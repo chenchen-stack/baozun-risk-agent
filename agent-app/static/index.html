@@ -63,6 +63,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);
 body.resizing{cursor:col-resize!important;user-select:none!important;-webkit-user-select:none!important}
 body.resizing *{cursor:col-resize!important;pointer-events:none!important}
 body.resizing .resize-handle{pointer-events:auto!important}
+body.resizing #resizeChat{pointer-events:auto!important}
 .sb .logo{padding:18px 14px 10px;border-bottom:1px solid rgba(255,255,255,.08)}
 .sb .logo .brand{display:flex;flex-direction:column;align-items:stretch;gap:10px}
 .sb-welcome{
@@ -155,26 +156,26 @@ body.resizing .resize-handle{pointer-events:auto!important}
   display:flex;flex-direction:column;
   transition:width .35s cubic-bezier(.4,0,.2,1);flex-shrink:0;
 }
-.chat-panel.open{width:min(520px,92vw);min-width:320px;max-width:min(780px,96vw);pointer-events:auto!important}
-/* 桌面：固定到视口最上层，避免编排画布/ LiteGraph 叠层盖住 flex 内的对话栏（关闭键点不到） */
+/* 未分栏时的 open 宽度（小屏 / 过渡）；桌面分栏宽度由内联 style + 默认 440px 控制 */
+.chat-panel.open{pointer-events:auto!important;border-left:1px solid var(--border)}
+/* 桌面：与 .mn 并排分栏，主区随拖动变窄；编排画布在 .mn 内，不再与侧栏抢 z-index */
 @media(min-width:769px){
   .chat-panel.open{
-    position:fixed!important;
-    top:0;right:0;bottom:0;
-    width:min(520px,92vw)!important;
-    min-width:320px!important;
-    max-width:min(780px,96vw)!important;
-    z-index:19850;
-    border-left:1px solid var(--border);
-    box-shadow:-10px 0 40px rgba(15,23,42,.14);
-    pointer-events:auto;
-    /* 脱离 flex 占位，主区占满宽；对话浮在右侧 */
-    flex:0 0 0!important;
-    margin:0!important;
+    position:relative;
+    flex:0 0 auto;
+    align-self:stretch;
+    min-height:0;
+    width:440px;
+    min-width:320px;
+    max-width:780px;
+    z-index:1;
+    box-shadow:-6px 0 28px rgba(15,23,42,.07);
+    overflow:hidden;
   }
+  #resizeChat.cp-resize-on{display:block!important}
 }
-.resize-handle-chat{display:none}
-.chat-panel.open~.resize-handle-chat,.resize-handle-chat.visible{display:block}
+/* Agent 分栏拖条：默认不占位，桌面打开对话后由 JS 加 .cp-resize-on */
+#resizeChat{display:none!important;flex-shrink:0}
 
 .cp-header{
   padding:12px 16px;border-bottom:1px solid var(--border);
@@ -1449,7 +1450,7 @@ body.demo-tour-on[data-demo-zoom="chat"] .mn{transform:none}
     </div>
   </div>
 
-  <div class="resize-handle" id="resizeChat" style="display:none"></div>
+  <div class="resize-handle" id="resizeChat" role="separator" aria-orientation="vertical" aria-label="拖动调整 Agent 侧栏宽度" title="拖动调整宽度"></div>
   <div class="chat-panel" id="chatPanel">
     <div class="cp-header">
       <div class="cp-title">
@@ -2009,14 +2010,26 @@ function setChatOpen(next){
   const cp=document.getElementById('chatPanel');
   const rh=document.getElementById('resizeChat');
   const ai=document.getElementById('aiBtn');
+  const desk=typeof window.matchMedia==='function'&&window.matchMedia('(min-width:769px)').matches;
   if(cp)cp.classList.toggle('open',chatOpen);
   if(ai)ai.classList.toggle('on',chatOpen);
-  const desk=typeof window.matchMedia==='function'&&window.matchMedia('(min-width:769px)').matches;
-  if(rh)rh.style.display=chatOpen&&!desk?'block':'none';
+  if(rh){
+    rh.classList.toggle('cp-resize-on',!!(chatOpen&&desk));
+  }
   if(!chatOpen){
-    if(cp){cp.style.width='';cp.style.transition='';}
+    if(cp){cp.style.width='';cp.style.transition='';cp.style.flexShrink='';}
   }else if(cp){
-    cp.style.transition=desk?'transform .28s ease,opacity .28s ease':'width .35s cubic-bezier(.4,0,.2,1)';
+    if(desk){
+      let w=parseInt(localStorage.getItem('chatPanelW')||'0',10);
+      if(!(w>=320&&w<=2000))w=440;
+      cp.style.transition='width .32s cubic-bezier(.4,0,.2,1)';
+      cp.style.width=w+'px';
+      cp.style.flexShrink='0';
+      requestAnimationFrame(function(){if(typeof window.clampChatPanelWidth==='function')window.clampChatPanelWidth();});
+    }else{
+      cp.style.transition='';
+      cp.style.flexShrink='';
+    }
     renderCpQuickBar();
   }
 }
@@ -3092,8 +3105,7 @@ async function send(){
 // ─────────── PANEL RESIZE ───────────
 (function(){
   const sb=document.querySelector('.sb');
-  const mn=document.querySelector('.mn');
-  const cp=document.getElementById('chatPanel');
+  const app=document.querySelector('.app');
   const hSb=document.getElementById('resizeSb');
   const hCp=document.getElementById('resizeChat');
 
@@ -3134,8 +3146,82 @@ async function send(){
     handle.addEventListener('mousedown',onDown);
   }
 
+  function getChatMaxW(){
+    if(!app||!sb||!hCp)return 780;
+    const total=app.getBoundingClientRect().width;
+    const minMain=340;
+    const sbW=sb.getBoundingClientRect().width;
+    const sbHandle=hSb?hSb.offsetWidth:0;
+    const used=sbW+sbHandle+(hCp.offsetWidth||5)+minMain;
+    return Math.max(320,Math.min(780,Math.floor(total-used)));
+  }
+
+  function initChatResize(){
+    let startX, startW;
+    const panel=()=>{
+      const p=document.getElementById('chatPanel');
+      return p&&p.classList.contains('open')?p:null;
+    };
+    function endDrag(){
+      if(!document.body.classList.contains('resizing')&&!hCp.classList.contains('active'))return;
+      hCp.classList.remove('active');
+      document.body.classList.remove('resizing');
+      document.removeEventListener('mousemove',onMove);
+      document.removeEventListener('mouseup',endDrag);
+      document.removeEventListener('pointerup',endDrag,true);
+      document.removeEventListener('pointercancel',endDrag,true);
+      window.removeEventListener('blur',endDrag);
+      const p=document.getElementById('chatPanel');
+      if(p&&p.classList.contains('open')){
+        try{
+          localStorage.setItem('chatPanelW',String(Math.round(p.getBoundingClientRect().width)));
+        }catch(e){}
+        p.style.transition='width .32s cubic-bezier(.4,0,.2,1)';
+      }
+    }
+    function onDown(e){
+      if(!window.matchMedia('(min-width:769px)').matches)return;
+      const p=panel();
+      if(!p)return;
+      e.preventDefault();
+      p.style.transition='none';
+      startX=e.clientX;
+      startW=p.getBoundingClientRect().width;
+      hCp.classList.add('active');
+      document.body.classList.add('resizing');
+      document.addEventListener('mousemove',onMove);
+      document.addEventListener('mouseup',endDrag);
+      document.addEventListener('pointerup',endDrag,true);
+      document.addEventListener('pointercancel',endDrag,true);
+      window.addEventListener('blur',endDrag);
+    }
+    function onMove(e){
+      const p=panel();
+      if(!p)return;
+      const dx=e.clientX-startX;
+      const newW=startW-dx;
+      const minW=320;
+      const maxW=getChatMaxW();
+      p.style.width=Math.max(minW,Math.min(maxW,newW))+'px';
+    }
+    hCp.addEventListener('mousedown',onDown);
+  }
+
   initResize(hSb,()=>sb,'left');
-  initResize(hCp,()=>cp.classList.contains('open')?cp:null,'right');
+  initChatResize();
+
+  window.clampChatPanelWidth=function(){
+    const p=document.getElementById('chatPanel');
+    if(!p||!p.classList.contains('open')||!window.matchMedia('(min-width:769px)').matches)return;
+    const maxW=getChatMaxW();
+    const cur=p.getBoundingClientRect().width;
+    if(cur>maxW)p.style.width=maxW+'px';
+  };
+  let _chatClampT=null;
+  window.addEventListener('resize',function(){
+    clearTimeout(_chatClampT);
+    _chatClampT=setTimeout(function(){window.clampChatPanelWidth();},100);
+  });
 })();
 
 /* ─────────── 一键演示：聚光灯 + 慢节奏「跟玩新手关一样」+ 真实点击 + 模拟对话（不调 API）────────── */
