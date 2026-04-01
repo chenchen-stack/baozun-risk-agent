@@ -144,6 +144,17 @@
     };
   }
 
+  /** wf/* 节点若保持 LiteGraph 默认 ALWAYS，graph.start(0) 会每帧 runStep → onExecute 每秒触发数十次 fetch，极易耗尽浏览器并发槽位（net::ERR_INSUFFICIENT_RESOURCES）。 */
+  function normalizePipelineWfModes(graph) {
+    if (!graph || !graph._nodes || !window.LiteGraph) return;
+    var G = window.LiteGraph;
+    for (var i = 0; i < graph._nodes.length; i++) {
+      var n = graph._nodes[i];
+      if (n && n.type && String(n.type).indexOf("wf/") === 0) n.mode = G.NEVER;
+    }
+    if (typeof graph.updateExecutionOrder === "function") graph.updateExecutionOrder();
+  }
+
   function registerNodeTypes() {
     var G = window.LiteGraph;
     if (!G || registerNodeTypes._ok) return;
@@ -162,6 +173,7 @@
         this.bgcolor = "#FFFFFF";
         this.boxcolor = "#E8ECF3";
         this.shape = "round";
+        this.mode = G.NEVER;
       };
     }
 
@@ -532,6 +544,7 @@
       .then(function (data) {
         if (data && data.litegraph && window.__pipeLGraph) {
           window.__pipeLGraph.configure(data.litegraph);
+          normalizePipelineWfModes(window.__pipeLGraph);
           window.__pipeLGraph.stop();
           window.__pipeLGraph.start();
           resizeCanvas();
@@ -549,6 +562,7 @@
     if (!window.__pipeLGraph) return;
     if (!confirm("重置为默认示例拓扑？")) return;
     buildDefaultGraph(window.__pipeLGraph);
+    normalizePipelineWfModes(window.__pipeLGraph);
     window.__pipeLGraph.stop();
     window.__pipeLGraph.start();
     resizeCanvas();
@@ -579,6 +593,7 @@
           var data = JSON.parse(fr.result);
           if (data.litegraph && window.__pipeLGraph) {
             window.__pipeLGraph.configure(data.litegraph);
+            normalizePipelineWfModes(window.__pipeLGraph);
             window.__pipeLGraph.stop();
             window.__pipeLGraph.start();
             resizeCanvas();
@@ -852,8 +867,10 @@
           .then(function (data) {
             if (data && data.litegraph && data.litegraph.nodes && data.litegraph.nodes.length) {
               graph.configure(data.litegraph);
+              normalizePipelineWfModes(graph);
             } else {
               buildDefaultGraph(graph);
+              normalizePipelineWfModes(graph);
             }
             graph.start();
             setTimeout(function () {
@@ -863,6 +880,7 @@
           })
           .catch(function () {
             buildDefaultGraph(graph);
+            normalizePipelineWfModes(graph);
             graph.start();
             setTimeout(function () {
               resizeCanvas();
@@ -871,6 +889,7 @@
           });
       } else {
         buildDefaultGraph(graph);
+        normalizePipelineWfModes(graph);
         graph.start();
         setTimeout(function () {
           resizeCanvas();
