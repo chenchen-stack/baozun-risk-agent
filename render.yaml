@@ -1,0 +1,12 @@
+# 从本仓库根目录部署到 Render 时使用（子目录 agent-app）
+services:
+  - type: web
+    name: baozun-risk-agent
+    runtime: docker
+    dockerfilePath: ./agent-app/Dockerfile
+    dockerContext: ./agent-app
+    plan: free
+    healthCheckPath: /api/health
+    envVars:
+      - key: DEEPSEEK_API_KEY
+        sync: false

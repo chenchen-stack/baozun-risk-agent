@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>宝尊风控 AI Agent</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700;900&family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#f5f5f7;--bg-card:#ffffff;--bg-sidebar:#1d1d1f;--bg-sidebar-hover:rgba(255,255,255,.08);
+  --text:#1d1d1f;--text2:#6e6e73;--text3:#aeaeb2;--text-inv:#f5f5f7;
+  --accent:#4f46e5;--accent-light:#eef2ff;--accent-bg:rgba(79,70,229,.06);
+  --green:#16a34a;--green-bg:rgba(22,163,74,.1);
+  --red:#dc2626;--red-bg:rgba(220,38,38,.08);
+  --orange:#ea580c;--orange-bg:rgba(234,88,12,.08);
+  --yellow:#ca8a04;--yellow-bg:rgba(202,138,4,.08);
+  --purple:#7c3aed;--purple-bg:rgba(124,58,237,.06);
+  --border:#e5e5e5;--border2:#f0f0f0;
+  --shadow:0 1px 3px rgba(0,0,0,.06);
+  --shadow2:0 4px 16px rgba(0,0,0,.08);
+  --shadow3:0 8px 30px rgba(0,0,0,.1);
+  --radius:12px;--radius-lg:16px;
+}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:'Noto Sans SC','DM Sans',-apple-system,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+
+.app{display:flex;height:100vh}
+
+/* ─── SIDEBAR ─── */
+.sidebar{width:220px;background:var(--bg-sidebar);display:flex;flex-direction:column;flex-shrink:0}
+.sidebar .logo{padding:20px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(255,255,255,.06)}
+.sidebar .logo .icon{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#4f46e5,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff;font-weight:700}
+.sidebar .logo .name{font-size:14px;font-weight:600;color:var(--text-inv);line-height:1.2}
+.sidebar .logo .sub{font-size:11px;color:var(--text3);margin-top:1px}
+
+.sidebar nav{flex:1;padding:12px 8px;display:flex;flex-direction:column;gap:2px}
+.sidebar nav a{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;cursor:pointer;text-decoration:none;color:rgba(255,255,255,.55);font-size:13px;font-weight:500;transition:all .15s}
+.sidebar nav a:hover{background:var(--bg-sidebar-hover);color:rgba(255,255,255,.85)}
+.sidebar nav a.active{background:rgba(79,70,229,.35);color:#fff}
+.sidebar nav a .nav-icon{width:20px;text-align:center;font-size:15px;flex-shrink:0}
+.sidebar nav .divider{height:1px;background:rgba(255,255,255,.06);margin:8px 4px}
+
+.sidebar .footer{padding:16px;border-top:1px solid rgba(255,255,255,.06)}
+.sidebar .footer .ver{font-size:11px;color:var(--text3)}
+
+/* ─── MAIN ─── */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+
+.topbar{height:56px;background:var(--bg-card);border-bottom:1px solid var(--border2);display:flex;align-items:center;justify-content:space-between;padding:0 24px;flex-shrink:0}
+.topbar .title{font-size:15px;font-weight:600}
+.topbar .badge{font-size:12px;background:var(--red-bg);color:var(--red);padding:2px 8px;border-radius:20px;font-weight:600}
+
+/* ─── PAGES ─── */
+.page{flex:1;overflow-y:auto;display:none;padding:24px}
+.page.active{display:block}
+
+/* ─── DASHBOARD ─── */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.stat-card{background:var(--bg-card);border-radius:var(--radius-lg);padding:20px;box-shadow:var(--shadow);position:relative;overflow:hidden;border:1px solid var(--border2)}
+.stat-card .label{font-size:12px;color:var(--text2);font-weight:500;margin-bottom:8px}
+.stat-card .value{font-size:28px;font-weight:700;line-height:1;font-family:'DM Sans','Noto Sans SC',sans-serif}
+.stat-card .sub{font-size:12px;color:var(--text3);margin-top:6px}
+.stat-card .stripe{position:absolute;top:0;left:0;right:0;height:3px}
+.stat-card.accent .stripe{background:var(--accent)}
+.stat-card.red .stripe{background:var(--red)}
+.stat-card.orange .stripe{background:var(--orange)}
+.stat-card.green .stripe{background:var(--green)}
+
+.section{margin-bottom:24px}
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.section-title{font-size:15px;font-weight:600}
+.section-badge{font-size:11px;padding:3px 8px;border-radius:20px;font-weight:600}
+
+.card{background:var(--bg-card);border-radius:var(--radius-lg);box-shadow:var(--shadow);border:1px solid var(--border2);overflow:hidden}
+
+/* Tables */
+table{width:100%;border-collapse:collapse}
+table th{text-align:left;font-size:12px;color:var(--text2);font-weight:500;padding:12px 16px;border-bottom:1px solid var(--border2);background:var(--bg)}
+table td{padding:12px 16px;font-size:13px;border-bottom:1px solid var(--border2)}
+table tr:last-child td{border-bottom:none}
+table tr:hover td{background:rgba(79,70,229,.02)}
+
+.risk-badge{display:inline-flex;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
+.risk-badge.high{background:var(--red-bg);color:var(--red)}
+.risk-badge.medium{background:var(--orange-bg);color:var(--orange)}
+.risk-badge.low{background:var(--yellow-bg);color:var(--yellow)}
+
+.status-dot{display:inline-flex;align-items:center;gap:4px;font-size:12px}
+.status-dot::before{content:'';width:6px;height:6px;border-radius:50%}
+.status-dot.pending::before{background:var(--orange)}
+.status-dot.done::before{background:var(--green)}
+.status-dot.blocked::before{background:var(--red)}
+
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+
+/* ─── EXCEPTION PAGE ─── */
+.filter-bar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.filter-bar .filter-btn{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;background:var(--bg-card);border:1px solid var(--border);color:var(--text2);transition:all .15s}
+.filter-bar .filter-btn:hover{border-color:var(--accent);color:var(--accent)}
+.filter-bar .filter-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+.exc-card{background:var(--bg-card);border-radius:var(--radius-lg);box-shadow:var(--shadow);border:1px solid var(--border2);padding:20px;margin-bottom:12px;cursor:pointer;transition:all .2s}
+.exc-card:hover{box-shadow:var(--shadow2);transform:translateY(-1px)}
+.exc-card .exc-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px}
+.exc-card .exc-title{font-size:14px;font-weight:600;line-height:1.4}
+.exc-card .exc-desc{font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:10px}
+.exc-card .exc-meta{display:flex;gap:16px;flex-wrap:wrap}
+.exc-card .exc-meta span{font-size:12px;color:var(--text3);display:flex;align-items:center;gap:4px}
+
+/* ─── REPORT PAGE ─── */
+.report-header{background:var(--bg-card);border-radius:var(--radius-lg);box-shadow:var(--shadow);border:1px solid var(--border2);padding:24px;margin-bottom:20px}
+.report-title{font-size:20px;font-weight:700;margin-bottom:4px}
+.report-sub{font-size:13px;color:var(--text2)}
+.report-actions{display:flex;gap:8px;margin-top:16px}
+.report-actions .btn{padding:8px 16px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;border:none}
+.btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:#4338ca}
+.btn-secondary{background:var(--bg);color:var(--text);border:1px solid var(--border)!important}.btn-secondary:hover{background:var(--border2)}
+
+.report-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px}
+.report-metric{background:var(--bg-card);border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--border2);padding:16px;text-align:center}
+.report-metric .rm-val{font-size:24px;font-weight:700;font-family:'DM Sans',sans-serif}
+.report-metric .rm-label{font-size:12px;color:var(--text2);margin-top:4px}
+
+.report-section{background:var(--bg-card);border-radius:var(--radius-lg);box-shadow:var(--shadow);border:1px solid var(--border2);margin-bottom:16px;overflow:hidden}
+.report-section .rs-title{padding:16px 20px;font-size:14px;font-weight:600;border-bottom:1px solid var(--border2);display:flex;align-items:center;gap:8px}
+
+/* ─── CHAT PAGE ─── */
+.chat-page{padding:0!important;display:flex;flex-direction:column}
+.chat-page.active{display:flex}
+
+.chat-messages{flex:1;overflow-y:auto;padding:24px;display:flex;flex-direction:column;gap:16px}
+
+.welcome{text-align:center;padding:60px 20px}
+.welcome .wicon{font-size:48px;margin-bottom:16px}
+.welcome h2{font-size:22px;font-weight:700;margin-bottom:8px}
+.welcome p{font-size:14px;color:var(--text2);max-width:400px;margin:0 auto 28px}
+.quick-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;max-width:480px;margin:0 auto}
+.quick-card{background:var(--bg-card);border:1px solid var(--border2);border-radius:var(--radius);padding:14px;text-align:left;cursor:pointer;transition:all .2s;box-shadow:var(--shadow)}
+.quick-card:hover{box-shadow:var(--shadow2);border-color:var(--accent);transform:translateY(-1px)}
+.quick-card .qicon{font-size:18px;margin-bottom:6px}
+.quick-card .qtitle{font-size:12px;font-weight:600;margin-bottom:2px}
+.quick-card .qdesc{font-size:11px;color:var(--text3)}
+
+.msg{display:flex;gap:12px;max-width:800px}
+.msg.user{flex-direction:row-reverse;margin-left:auto}
+.msg .avatar{width:32px;height:32px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px;font-weight:600}
+.msg.ai .avatar{background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff}
+.msg.user .avatar{background:var(--bg);border:1px solid var(--border)}
+.msg .bubble{padding:12px 16px;border-radius:14px;font-size:14px;line-height:1.7}
+.msg.ai .bubble{background:var(--bg-card);box-shadow:var(--shadow);border:1px solid var(--border2)}
+.msg.user .bubble{background:var(--accent);color:#fff;border-radius:14px 14px 4px 14px}
+.msg .bubble h1,.msg .bubble h2,.msg .bubble h3{margin:12px 0 6px;font-weight:600}
+.msg .bubble h3{font-size:14px}
+.msg .bubble ul,.msg .bubble ol{padding-left:18px;margin:6px 0}
+.msg .bubble li{margin:3px 0}
+.msg .bubble table{margin:8px 0;font-size:13px}
+.msg .bubble th{background:var(--bg);font-weight:600}
+.msg .bubble td,.msg .bubble th{padding:6px 10px;border:1px solid var(--border2)}
+.msg .bubble code{background:var(--bg);padding:1px 5px;border-radius:4px;font-family:'DM Mono',monospace;font-size:12px}
+.msg .bubble pre{background:var(--bg);padding:12px;border-radius:8px;margin:8px 0;overflow-x:auto}
+.msg .bubble pre code{background:none;padding:0;font-size:12px}
+
+.typing{display:flex;gap:4px;padding:8px 0}
+.typing span{width:6px;height:6px;border-radius:50%;background:var(--text3);animation:blink 1.2s infinite}
+.typing span:nth-child(2){animation-delay:.2s}
+.typing span:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,80%{opacity:.3}40%{opacity:1}}
+
+.query-anim{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--accent);margin:6px 0;padding:6px 12px;background:var(--accent-bg);border-radius:8px}
+.query-anim .spinner{width:14px;height:14px;border:2px solid var(--accent-light);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.chat-input-area{padding:12px 24px 20px;border-top:1px solid var(--border2);background:var(--bg-card)}
+.chat-input-wrap{display:flex;gap:8px;max-width:800px;margin:0 auto}
+.chat-input-wrap textarea{flex:1;border:1px solid var(--border);border-radius:12px;padding:12px 16px;font-size:14px;font-family:inherit;resize:none;outline:none;transition:border .2s;min-height:44px;max-height:120px;line-height:1.5}
+.chat-input-wrap textarea:focus{border-color:var(--accent)}
+.chat-input-wrap .send-btn{width:44px;height:44px;border-radius:12px;background:var(--accent);color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;transition:all .15s;flex-shrink:0}
+.chat-input-wrap .send-btn:hover{background:#4338ca}
+.chat-input-wrap .send-btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* ─── ANIMATIONS ─── */
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fadeIn .3s ease}
+
+/* ─── SCROLLBAR ─── */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--text3)}
+
+/* ─── RESPONSIVE ─── */
+@media(max-width:768px){
+  .sidebar{position:fixed;z-index:100;transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0)}
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+  .two-col,.report-grid{grid-template-columns:1fr}
+  .quick-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="icon">风</div>
+      <div><div class="name">宝尊风控 AI Agent</div><div class="sub">非经营性采购智能风控</div></div>
+    </div>
+    <nav>
+      <a class="active" onclick="go('dashboard')" data-page="dashboard"><span class="nav-icon">📊</span>异常看板</a>
+      <a onclick="go('exceptions')" data-page="exceptions"><span class="nav-icon">🚨</span>预警列表</a>
+      <a onclick="go('report')" data-page="report"><span class="nav-icon">📋</span>月度报告</a>
+      <div class="divider"></div>
+      <a onclick="go('chat')" data-page="chat"><span class="nav-icon">🤖</span>智能搜索</a>
+    </nav>
+    <div class="footer"><div class="ver">v1.0 · Demo · 2026年3月</div></div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div class="title" id="pageTitle">异常看板</div>
+      <div class="badge" id="alertBadge" style="display:none"></div>
+    </div>
+
+    <!-- PAGE: DASHBOARD -->
+    <div class="page active" id="pg-dashboard">
+      <div class="stats-grid" id="statsGrid"></div>
+      <div class="two-col">
+        <div class="section">
+          <div class="section-header"><span class="section-title">⚠️ 待处理异常</span><span class="section-badge" style="background:var(--red-bg);color:var(--red)" id="excBadge"></span></div>
+          <div class="card"><table><thead><tr><th>编号</th><th>类型</th><th>级别</th><th>金额</th><th>状态</th></tr></thead><tbody id="excTable"></tbody></table></div>
+        </div>
+        <div class="section">
+          <div class="section-header"><span class="section-title">💳 待审批付款</span></div>
+          <div class="card"><table><thead><tr><th>付款编号</th><th>描述</th><th>金额</th><th>风险</th></tr></thead><tbody id="payTable"></tbody></table></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE: EXCEPTIONS -->
+    <div class="page" id="pg-exceptions">
+      <div class="filter-bar" id="filterBar">
+        <button class="filter-btn active" onclick="filterExc('all')">全部</button>
+        <button class="filter-btn" onclick="filterExc('high')">🔴 高风险</button>
+        <button class="filter-btn" onclick="filterExc('medium')">🟡 中风险</button>
+        <button class="filter-btn" onclick="filterExc('low')">🟢 低风险</button>
+      </div>
+      <div id="excCards"></div>
+    </div>
+
+    <!-- PAGE: REPORT -->
+    <div class="page" id="pg-report">
+      <div class="report-header">
+        <div class="report-title" id="reportTitle">宝尊电商 非经营性采购内控报告</div>
+        <div class="report-sub" id="reportSub"></div>
+        <div class="report-actions">
+          <button class="btn btn-primary" onclick="alert('演示环境：正式版将导出PDF格式审计底稿')">📎 导出审计底稿</button>
+          <button class="btn btn-secondary" onclick="alert('演示环境：正式版将导出Excel明细')">📥 导出Excel明细</button>
+        </div>
+      </div>
+      <div class="report-grid" id="reportMetrics"></div>
+      <div class="report-section">
+        <div class="rs-title">🔴 高风险项目（需立即处理）</div>
+        <table><thead><tr><th>类型</th><th>数量</th><th>涉及金额</th><th>建议</th></tr></thead><tbody id="highRiskTable"></tbody></table>
+      </div>
+      <div class="report-section">
+        <div class="rs-title">🟡 中风险项目（需关注）</div>
+        <table><thead><tr><th>类型</th><th>数量</th><th>涉及金额</th><th>建议</th></tr></thead><tbody id="medRiskTable"></tbody></table>
+      </div>
+      <div class="report-section">
+        <div class="rs-title">📊 三单匹配与四流一致性校验</div>
+        <table><thead><tr><th>校验项目</th><th>检查总数</th><th>通过</th><th>异常</th><th>通过率</th></tr></thead><tbody id="checkTable"></tbody></table>
+      </div>
+    </div>
+
+    <!-- PAGE: CHAT -->
+    <div class="page chat-page" id="pg-chat">
+      <div class="chat-messages" id="chatMsgs">
+        <div class="welcome fade-in" id="chatWelcome">
+          <div class="wicon">🛡️</div>
+          <h2>宝尊风控 AI Agent</h2>
+          <p>输入采购单号、合同号、付款单号或自然语言问题，AI自动从三个系统抓取数据并进行风控校验</p>
+          <div class="quick-grid">
+            <div class="quick-card" onclick="qs('查采购单PO-2026-003的完整信息流，包括三单匹配和四流一致性校验结果')"><div class="qicon">🔍</div><div class="qtitle">完整信息流查询</div><div class="qdesc">PO-2026-003 全链路追溯</div></div>
+            <div class="quick-card" onclick="qs('本月有哪些非经营性采购跳过了采购申请流程？列出详情和风险等级')"><div class="qicon">⚡</div><div class="qtitle">跳过申请检查</div><div class="qdesc">查找缺失前序流程的采购</div></div>
+            <div class="quick-card" onclick="qs('检查付款单PAY-2026-007是否存在重复付款风险，并给出完整的风控校验报告')"><div class="qicon">💰</div><div class="qtitle">重复付款检测</div><div class="qdesc">PAY-2026-007 风控校验</div></div>
+            <div class="quick-card" onclick="qs('生成2026年3月非经营性采购内控月报摘要，按高/中/低风险分级统计')"><div class="qicon">📊</div><div class="qtitle">月度风控报告</div><div class="qdesc">3月异常统计与风险分析</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="chat-input-area">
+        <div class="chat-input-wrap">
+          <textarea id="chatInput" placeholder="输入采购单号、合同号、付款单号，或用自然语言描述您的查询..." rows="1" onkeydown="handleKey(event)" oninput="autoH(this)"></textarea>
+          <button class="send-btn" id="sendBtn" onclick="send()">➤</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const titles={'dashboard':'异常看板','exceptions':'预警列表','report':'月度报告','chat':'智能搜索'};
+let curPage='dashboard', D=null, history=[];
+
+function go(p){
+  curPage=p;
+  document.querySelectorAll('.page').forEach(el=>el.classList.remove('active'));
+  document.getElementById('pg-'+p).classList.add('active');
+  document.querySelectorAll('.sidebar nav a').forEach(a=>{a.classList.toggle('active',a.dataset.page===p)});
+  document.getElementById('pageTitle').textContent=titles[p]||p;
+}
+
+async function loadData(){
+  try{const r=await fetch('/api/dashboard');D=await r.json();renderDashboard();renderExceptions();renderReport();}catch(e){console.error(e)}
+}
+
+function fmt(n){return n>=10000?(n/10000).toFixed(1)+'万':n.toLocaleString();}
+function fmtY(n){return '¥'+n.toLocaleString();}
+
+function renderDashboard(){
+  const s=D.summary;
+  document.getElementById('alertBadge').style.display='inline';
+  document.getElementById('alertBadge').textContent=s.anomaly_count+' 异常';
+  document.getElementById('statsGrid').innerHTML=`
+    <div class="stat-card accent fade-in"><div class="stripe"></div><div class="label">本月非经营性采购</div><div class="value">${s.total_po}</div><div class="sub">总金额 ${fmtY(s.total_amount)}</div></div>
+    <div class="stat-card red fade-in" style="animation-delay:.05s"><div class="stripe"></div><div class="label">异常数量</div><div class="value">${s.anomaly_count}</div><div class="sub">高风险 ${s.high_risk} · 中风险 ${s.medium_risk} · 低风险 ${s.low_risk}</div></div>
+    <div class="stat-card orange fade-in" style="animation-delay:.1s"><div class="stripe"></div><div class="label">待审批付款</div><div class="value">${s.pending_payment}</div><div class="sub">待审批金额 ${fmtY(s.pending_amount)}</div></div>
+    <div class="stat-card green fade-in" style="animation-delay:.15s"><div class="stripe"></div><div class="label">三单匹配通过率</div><div class="value">${D.monthly_report.three_doc_summary.checked>0?Math.round(D.monthly_report.three_doc_summary.passed/D.monthly_report.three_doc_summary.checked*100):0}%</div><div class="sub">${D.monthly_report.three_doc_summary.passed}/${D.monthly_report.three_doc_summary.checked} 通过</div></div>
+  `;
+  document.getElementById('excBadge').textContent=s.anomaly_count+' 条';
+  let rows='';
+  D.exceptions.slice(0,5).forEach(e=>{
+    rows+=`<tr><td style="font-family:'DM Mono',monospace;font-size:12px">${e.id}</td><td>${e.type}</td><td><span class="risk-badge ${e.level}">${e.level==='high'?'高风险':e.level==='medium'?'中风险':'低风险'}</span></td><td>${fmtY(e.amount)}</td><td><span class="status-dot ${e.status==='待处理'?'pending':'blocked'}">${e.status}</span></td></tr>`;
+  });
+  document.getElementById('excTable').innerHTML=rows;
+
+  let prows='';
+  D.recent_payments.forEach(p=>{
+    prows+=`<tr><td style="font-family:'DM Mono',monospace;font-size:12px">${p.id}</td><td>${p.desc}</td><td>${fmtY(p.amount)}</td><td><span class="risk-badge ${p.risk}">${p.risk==='high'?'高':'中'}</span></td></tr>`;
+  });
+  document.getElementById('payTable').innerHTML=prows;
+}
+
+let excFilter='all';
+function filterExc(f){
+  excFilter=f;
+  document.querySelectorAll('.filter-bar .filter-btn').forEach(b=>b.classList.remove('active'));
+  event.target.classList.add('active');
+  renderExcCards();
+}
+function renderExcCards(){
+  const filtered=excFilter==='all'?D.exceptions:D.exceptions.filter(e=>e.level===excFilter);
+  let html='';
+  filtered.forEach(e=>{
+    html+=`<div class="exc-card fade-in" onclick="excDetail('${e.id}')">
+      <div class="exc-head"><div class="exc-title">${e.type}：${e.id}</div><span class="risk-badge ${e.level}">${e.level==='high'?'高风险':e.level==='medium'?'中风险':'低风险'}</span></div>
+      <div class="exc-desc">${e.desc}</div>
+      <div class="exc-meta">
+        <span>📄 ${e.po}</span><span>📑 ${e.contract}</span><span>💰 ${fmtY(e.amount)}</span><span>🏢 ${e.dept}</span><span>📅 ${e.date}</span>
+      </div>
+    </div>`;
+  });
+  document.getElementById('excCards').innerHTML=html;
+}
+function renderExceptions(){renderExcCards();}
+function excDetail(id){
+  go('chat');
+  const e=D.exceptions.find(x=>x.id===id);
+  if(e){qs(`查采购单${e.po}的完整信息流，包括三单匹配和四流一致性校验结果。该笔采购存在"${e.type}"异常，请详细分析风险并给出处理建议。`);}
+}
+
+function renderReport(){
+  const r=D.monthly_report;
+  document.getElementById('reportSub').textContent=r.period+' · 非经营性采购风控报告 · 涉及部门：'+r.departments.join('、');
+  document.getElementById('reportMetrics').innerHTML=`
+    <div class="report-metric fade-in"><div class="rm-val" style="color:var(--accent)">${r.total_purchases}</div><div class="rm-label">采购总笔数</div></div>
+    <div class="report-metric fade-in"><div class="rm-val" style="color:var(--text)">${fmtY(r.total_amount)}</div><div class="rm-label">采购总金额</div></div>
+    <div class="report-metric fade-in"><div class="rm-val" style="color:var(--red)">${r.high_risk_items.length+r.medium_risk_items.length}</div><div class="rm-label">异常项目</div></div>
+  `;
+
+  const suggest={'跳过采购申请':'追补采购申请流程，加强前序流程管控','疑似重复付款':'立即冻结付款，核实是否重复','合同类型错误':'更正合同类型，重新走审批流程','三单匹配异常':'核实采购数量与发票金额差异，补充验收记录'};
+  let hhtml='';
+  r.high_risk_items.forEach(i=>{hhtml+=`<tr><td><span class="risk-badge high">高风险</span> ${i.type}</td><td>${i.count}笔</td><td>${fmtY(i.amount)}</td><td>${suggest[i.type]||'待分析'}</td></tr>`;});
+  document.getElementById('highRiskTable').innerHTML=hhtml;
+  let mhtml='';
+  r.medium_risk_items.forEach(i=>{mhtml+=`<tr><td><span class="risk-badge medium">中风险</span> ${i.type}</td><td>${i.count}笔</td><td>${fmtY(i.amount)}</td><td>${suggest[i.type]||'待分析'}</td></tr>`;});
+  document.getElementById('medRiskTable').innerHTML=mhtml;
+
+  const td=r.three_doc_summary,ff=r.four_flow_summary;
+  document.getElementById('checkTable').innerHTML=`
+    <tr><td>三单匹配（PO / 验收单 / 发票）</td><td>${td.checked}</td><td style="color:var(--green)">${td.passed}</td><td style="color:var(--red)">${td.failed}</td><td>${td.checked>0?Math.round(td.passed/td.checked*100):0}%</td></tr>
+    <tr><td>四流一致（合同 / 资金 / 发票 / 物流）</td><td>${ff.checked}</td><td style="color:var(--green)">${ff.passed}</td><td style="color:var(--red)">${ff.failed}</td><td>${ff.checked>0?Math.round(ff.passed/ff.checked*100):0}%</td></tr>
+  `;
+}
+
+function autoH(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,120)+'px';}
+function handleKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}}
+
+function addMsg(role,html){
+  const w=document.getElementById('chatWelcome');if(w)w.style.display='none';
+  const d=document.createElement('div');d.className='msg '+role+' fade-in';
+  d.innerHTML=`<div class="avatar">${role==='ai'?'🛡':'👤'}</div><div class="bubble">${html}</div>`;
+  document.getElementById('chatMsgs').appendChild(d);
+  document.getElementById('chatMsgs').scrollTop=99999;
+  return d;
+}
+
+function showQ(bubble){
+  const q=document.createElement('div');q.className='query-anim';q.innerHTML='<div class="spinner"></div>正在查询采购系统、OA合同系统、OA付款系统...';
+  bubble.querySelector('.bubble').appendChild(q);return q;
+}
+
+const queryKW=['查','采购','合同','付款','PO-','PAY-','SC-','三单','四流','校验','检查','风险','报告','月报','异常','重复','供应商'];
+function isQ(t){return queryKW.some(k=>t.includes(k));}
+
+function qs(t){
+  document.getElementById('chatInput').value=t;
+  go('chat');
+  setTimeout(()=>send(),100);
+}
+
+async function send(){
+  const input=document.getElementById('chatInput'), btn=document.getElementById('sendBtn');
+  const t=input.value.trim();if(!t)return;
+  input.value='';input.style.height='auto';btn.disabled=true;
+  addMsg('user',t.replace(/</g,'&lt;'));
+  history.push({role:'user',content:t});
+
+  const aiMsg=addMsg('ai','<div class="typing"><span></span><span></span><span></span></div>');
+  const bubble=aiMsg.querySelector('.bubble');
+  let qEl=null;
+  if(isQ(t)){qEl=showQ(aiMsg);}
+
+  try{
+    const res=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:history})});
+    const reader=res.body.getReader();const dec=new TextDecoder();
+    let full='',buf='';
+    while(true){
+      const{done,value}=await reader.read();if(done)break;
+      buf+=dec.decode(value,{stream:true});
+      const lines=buf.split('\n');buf=lines.pop();
+      for(const line of lines){
+        if(!line.startsWith('data: '))continue;
+        const data=line.slice(6);
+        if(data==='[DONE]')continue;
+        try{const j=JSON.parse(data);if(j.content)full+=j.content;}catch{}
+      }
+      if(qEl&&full.length>20){qEl.remove();qEl=null;}
+      bubble.innerHTML=marked.parse(full);
+      document.getElementById('chatMsgs').scrollTop=99999;
+    }
+    history.push({role:'assistant',content:full});
+  }catch(e){
+    bubble.innerHTML='<span style="color:var(--red)">请求失败：'+e.message+'</span>';
+  }
+  btn.disabled=false;input.focus();
+}
+
+loadData();
+</script>
+</body>
+</html>

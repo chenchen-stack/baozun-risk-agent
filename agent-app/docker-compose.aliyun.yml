@@ -1,0 +1,13 @@
+# 在 ECS 上使用：先 export ACR_IMAGE、DEEPSEEK_API_KEY
+# docker compose -f docker-compose.aliyun.yml up -d
+services:
+  web:
+    image: ${ACR_IMAGE}
+    ports:
+      - "8800:8800"
+    environment:
+      PORT: "8800"
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY}
+      # 默认 36；本地可 export AGENT_MAX_ITERATIONS=40 覆盖
+      AGENT_MAX_ITERATIONS: ${AGENT_MAX_ITERATIONS:-36}
+    restart: unless-stopped

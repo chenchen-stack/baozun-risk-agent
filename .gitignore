@@ -1,0 +1,33 @@
+# 密钥与本地环境
+.env
+.env.*
+!.env.example
+**/env.deploy
+agent-app/.env
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
+# 生成物 / 运行时
+agent-app/reports/*.html
+!agent-app/reports/.gitkeep
+*.log
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Cursor / 本地
+.cursor/
+
+# 若在外部 data 目录放敏感 JSON，勿提交（示例仅保留 .gitkeep）
+# agent-app/external_data/*.json

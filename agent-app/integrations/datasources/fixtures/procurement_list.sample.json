@@ -1,0 +1,38 @@
+{
+  "items": [
+    {
+      "poNumber": "PO-2026-101",
+      "title": "REST 演示 · 行政耗材采购",
+      "category": "非经营性采购-办公用品",
+      "department": "BEC-行政部",
+      "applicant": "周敏",
+      "supplier": "上海晨光科力普办公用品有限公司",
+      "supplierId": "SUP-REST-001",
+      "amount": 12800,
+      "applyDate": "2026-03-28",
+      "status": "待审批",
+      "hasPurchaseRequest": true,
+      "prNumber": "PR-2026-101",
+      "budgetCode": "BEC-ADMIN-2026-Q1",
+      "budgetTotal": 200000,
+      "budgetUsed": 45000
+    },
+    {
+      "po_number": "PO-2026-102",
+      "title": "同批第二条（snake_case 字段）",
+      "category": "非经营性采购-IT设备",
+      "department": "BEC-技术部",
+      "applicant": "赵工",
+      "supplier": "联想（上海）电子科技有限公司",
+      "supplier_id": "SUP-REST-002",
+      "amount": 96000,
+      "apply_date": "2026-03-29",
+      "status": "已审批",
+      "has_purchase_request": true,
+      "pr_number": "PR-2026-102",
+      "budget_code": "BEC-IT-2026-Q1",
+      "budget_total": 500000,
+      "budget_used": 120000
+    }
+  ]
+}

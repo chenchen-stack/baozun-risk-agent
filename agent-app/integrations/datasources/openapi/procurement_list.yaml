@@ -1,0 +1,75 @@
+openapi: 3.0.3
+info:
+  title: 采购订单列表（示例契约）
+  version: "1.0"
+  description: |
+    与 integrations/datasources/mapper.py 字段别名对齐。
+    实现方只需保证列表元素可被映射为 PO-YYYY-NNN 及预算等字段。
+servers:
+  - url: https://procurement-api.example.com
+paths:
+  /api/v1/purchase-orders:
+    get:
+      summary: 分页/全量采购订单（演示用全量即可）
+      operationId: listPurchaseOrders
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/PurchaseOrderListEnvelope"
+                  - type: array
+                    items:
+                      $ref: "#/components/schemas/PurchaseOrder"
+components:
+  schemas:
+    PurchaseOrderListEnvelope:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/PurchaseOrder"
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/PurchaseOrder"
+    PurchaseOrder:
+      type: object
+      required: [poNumber]
+      properties:
+        poNumber:
+          type: string
+          example: PO-2026-101
+        title:
+          type: string
+        category:
+          type: string
+        department:
+          type: string
+        applicant:
+          type: string
+        supplier:
+          type: string
+        supplierId:
+          type: string
+        amount:
+          type: number
+        applyDate:
+          type: string
+          format: date
+        status:
+          type: string
+        hasPurchaseRequest:
+          type: boolean
+        prNumber:
+          type: string
+          nullable: true
+        budgetCode:
+          type: string
+        budgetTotal:
+          type: number
+        budgetUsed:
+          type: number

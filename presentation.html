@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>宝尊电商风控部 AI Agent 解决方案</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@100;300;400;500;700;900&family=DM+Sans:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#000;--fg:#fff;--dim:rgba(255,255,255,.45);
+  --accent:#2997FF;--accent2:#30D158;--red:#FF453A;--orange:#FF9F0A;--purple:#BF5AF2;--pink:#FF375F;
+  --card:rgba(255,255,255,.06);--border:rgba(255,255,255,.08);
+  --slide-pad:clamp(40px,6vw,80px);
+}
+html,body{height:100%;overflow:hidden;background:#000;font-family:'Noto Sans SC','DM Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+
+.deck{position:relative;width:100vw;height:100vh}
+.s{position:absolute;inset:0;opacity:0;visibility:hidden;display:flex;flex-direction:column;transition:opacity .7s cubic-bezier(.4,0,.2,1),transform .7s cubic-bezier(.4,0,.2,1);transform:scale(.97);overflow-y:auto;overflow-x:hidden}
+.s.active{opacity:1;visibility:visible;transform:scale(1)}
+.s::-webkit-scrollbar{width:0}
+
+/* ── NAV ── */
+.nav{position:fixed;bottom:0;left:0;right:0;height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 32px;z-index:100;background:rgba(0,0,0,.7);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);border-top:1px solid var(--border)}
+.nav .pg{font-size:12px;color:var(--dim);letter-spacing:2px;font-family:'DM Mono',monospace}
+.nav .btns{display:flex;gap:8px}
+.nav button{width:36px;height:36px;border-radius:50%;border:1px solid rgba(255,255,255,.15);background:transparent;color:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.nav button:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.3)}
+.prog{position:fixed;top:0;left:0;height:2px;background:var(--accent);z-index:101;transition:width .5s cubic-bezier(.4,0,.2,1)}
+
+/* ── SLIDE TYPES ── */
+
+/* Dark hero (most slides) */
+.dark{background:#000;color:#fff;padding:var(--slide-pad);padding-bottom:80px}
+
+/* Light slide */
+.light{background:#fff;color:#000;padding:var(--slide-pad);padding-bottom:80px}
+.light h2,.light h3{color:#1d1d1f}
+.light .dim{color:rgba(0,0,0,.45)}
+.light .card{background:rgba(0,0,0,.03);border-color:rgba(0,0,0,.06)}
+
+/* Gradient hero */
+.grad{background:linear-gradient(180deg,#000 0%,#0a1628 50%,#0d2137 100%);color:#fff;padding:var(--slide-pad);padding-bottom:80px;justify-content:center;align-items:center;text-align:center}
+
+/* ── TYPOGRAPHY ── */
+.eyebrow{font-size:clamp(12px,1.2vw,16px);font-weight:500;letter-spacing:3px;text-transform:uppercase;color:var(--accent);margin-bottom:12px}
+.eyebrow.green{color:var(--accent2)}
+.eyebrow.orange{color:var(--orange)}
+.eyebrow.purple{color:var(--purple)}
+.eyebrow.pink{color:var(--pink)}
+.eyebrow.red{color:var(--red)}
+h1{font-size:clamp(36px,5vw,72px);font-weight:900;line-height:1.1;letter-spacing:-.02em;margin-bottom:20px}
+h2{font-size:clamp(28px,3.5vw,52px);font-weight:700;line-height:1.15;letter-spacing:-.01em;margin-bottom:16px}
+h3{font-size:clamp(18px,2vw,28px);font-weight:700;line-height:1.3;margin-bottom:12px}
+.sub{font-size:clamp(16px,1.6vw,22px);font-weight:300;line-height:1.6;color:var(--dim);max-width:800px}
+.dark .sub{color:rgba(255,255,255,.55)}
+.light .sub{color:rgba(0,0,0,.5)}
+.big-num{font-family:'DM Sans','Noto Sans SC',sans-serif;font-size:clamp(48px,8vw,120px);font-weight:700;line-height:1;letter-spacing:-.03em}
+
+/* ── GRID ── */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:clamp(16px,2vw,32px)}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:clamp(12px,1.5vw,24px)}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(12px,1.5vw,20px)}
+.g5{display:grid;grid-template-columns:repeat(5,1fr);gap:clamp(8px,1vw,16px)}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:clamp(16px,2vw,28px);transition:transform .2s}
+.card:hover{transform:translateY(-2px)}
+.card .ic{font-size:28px;margin-bottom:12px}
+.card .val{font-size:clamp(24px,3vw,40px);font-weight:700;line-height:1.1;margin-bottom:4px}
+.card .lbl{font-size:13px;color:var(--dim);line-height:1.4}
+.card .tag{display:inline-block;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;margin-top:8px}
+.tag-blue{background:rgba(41,151,255,.15);color:var(--accent)}
+.tag-green{background:rgba(48,209,88,.15);color:var(--accent2)}
+.tag-red{background:rgba(255,69,58,.15);color:var(--red)}
+.tag-orange{background:rgba(255,159,10,.15);color:var(--orange)}
+.tag-purple{background:rgba(191,90,242,.15);color:var(--purple)}
+
+/* ── TABLE ── */
+.tbl{width:100%;border-collapse:collapse;font-size:clamp(12px,1.1vw,14px);margin:16px 0}
+.tbl th{text-align:left;padding:12px 16px;border-bottom:1px solid var(--border);font-weight:600;color:var(--accent);font-size:11px;letter-spacing:1px;text-transform:uppercase}
+.tbl td{padding:10px 16px;border-bottom:1px solid var(--border);color:rgba(255,255,255,.75);line-height:1.5;vertical-align:top}
+.light .tbl td{color:rgba(0,0,0,.7)}
+.light .tbl th{color:var(--accent)}
+.light .tbl th,.light .tbl td{border-color:rgba(0,0,0,.08)}
+.tbl tr:last-child td{border-bottom:none}
+
+/* ── FLOW ── */
+.flow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:16px 0}
+.flow .node{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 20px;font-size:13px;font-weight:600;text-align:center}
+.flow .arr{font-size:18px;color:var(--dim)}
+.flow .node.br{border-color:var(--red);position:relative}
+.flow .node.br::after{content:'✕';position:absolute;top:-8px;right:-8px;width:18px;height:18px;background:var(--red);color:#fff;border-radius:50%;font-size:10px;display:flex;align-items:center;justify-content:center}
+
+/* ── QUOTE ── */
+.qt{border-left:3px solid var(--accent);padding:16px 24px;margin:16px 0;font-size:clamp(14px,1.3vw,17px);font-weight:300;line-height:1.7;color:rgba(255,255,255,.7);font-style:italic}
+.light .qt{color:rgba(0,0,0,.6)}
+.qt .au{font-style:normal;font-weight:600;color:var(--accent);margin-top:8px;font-size:13px;display:block}
+
+/* ── TERMINAL ── */
+.term{background:#111;border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:20px 24px;font-family:'DM Mono',monospace;font-size:13px;line-height:1.8;color:rgba(255,255,255,.8);margin:16px 0;overflow-x:auto}
+.term .g{color:var(--accent2)}.term .b{color:var(--accent)}.term .r{color:var(--red)}.term .y{color:var(--orange)}.term .p{color:var(--purple)}
+
+/* ── PILL ── */
+.pill{display:inline-flex;align-items:center;gap:6px;padding:6px 16px;border-radius:20px;font-size:12px;font-weight:600;background:var(--card);border:1px solid var(--border);margin:4px}
+
+/* ── DIVIDER ── */
+.sep{width:60px;height:3px;background:var(--accent);border-radius:2px;margin:20px 0}
+.sep.center{margin:20px auto}
+
+/* ── LAYER ── */
+.layer{border-radius:14px;padding:18px 24px;margin:8px 0;border:1px solid var(--border)}
+.layer .lt{font-size:14px;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.layer .ld{font-size:12px;color:var(--dim);line-height:1.6}
+.layer .pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+
+/* scrollable content area */
+.scroll{flex:1;overflow-y:auto;padding-bottom:20px}
+.scroll::-webkit-scrollbar{width:3px}
+.scroll::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px}
+
+/* center layout */
+.center-content{display:flex;flex-direction:column;align-items:center;text-align:center}
+
+/* Two-panel comparison */
+.vs{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin:16px 0}
+.vs .pan{border-radius:16px;padding:24px;border:1px solid var(--border)}
+.vs .pan.bad{background:rgba(255,69,58,.04);border-color:rgba(255,69,58,.15)}
+.vs .pan.good{background:rgba(48,209,88,.04);border-color:rgba(48,209,88,.15)}
+.vs .pan h4{font-size:15px;font-weight:700;margin-bottom:12px}
+.vs .pan.bad h4{color:var(--red)}
+.vs .pan.good h4{color:var(--accent2)}
+.vs .pan ul{list-style:none;font-size:13px;line-height:1.9;color:rgba(255,255,255,.65)}
+.vs .pan ul li::before{content:'';display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:10px;vertical-align:middle}
+.vs .pan.bad ul li::before{background:var(--red)}
+.vs .pan.good ul li::before{background:var(--accent2)}
+
+/* Highlight number */
+.hl{color:var(--accent);font-weight:700}
+.hl-g{color:var(--accent2);font-weight:700}
+.hl-o{color:var(--orange);font-weight:700}
+.hl-r{color:var(--red);font-weight:700}
+.hl-p{color:var(--purple);font-weight:700}
+
+/* Step */
+.steps{display:flex;flex-direction:column;gap:12px;margin:16px 0}
+.step{display:flex;gap:16px;align-items:flex-start}
+.step .sn{width:32px;height:32px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0}
+.step .sc{flex:1}
+.step .st{font-size:14px;font-weight:700;margin-bottom:2px}
+.step .sd{font-size:13px;color:var(--dim);line-height:1.5}
+
+/* horizontal bar */
+.hbar{display:flex;border-radius:12px;overflow:hidden;margin:20px 0;height:52px}
+.hbar>div{display:flex;align-items:center;justify-content:center;flex-direction:column;padding:4px 12px}
+.hbar>div .ht{font-size:10px;opacity:.7}.hbar>div .hv{font-size:12px;font-weight:700}
+
+@media(max-width:768px){
+  .g2,.g3,.g4,.g5,.vs{grid-template-columns:1fr}
+  .hbar{flex-direction:column;height:auto}
+  .hbar>div{padding:8px}
+}
+</style>
+</head>
+<body>
+<div class="prog" id="prog"></div>
+<div class="deck" id="deck">
+
+<!-- ═══════════════ S1: COVER ═══════════════ -->
+<div class="s grad active" data-i="0">
+  <div class="center-content" style="max-width:900px;margin:0 auto">
+    <div class="eyebrow" style="margin-bottom:24px">BAOZUN RISK CONTROL × AI AGENT</div>
+    <h1 style="margin-bottom:28px">宝尊电商风控部<br>AI Agent 解决方案</h1>
+    <p class="sub" style="max-width:700px;margin-bottom:40px">
+      从非经营性采购切入，打通系统断点<br>
+      让风控从"事后人工回查"变成"事前自动拦截"
+    </p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center">
+      <span class="pill">玄夜组</span>
+      <span class="pill">2026年4月2日</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ S2: TOC ═══════════════ -->
+<div class="s dark" data-i="1">
+  <div class="eyebrow">AGENDA</div>
+  <h2>目录</h2>
+  <div class="sep"></div>
+  <div class="g3" style="margin-top:20px">
+    <div class="card" onclick="go(2)" style="cursor:pointer"><div style="color:var(--accent);font-weight:700;font-size:13px;margin-bottom:8px">01</div><div style="font-weight:700;font-size:15px;margin-bottom:4px">我们比您更懂宝尊</div><div class="lbl">业务版图·技术底座·组织画像</div></div>
+    <div class="card" onclick="go(5)" style="cursor:pointer"><div style="color:var(--accent2);font-weight:700;font-size:13px;margin-bottom:8px">02</div><div style="font-weight:700;font-size:15px;margin-bottom:4px">我们比您更懂风控</div><div class="lbl">三单匹配·四流一致·真实场景</div></div>
+    <div class="card" onclick="go(8)" style="cursor:pointer"><div style="color:var(--orange);font-weight:700;font-size:13px;margin-bottom:8px">03</div><div style="font-weight:700;font-size:15px;margin-bottom:4px">我们比您更懂痛点</div><div class="lbl">非经营性采购的"断点"全景图</div></div>
+    <div class="card" onclick="go(12)" style="cursor:pointer"><div style="color:var(--purple);font-weight:700;font-size:13px;margin-bottom:8px">04</div><div style="font-weight:700;font-size:15px;margin-bottom:4px">解决方案</div><div class="lbl">五大能力·四层架构·核心Demo</div></div>
+    <div class="card" onclick="go(18)" style="cursor:pointer"><div style="color:var(--pink);font-weight:700;font-size:13px;margin-bottom:8px">05</div><div style="font-weight:700;font-size:15px;margin-bottom:4px">为什么是现在</div><div class="lbl">行业趋势·得物案例·宝尊时机</div></div>
+    <div class="card" onclick="go(20)" style="cursor:pointer"><div style="color:var(--accent);font-weight:700;font-size:13px;margin-bottom:8px">06</div><div style="font-weight:700;font-size:15px;margin-bottom:4px">落地路径</div><div class="lbl">三步走·集成方案·2周出Demo</div></div>
+    <div class="card" onclick="go(23)" style="cursor:pointer"><div style="color:var(--accent2);font-weight:700;font-size:13px;margin-bottom:8px">07</div><div style="font-weight:700;font-size:15px;margin-bottom:4px">成本与回报</div><div class="lbl">透明定价·灵活付费·ROI测算</div></div>
+    <div class="card" onclick="go(24)" style="cursor:pointer"><div style="color:var(--orange);font-weight:700;font-size:13px;margin-bottom:8px">08</div><div style="font-weight:700;font-size:15px;margin-bottom:4px">未来展望</div><div class="lbl">22个场景·蓝图·弹药</div></div>
+    <div class="card" onclick="go(27)" style="cursor:pointer"><div style="color:var(--red);font-weight:700;font-size:13px;margin-bottom:8px">09</div><div style="font-weight:700;font-size:15px;margin-bottom:4px">总结与下一步</div><div class="lbl">Q&A·核心价值·行动计划</div></div>
+  </div>
+</div>
+
+<!-- ═══════════════ S3: 宝尊业务版图 ═══════════════ -->
+<div class="s dark" data-i="2">
+  <div class="scroll">
+    <div class="eyebrow">PART 01 — 我们比您更懂宝尊</div>
+    <h2>宝尊是谁？<br>我们读懂了您的业务版图。</h2>
+    <div class="sep"></div>
+    <div class="g3" style="margin-top:24px">
+      <div class="card" style="border-color:rgba(41,151,255,.2)">
+        <div class="ic">📦</div>
+        <div style="color:var(--accent);font-size:12px;font-weight:600;letter-spacing:1px;margin-bottom:8px">宝尊电商 BEC</div>
+        <div class="val">~73亿</div>
+        <div class="lbl">电商代运营·数字营销·IT方案·仓储物流</div>
+        <div class="tag tag-blue">服务 450+ 品牌</div>
+      </div>
+      <div class="card" style="border-color:rgba(48,209,88,.2)">
+        <div class="ic">🏬</div>
+        <div style="color:var(--accent2);font-size:12px;font-weight:600;letter-spacing:1px;margin-bottom:8px">品牌管理 BBM</div>
+        <div class="val">~6.6亿</div>
+        <div class="lbl">GAP大中华区·HUNTER东南亚·341家门店</div>
+        <div class="tag tag-green">同比 +24%</div>
+      </div>
+      <div class="card" style="border-color:rgba(191,90,242,.2)">
+        <div class="ic">🌍</div>
+        <div style="color:var(--purple);font-size:12px;font-weight:600;letter-spacing:1px;margin-bottom:8px">宝尊国际 BZI</div>
+        <div class="val">早期</div>
+        <div class="lbl">海外业务拓展，长期战略布局</div>
+        <div class="tag tag-purple">战略储备</div>
+      </div>
+    </div>
+    <h3 style="margin-top:32px;font-size:16px">业务特征与风控挑战</h3>
+    <div class="g2" style="margin-top:12px">
+      <div class="card" style="padding:16px 20px"><div style="font-weight:600;font-size:13px;margin-bottom:4px">代运营模式</div><div class="lbl">替几百个品牌管钱管货管人，资金归属、费用分摊极其复杂</div></div>
+      <div class="card" style="padding:16px 20px"><div style="font-weight:600;font-size:13px;margin-bottom:4px">自营品牌模式</div><div class="lbl">GAP/HUNTER涉及门店租赁、装修、人员，大量非经营性采购</div></div>
+      <div class="card" style="padding:16px 20px"><div style="font-weight:600;font-size:13px;margin-bottom:4px">多实体结构</div><div class="lbl">港股+美股双上市，需同时满足港交所、SEC合规要求</div></div>
+      <div class="card" style="padding:16px 20px"><div style="font-weight:600;font-size:13px;margin-bottom:4px">高速增长期</div><div class="lbl">2025年营收99亿，经营现金流4.2亿，扭亏为盈关键期</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ S4: 技术底座 ═══════════════ -->
+<div class="s dark" data-i="3">
+  <div class="scroll">
+    <div class="eyebrow">PART 01 — 技术底座</div>
+    <h2>BOCDOP 宝舵<br>我们读懂了您的系统架构。</h2>
+    <div class="sep"></div>
+    <div class="g2" style="margin-top:20px">
+      <div>
+        <h3 style="font-size:15px;color:var(--accent2)">前台系统（自研·成熟）</h3>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin:12px 0">
+          <span class="pill" style="border-color:rgba(48,209,88,.2)">OMS 4.0 微服务化</span>
+          <span class="pill" style="border-color:rgba(48,209,88,.2)">WMS 3.0 千万级</span>
+          <span class="pill" style="border-color:rgba(48,209,88,.2)">HUB 4.0</span>
+          <span class="pill" style="border-color:rgba(48,209,88,.2)">CRM (SHOPCAT)</span>
+          <span class="pill" style="border-color:rgba(48,209,88,.2)">O2O (SHOPDOG)</span>
+          <span class="pill" style="border-color:rgba(48,209,88,.2)">SEMA AI引擎</span>
+          <span class="pill" style="border-color:rgba(48,209,88,.2)">BBI 智能报表</span>
+          <span class="pill" style="border-color:rgba(48,209,88,.2)">数据中台 SelectDB</span>
+        </div>
+        <h3 style="font-size:15px;color:var(--red);margin-top:20px">后台系统（第三方·断点）</h3>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin:12px 0">
+          <span class="pill" style="border-color:rgba(255,69,58,.2)">采购系统 ❌</span>
+          <span class="pill" style="border-color:rgba(255,69,58,.2)">OA合同系统 ❌</span>
+          <span class="pill" style="border-color:rgba(255,69,58,.2)">OA付款系统 ❌</span>
+          <span class="pill" style="border-color:rgba(255,69,58,.2)">财务系统 ❌</span>
+        </div>
+      </div>
+      <div class="card" style="display:flex;flex-direction:column;justify-content:center;border-color:rgba(41,151,255,.2)">
+        <div style="font-size:14px;font-weight:700;color:var(--accent);margin-bottom:12px">核心洞察</div>
+        <div style="font-size:15px;line-height:1.8;color:rgba(255,255,255,.7)">
+          问题不是"能不能接"，<br>
+          而是"值不值得投入自研团队去接"。<br><br>
+          <span style="color:#fff;font-weight:600">这正是我方 Agent 方案的切入点。</span>
+        </div>
+        <div style="margin-top:16px;font-size:12px;color:var(--dim)">800人技术团队 · 火山引擎+千问已部署 · 数据中台实时就绪</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ S5: 张文洁 ═══════════════ -->
+<div class="s dark" data-i="4">
+  <div class="center-content" style="max-width:800px;margin:0 auto">
+    <div class="eyebrow">PART 01 — 您要见的人</div>
+    <h2>张文洁的双重身份</h2>
+    <div class="sep center"></div>
+    <div class="g2" style="margin-top:32px;width:100%">
+      <div class="card" style="text-align:center;border-color:rgba(41,151,255,.2)">
+        <div style="font-size:36px;margin-bottom:12px">🛡️</div>
+        <div style="font-size:18px;font-weight:700;margin-bottom:8px">集团风控部总监</div>
+        <div style="font-size:13px;color:var(--dim);line-height:1.7">关心具体能解决什么业务问题<br>方案是否真的能落地<br>用真实场景和数据说话</div>
+      </div>
+      <div class="card" style="text-align:center;border-color:rgba(48,209,88,.2)">
+        <div style="font-size:36px;margin-bottom:12px">🚀</div>
+        <div style="font-size:18px;font-weight:700;margin-bottom:8px">AI先锋小组牵头人</div>
+        <div style="font-size:13px;color:var(--dim);line-height:1.7">需要向上交差——展示AI价值<br>200人财务大中心的效率提升<br>需要我们给他"弹药"</div>
+      </div>
+    </div>
+    <div style="margin-top:32px;display:flex;align-items:center;gap:12px;font-size:13px;color:var(--dim)">
+      <span style="color:var(--accent2)">●</span> CFO已看过初版汇报，认可Agent方向可行
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ S6: 风控日常 ═══════════════ -->
+<div class="s dark" data-i="5">
+  <div class="scroll">
+    <div class="eyebrow green">PART 02 — 我们比您更懂风控</div>
+    <h2>风控部每天在干什么？<br>不是教科书，是真实工作。</h2>
+    <div class="sep" style="background:var(--accent2)"></div>
+    <div class="vs" style="margin-top:20px">
+      <div class="pan bad">
+        <h4>你以为的痛苦</h4>
+        <ul>
+          <li>"不知道有风险"</li>
+        </ul>
+      </div>
+      <div class="pan" style="background:rgba(255,255,255,.02);border-color:rgba(255,255,255,.1)">
+        <h4 style="color:#fff">真正的痛苦</h4>
+        <ul>
+          <li>信息散落在不同系统里，拼不起来</li>
+          <li>一笔业务要查三个系统三次登录</li>
+          <li>人成了串联断点的"胶水"</li>
+          <li>60% 时间花在机械劳动上</li>
+        </ul>
+      </div>
+    </div>
+    <h3 style="font-size:15px;margin-top:24px">每日工作现状</h3>
+    <div class="term">
+<span class="b">09:00</span> 登录采购系统 → 导出昨日采购申请（300条）
+<span class="b">10:00</span> 登录OA合同系统 → 导出昨日合同（200条）
+<span class="b">11:00</span> Excel VLOOKUP → 手工匹配采购 ↔ 合同
+<span class="y">12:00</span> 发现50笔无采购申请 → 逐个发邮件问
+<span class="b">14:00</span> 收到回复 → 30笔有但未关联 / 20笔确实没有
+<span class="b">15:00</span> 登录OA付款系统 → 导出昨日付款（500条）
+<span class="b">16:00</span> 手工匹配付款 ↔ 合同
+<span class="r">18:00</span> 整理异常清单 → 准备明日汇报
+
+<span class="r">结果：每天8小时，60%在"问人"和"手工匹配"</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ S7: 三单匹配·四流一致 ═══════════════ -->
+<div class="s dark" data-i="6">
+  <div class="scroll">
+    <div class="eyebrow green">PART 02 — 核心风控机制</div>
+    <h2>三单匹配 × 四流一致</h2>
+    <div class="sep" style="background:var(--accent2)"></div>
+    <div class="g2" style="margin-top:20px">
+      <div>
+        <h3 style="font-size:15px">三单匹配</h3>
+        <div class="term" style="font-size:12px">
+采购订单 ←→ 入库验收单 ←→ 供应商发票
+  数量差异 ≤ <span class="y">2%</span>
+  单价差异 ≤ <span class="y">1%</span>
+  税率差异 = <span class="r">0%</span> (必须100%一致)
+
+超阈值 → <span class="r">冻结付款</span> → 人工复核
+<span class="r">三个系统的数据不在同一处，复核就是噩梦</span>
+        </div>
+      </div>
+      <div>
+        <h3 style="font-size:15px">四流一致（金税四期核心）</h3>
+        <table class="tbl">
+          <tr><th>流</th><th>校验要点</th></tr>
+          <tr><td style="color:var(--accent);font-weight:600">合同流</td><td>合同主体与实际交易方一致</td></tr>
+          <tr><td style="color:var(--accent2);font-weight:600">资金流</td><td>付款方=收款方=合同主体=发票抬头</td></tr>
+          <tr><td style="color:var(--orange);font-weight:600">发票流</td><td>品名数量与合同/出库单严丝合缝</td></tr>
+          <tr><td style="color:var(--purple);font-weight:600">物流</td><td>出入库单签字+物流单据+签收回执</td></tr>
+        </table>
+        <div style="margin-top:12px;font-size:13px;color:var(--dim);line-height:1.6">
+          双上市公司，四流一致不是"最好做到"，<br>是<span class="hl-r">必须做到</span>。
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ S8: 付款生命周期 ═══════════════ -->
+<div class="s dark" data-i="7">
+  <div class="scroll">
+    <div class="eyebrow green">PART 02 — 付款审批全流程</div>
+    <h2>付款审批的完整生命周期<br><span style="font-size:.6em;font-weight:400;color:var(--dim)">每一步都可以用 Agent 优化</span></h2>
+    <div class="sep" style="background:var(--accent2)"></div>
+    <div class="steps" style="margin-top:20px">
+      <div class="step"><div class="sn" style="background:var(--accent)">1</div><div class="sc"><div class="st">发票验真与三单匹配</div><div class="sd">税局接口验真 → 匹配采购订单与收货记录 → 差异超阈值冻结</div></div></div>
+      <div class="step"><div class="sn" style="background:var(--accent2)">2</div><div class="sc"><div class="st">应付账款自动生成</div><div class="sd">匹配通过后生成应付行项目：供应商、PO号、税率、到期日、费用科目</div></div></div>
+      <div class="step"><div class="sn" style="background:var(--orange)">3</div><div class="sc"><div class="st">付款申请与分级审批</div><div class="sd">按金额/供应商等级/预算占用分级审批 → 大额（>50万）CFO/法务联签</div></div></div>
+      <div class="step"><div class="sn" style="background:var(--purple)">4</div><div class="sc"><div class="st">支付执行与回单同步</div><div class="sd">银企直连批量付款 → 实时回传流水与电子回单</div></div></div>
+      <div class="step"><div class="sn" style="background:var(--pink)">5</div><div class="sc"><div class="st">自动核销与对账</div><div class="sd">多键匹配（付款单号、发票号、PO号）→ 完全核销 or 差额分摊</div></div></div>
+    </div>
+    <table class="tbl" style="margin-top:20px">
+      <tr><th>异常类型</th><th>闭环要求</th></tr>
+      <tr><td>数量不符</td><td>T+3 天</td></tr>
+      <tr><td>单价不符</td><td>T+5 天</td></tr>
+      <tr><td>缺票/错票</td><td>T+10 天</td></tr>
+      <tr><td>红冲重开</td><td>T+30 天</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ═══════════════ S9: 痛点场景还原 ═══════════════ -->
+<div class="s dark" data-i="8">
+  <div class="scroll">
+    <div class="eyebrow orange">PART 03 — 我们比您更懂痛点</div>
+    <h2>一笔GAP门店装修采购<br>要查多少次系统？</h2>
+    <div class="sep" style="background:var(--orange)"></div>
+    <div class="term" style="margin-top:20px">
+<span class="y">场景还原：一笔GAP门店装修的非经营性采购</span>
+
+① 业务部门在 <span class="b">采购系统</span> 提交采购申请
+② 合同在 <span class="b">OA合同系统</span> 走签署审批
+③ 供应商施工完毕，项目部做验收
+④ 供应商开发票，财务在 <span class="b">财务系统</span> 做应付挂账
+⑤ 财务发起付款申请
+
+<span class="r">风控要核查 5 个问题：</span>
+  ❶ 有没有对应的合同？ → 去合同系统查
+  ❷ 金额是否一致？     → 两个系统对数据
+  ❸ 验收是否完成？     → 可能在项目系统或OA
+  ❹ 发票是否匹配？     → 去财务系统查
+  ❺ 有没有重复付款？   → 查历史付款记录
+
+<span class="r">每一步都要切换系统、手动查数、人工比对。</span>
+<span class="r">一天几十笔上百笔，200人团队大量人力消耗在这里。</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ S10: 断点全景图 ═══════════════ -->
+<div class="s dark" data-i="9">
+  <div class="scroll">
+    <div class="eyebrow orange">PART 03 — 断点全景图</div>
+    <h2>非经营性采购<br>流程"断点"全景图</h2>
+    <div class="sep" style="background:var(--orange)"></div>
+    <div style="margin-top:20px">
+      <div style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--accent2);margin-bottom:12px"><span style="width:8px;height:8px;border-radius:50%;background:var(--accent2);display:inline-block"></span> 理想流程</div>
+      <div class="flow">
+        <div class="node">采购需求</div><div class="arr">→</div>
+        <div class="node">采购申请</div><div class="arr">→</div>
+        <div class="node">合同审批</div><div class="arr">→</div>
+        <div class="node">验收确认</div><div class="arr">→</div>
+        <div class="node">付款申请</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--red);margin:20px 0 12px"><span style="width:8px;height:8px;border-radius:50%;background:var(--red);display:inline-block"></span> 宝尊现状（四个断点）</div>
+      <div class="flow">
+        <div class="node br">采购申请<br><span style="font-size:10px;color:var(--dim)">采购系统</span></div>
+        <div class="arr" style="color:var(--red)">✕</div>
+        <div class="node br">合同审批<br><span style="font-size:10px;color:var(--dim)">OA合同系统</span></div>
+        <div class="arr" style="color:var(--red)">✕</div>
+        <div class="node br">验收确认<br><span style="font-size:10px;color:var(--dim)">采购系统</span></div>
+        <div class="arr" style="color:var(--red)">✕</div>
+        <div class="node br">付款申请<br><span style="font-size:10px;color:var(--dim)">OA付款系统</span></div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:24px;border-color:rgba(255,69,58,.15);background:rgba(255,69,58,.03)">
+      <div style="font-size:14px;line-height:1.8;color:rgba(255,255,255,.7)">
+        <span class="hl-r">无法</span>从付款追溯到采购需求 · <span class="hl-r">无法</span>判断合同类型是否正确 · <span class="hl-r">无法</span>判断采购有没有走申请流程
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ S11: 三大风险场景 ═══════════════ -->
+<div class="s dark" data-i="10">
+  <div class="scroll">
+    <div class="eyebrow orange">PART 03 — 三大风险场景</div>
+    <h2>客户原话提炼的<br>三大风险场景</h2>
+    <div class="sep" style="background:var(--orange)"></div>
+    <div class="g3" style="margin-top:20px">
+      <div class="card" style="border-top:3px solid var(--red)">
+        <div style="color:var(--red);font-size:12px;font-weight:700;letter-spacing:1px;margin-bottom:12px">场景 01</div>
+        <div style="font-size:16px;font-weight:700;margin-bottom:8px">跳过采购申请</div>
+        <div class="qt" style="border-color:var(--red);padding:12px 16px;font-size:12px;margin:8px 0">"有些采购本身应该走集中采购的，但业务部门没有走前序流程，直接走到合同"</div>
+        <div class="tag tag-red">后果：成本失控，议价能力丧失</div>
+      </div>
+      <div class="card" style="border-top:3px solid var(--orange)">
+        <div style="color:var(--orange);font-size:12px;font-weight:700;letter-spacing:1px;margin-bottom:12px">场景 02</div>
+        <div style="font-size:16px;font-weight:700;margin-bottom:8px">合同类型错误</div>
+        <div class="qt" style="border-color:var(--orange);padding:12px 16px;font-size:12px;margin:8px 0">"申请人为了审批便利性，会选一些其他的类型"</div>
+        <div class="tag tag-orange">后果：合规风险，审计问题</div>
+      </div>
+      <div class="card" style="border-top:3px solid var(--purple)">
+        <div style="color:var(--purple);font-size:12px;font-weight:700;letter-spacing:1px;margin-bottom:12px">场景 03</div>
+        <div style="font-size:16px;font-weight:700;margin-bottom:8px">付款无溯源</div>
+        <div class="qt" style="border-color:var(--purple);padding:12px 16px;font-size:12px;margin:8px 0">"同一合同项下，发起付款人不一样，没有结构化数据可以追溯"</div>
+        <div class="tag tag-purple">后果：重复付款，资金损失</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ S12: 数据断点4层级 ═══════════════ -->
+<div class="s grad" data-i="11">
+  <div class="center-content" style="max-width:800px;margin:0 auto">
+    <div class="eyebrow orange">PART 03 — 根因分析</div>
+    <h2>数据断点的<br>四个层级</h2>
+    <div class="sep center" style="background:var(--orange)"></div>
+    <div style="text-align:left;width:100%;margin-top:24px">
+      <div class="steps">
+        <div class="step"><div class="sn" style="background:var(--red)">1</div><div class="sc"><div class="st">系统间数据不通</div><div class="sd">采购、OA、财务系统无法自动传递信息</div></div></div>
+        <div class="step"><div class="sn" style="background:var(--orange)">2</div><div class="sc"><div class="st">业务流程断点</div><div class="sd">采购、合同、验收、付款流程节点之间无法追溯</div></div></div>
+        <div class="step"><div class="sn" style="background:var(--purple)">3</div><div class="sc"><div class="st">风控规则无法执行</div><div class="sd">三单匹配、四流一致等规则分散执行，无法统一</div></div></div>
+        <div class="step"><div class="sn" style="background:var(--pink)">4</div><div class="sc"><div class="st">人工成了"胶水"</div><div class="sd">人成了串联系统的唯一方式，60%时间在机械劳动</div></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ S13: 整体方案定位 ═══════════════ -->
+<div class="s grad" data-i="12">
+  <div class="center-content" style="max-width:900px;margin:0 auto">
+    <div class="eyebrow purple">PART 04 — 解决方案</div>
+    <h2 style="font-size:clamp(24px,3vw,42px);line-height:1.4">用AI把三个断掉的系统串起来<br>让风控人员问一句话<br>就能看到<span style="color:var(--accent)">完整的采购信息链</span></h2>
+    <div class="sep center" style="background:var(--purple)"></div>
+    <p class="sub" style="margin:20px auto 32px">让人从"胶水"变成真正的风控分析师</p>
+    <div class="g5" style="width:100%">
+      <div class="card" style="text-align:center;padding:18px 12px"><div style="font-size:24px;margin-bottom:8px">🔗</div><div style="font-size:13px;font-weight:700">信息串联</div><div class="lbl" style="font-size:11px">采购→合同→付款<br>完整链条</div></div>
+      <div class="card" style="text-align:center;padding:18px 12px"><div style="font-size:24px;margin-bottom:8px">🏷️</div><div style="font-size:13px;font-weight:700">标签识别</div><div class="lbl" style="font-size:11px">自动识别<br>非经营性采购</div></div>
+      <div class="card" style="text-align:center;padding:18px 12px"><div style="font-size:24px;margin-bottom:8px">🤖</div><div style="font-size:13px;font-weight:700">规则校验</div><div class="lbl" style="font-size:11px">三单匹配<br>四流一致</div></div>
+      <div class="card" style="text-align:center;padding:18px 12px"><div style="font-size:24px;margin-bottom:8px">⚡</div><div style="font-size:13px;font-weight:700">风险预警</div><div class="lbl" style="font-size:11px">异常自动推送<br>实时拦截</div></div>
+      <div class="card" style="text-align:center;padding:18px 12px"><div style="font-size:24px;margin-bottom:8px">📊</div><div style="font-size:13px;font-weight:700">报告生成</div><div class="lbl" style="font-size:11px">内控报告<br>审计底稿</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ S14: 能力1 信息串联 ═══════════════ -->
+<div class="s dark" data-i="13">
+  <div class="scroll">
+    <div class="eyebrow purple">PART 04 — 核心能力 01</div>
+    <h2>信息流串联</h2>
+    <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:20px">
+      <span class="big-num" style="color:var(--red)">25分钟</span>
+      <span style="font-size:28px;color:var(--dim)">→</span>
+      <span class="big-num" style="color:var(--accent2)">10秒</span>
+    </div>
+    <div class="term">
+<span class="b">🤖 AI Agent 返回结果</span>
+
+📄 采购单号：<span class="b">PO-20241105-001</span>
+📦 内容：服务器 x5 | 金额：<span class="y">250,000元</span> | 部门：技术部
+
+📑 合同：<span class="b">SC-20241120-088</span>
+   类型：非经营性采购-IT设备 | 审批：<span class="g">已通过</span>
+
+📑 三单匹配：
+   采购数量 5 ↔ 入库数量 5 ↔ 发票数量 5 → <span class="g">✓ 一致</span>
+   采购单价 50,000 ↔ 发票单价 50,000 → <span class="g">✓ 差异0%</span>
+
+💳 付款：<span class="b">PAY-20241205-321</span>
+   金额：250,000元 | 状态：<span class="g">已付</span>
+
+⚠️ 风控检查：
+   <span class="g">✅ 流程完整</span>  <span class="g">✅ 三单匹配</span>  <span class="g">✅ 四流一致</span>
+   <span class="g">✅ 供应商正常</span>  <span class="g">✅ 未超预算</span>  <span class="g">✅ 无重复付款</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ S15: 能力2 事前识别 ═══════════════ -->
+<div class="s dark" data-i="14">
+  <div class="scroll">
+    <div class="eyebrow purple">PART 04 — 核心能力 02</div>
+    <h2>事前风险识别<br><span style="font-size:.55em;font-weight:400;color:var(--dim)">让合同审批人"看明白"</span></h2>
+    <div class="sep" style="background:var(--purple)"></div>
+    <div class="vs" style="margin-top:16px">
+      <div class="pan bad">
+        <h4>当前痛点</h4>
+        <ul>
+          <li>不知道这笔采购有没有走申请流程</li>
+          <li>不知道申请人选的合同类型对不对</li>
+          <li>不知道应该走什么审批流</li>
+          <li>只能发邮件、打电话问人</li>
+        </ul>
+      </div>
+      <div class="pan good">
+        <h4>AI Agent 做什么</h4>
+        <ul>
+          <li>①  去采购系统查有没有采购申请</li>
+          <li>②  校验合同类型，不对就自动纠正</li>
+          <li>③  根据金额判断应该走什么审批流</li>
+          <li>④  三单匹配预校验，一次性呈现</li>
+        </ul>
+      </div>
+    </div>
+    <div class="card" style="text-align:center;margin-top:20px;border-color:rgba(48,209,88,.2);background:rgba(48,209,88,.03)">
+      <div style="font-size:18px;font-weight:700">审批人不用再问"这笔有申请吗？"</div>
+      <div style="font-size:13px;color:var(--dim);margin-top:4px">合同类型错误自动纠正 · 审批流错误自动提示 · 三单匹配一键可见</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ S16: 能力3 事中监控 ═══════════════ -->
+<div class="s dark" data-i="15">
+  <div class="scroll">
+    <div class="eyebrow purple">PART 04 — 核心能力 03</div>
+    <h2>事中风险监控<br><span style="font-size:.55em;font-weight:400;color:var(--dim)">让付款审批人"付得明白"</span></h2>
+    <div class="sep" style="background:var(--purple)"></div>
+    <div class="g4" style="margin-top:20px">
+      <div class="card" style="text-align:center;border-top:2px solid var(--accent)"><div style="font-size:28px;margin-bottom:8px">🔗</div><div style="font-weight:700;font-size:13px">自动关联合同</div><div class="lbl" style="font-size:11px">填错则AI自动纠正</div></div>
+      <div class="card" style="text-align:center;border-top:2px solid var(--accent2)"><div style="font-size:28px;margin-bottom:8px">📋</div><div style="font-weight:700;font-size:13px">检查前序流程</div><div class="lbl" style="font-size:11px">缺失则标记"异常"</div></div>
+      <div class="card" style="text-align:center;border-top:2px solid var(--orange)"><div style="font-size:28px;margin-bottom:8px">📐</div><div style="font-weight:700;font-size:13px">三单匹配+四流</div><div class="lbl" style="font-size:11px">超阈值自动预警</div></div>
+      <div class="card" style="text-align:center;border-top:2px solid var(--red)"><div style="font-size:28px;margin-bottom:8px">🚫</div><div style="font-weight:700;font-size:13px">重复付款检查</div><div class="lbl" style="font-size:11px">跨系统自动去重</div></div>
+    </div>
+    <div class="card" style="text-align:center;margin-top:20px;border-color:rgba(255,159,10,.2);background:rgba(255,159,10,.03)">
+      <div style="font-size:18px;font-weight:700">重复付款自动拦截 · 超合同金额自动预警</div>
+      <div style="font-size:13px;color:var(--dim);margin-top:4px">付款审批人清楚知道"这笔钱是怎么来的"</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ S17: 能力4 事后分析 ═══════════════ -->
+<div class="s dark" data-i="16">
+  <div class="scroll">
+    <div class="eyebrow purple">PART 04 — 核心能力 04</div>
+    <h2>事后追溯分析<br><span style="font-size:.55em;font-weight:400;color:var(--dim)">月度报告 + 审计底稿一键导出</span></h2>
+    <div class="sep" style="background:var(--purple)"></div>
+    <div class="term" style="margin-top:20px">
+<span class="b">📊 宝尊电商 2025年3月 非经营性采购内控报告</span>
+
+一、整体情况
+   总笔数：<span class="y">156</span>笔 | 总金额：<span class="y">3,200,000</span>元 | 涉及部门：12个
+
+二、异常统计
+   <span class="r">🔴 高风险（需立即处理）：5笔</span>
+      无采购申请直接付款：3笔 / 450,000元
+      无合同直接付款：2笔 / 230,000元
+   <span class="y">🟡 中风险（需关注）：12笔</span>
+      合同类型选择错误：8笔
+      三单匹配异常：4笔
+
+三、审计底稿
+   <span class="g">✅ 一键导出"四合一"底稿</span>
+   合同 + 银行回单 + 发票 + 物流单据 → 标准化归档
+   <span class="g">突击式审计准备 → 日常化自动归档</span>
+    </div>
+    <div class="g2" style="margin-top:16px">
+      <div class="card" style="text-align:center;border-color:rgba(48,209,88,.2)"><div class="val" style="color:var(--accent2)">2-3天→0.5天</div><div class="lbl">月度报告时间</div></div>
+      <div class="card" style="text-align:center;border-color:rgba(48,209,88,.2)"><div class="val" style="color:var(--accent2)">一键导出</div><div class="lbl">审计底稿自动归档</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ S18: 架构图 ═══════════════ -->
+<div class="s dark" data-i="17">
+  <div class="scroll">
+    <div class="eyebrow purple">PART 04 — 系统架构</div>
+    <h2>四层闭环架构</h2>
+    <div class="sep" style="background:var(--purple)"></div>
+    <div style="margin-top:20px;display:flex;flex-direction:column;gap:8px">
+      <div class="layer" style="background:rgba(255,159,10,.04);border-color:rgba(255,159,10,.2)"><div class="lt"><span style="color:var(--orange)">📱</span> 展示层 — 决策窗口</div><div class="pills"><span class="pill">智能搜索</span><span class="pill">异常看板</span><span class="pill">预警列表</span><span class="pill">月度报告</span><span class="pill">审计底稿</span></div></div>
+      <div style="text-align:center;color:var(--dim);font-size:18px">▲</div>
+      <div class="layer" style="background:rgba(191,90,242,.04);border-color:rgba(191,90,242,.2)"><div class="lt"><span style="color:var(--purple)">🧠</span> 智能层 — 风控大脑</div><div class="pills"><span class="pill">规则引擎</span><span class="pill">信息串联</span><span class="pill">标签体系</span><span class="pill">风险识别</span><span class="pill">三单匹配</span><span class="pill">四流校验</span></div></div>
+      <div style="text-align:center;color:var(--dim);font-size:18px">▲</div>
+      <div class="layer" style="background:rgba(41,151,255,.04);border-color:rgba(41,151,255,.2)"><div class="lt"><span style="color:var(--accent)">💾</span> 数据层 — 数据融合</div><div class="pills"><span class="pill">API对接</span><span class="pill">数据库直连</span><span class="pill">外部数据（企查查·税局）</span></div></div>
+      <div style="text-align:center;color:var(--dim);font-size:18px">▲</div>
+      <div class="layer" style="background:rgba(48,209,88,.04);border-color:rgba(48,209,88,.2)"><div class="lt"><span style="color:var(--accent2)">🔌</span> 接入层 — 零改造</div><div class="ld">API对接 · 数据库直连 · RPA屏幕操作 → <strong style="color:var(--accent2)">不改任何现有系统</strong></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ S19: 为什么是现在 ═══════════════ -->
+<div class="s grad" data-i="18">
+  <div class="center-content" style="max-width:850px;margin:0 auto">
+    <div class="eyebrow pink">PART 05</div>
+    <h2>为什么是现在？</h2>
+    <div class="sep center" style="background:var(--pink)"></div>
+    <div class="g3" style="margin-top:32px;width:100%">
+      <div class="card" style="text-align:left">
+        <div style="color:var(--accent);font-size:12px;font-weight:700;letter-spacing:1px;margin-bottom:12px">政策驱动</div>
+        <div style="font-size:14px;font-weight:600;margin-bottom:8px">国资委司库建设深水区</div>
+        <div class="lbl">AI成为核心驱动力<br>数据贯通·风险识别·智能预警</div>
+      </div>
+      <div class="card" style="text-align:left">
+        <div style="color:var(--accent2);font-size:12px;font-weight:700;letter-spacing:1px;margin-bottom:12px">得物验证</div>
+        <div style="font-size:14px;font-weight:600;margin-bottom:8px">100万投入，60%效率提升</div>
+        <div class="lbl">手工处理时间减少60%<br>数据等待时间减少70%</div>
+      </div>
+      <div class="card" style="text-align:left">
+        <div style="color:var(--orange);font-size:12px;font-weight:700;letter-spacing:1px;margin-bottom:12px">宝尊战略</div>
+        <div style="font-size:14px;font-weight:600;margin-bottom:8px">AI工具部署=2026战略重点</div>
+        <div class="lbl">仇文彬、吴骏华均明确<br>2028年利润目标5.5亿</div>
+      </div>
+    </div>
+    <div class="qt" style="margin-top:32px;max-width:700px;text-align:left">
+      "AI与数字化职能工具的部署，将是宝尊电商未来的重点。"
+      <span class="au">—— 吴骏华，宝尊集团首席战略官兼电商业务总裁</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ S20: 得物案例 ═══════════════ -->
+<div class="s dark" data-i="19">
+  <div class="scroll">
+    <div class="eyebrow pink">PART 05 — 得物案例拆解</div>
+    <h2>得物已验证路径可行<br><span style="font-size:.55em;font-weight:400;color:var(--dim)">宝尊条件更好，成本更低</span></h2>
+    <div class="sep" style="background:var(--pink)"></div>
+    <div class="g2" style="margin-top:20px">
+      <div>
+        <div class="g2">
+          <div class="card" style="text-align:center"><div class="val" style="color:var(--orange)">100万</div><div class="lbl">得物外部投入</div></div>
+          <div class="card" style="text-align:center"><div class="val" style="color:var(--accent2)">-60%</div><div class="lbl">手工处理时间</div></div>
+          <div class="card" style="text-align:center"><div class="val" style="color:var(--accent)">-70%</div><div class="lbl">数据等待时间</div></div>
+          <div class="card" style="text-align:center"><div class="val" style="color:var(--purple)">本地化</div><div class="lbl">模型部署方式</div></div>
+        </div>
+      </div>
+      <div class="card" style="border-color:rgba(41,151,255,.2)">
+        <div style="font-size:14px;font-weight:700;color:var(--accent);margin-bottom:12px">宝尊的优势</div>
+        <div style="font-size:13px;line-height:2;color:rgba(255,255,255,.7)">
+          ✅ 火山引擎+千问已本地部署<br>
+          ✅ 模型成本=零<br>
+          ✅ 800人技术团队可配合<br>
+          ✅ SelectDB实时数据中台就绪<br>
+          ✅ 我方Agent按人天收费<br>
+          ✅ 一个场景十几~二十万
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ S21: 三个硬问题 ═══════════════ -->
+<div class="s dark" data-i="20">
+  <div class="scroll">
+    <div class="eyebrow">PART 06 — 落地路径</div>
+    <h2>三个硬问题<br>三个答案</h2>
+    <div class="sep"></div>
+    <div class="g3" style="margin-top:20px">
+      <div class="card">
+        <div style="color:var(--accent);font-size:13px;font-weight:700;margin-bottom:12px">怎么拿数据？</div>
+        <div class="steps">
+          <div class="step"><div class="sn" style="width:24px;height:24px;font-size:11px;background:var(--accent2)">1</div><div class="sc"><div class="st" style="font-size:13px">API对接（最优）</div><div class="sd" style="font-size:11px">微服务化系统已有REST API</div></div></div>
+          <div class="step"><div class="sn" style="width:24px;height:24px;font-size:11px;background:var(--accent)">2</div><div class="sc"><div class="st" style="font-size:13px">数据库直连（次优）</div><div class="sd" style="font-size:11px">只读从库，DBA配合开权限</div></div></div>
+          <div class="step"><div class="sn" style="width:24px;height:24px;font-size:11px;background:var(--orange)">3</div><div class="sc"><div class="st" style="font-size:13px">RPA屏幕操作（兜底）</div><div class="sd" style="font-size:11px">零侵入，模拟人工操作</div></div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div style="color:var(--accent2);font-size:13px;font-weight:700;margin-bottom:12px">要不要改系统？</div>
+        <div style="font-size:48px;font-weight:900;color:var(--accent2);margin:16px 0">不需要</div>
+        <div style="font-size:13px;color:var(--dim);line-height:1.7">Agent是"中间层"<br>只做读取→对齐→分析→呈现<br>合同还在合同系统审批<br>付款还在财务系统执行</div>
+      </div>
+      <div class="card">
+        <div style="color:var(--orange);font-size:13px;font-weight:700;margin-bottom:12px">用什么模型？</div>
+        <div style="font-size:13px;line-height:2;color:rgba(255,255,255,.7);margin-top:12px">
+          ✅ 优先宝尊已部署的<br>
+          <span style="font-weight:700;color:#fff">火山引擎 + 千问</span><br>
+          ✅ 零额外模型成本<br>
+          ✅ 算力从已有资源池分配<br>
+          ✅ 我方仅收人天开发费
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ S22: 三步走 ═══════════════ -->
+<div class="s dark" data-i="21">
+  <div class="scroll">
+    <div class="eyebrow">PART 06 — 实施路径</div>
+    <h2>三步走，2周出Demo</h2>
+    <div class="sep"></div>
+    <div class="hbar" style="margin-top:24px">
+      <div style="flex:1;background:#1a1a2e;color:#fff"><div class="ht">3-5天</div><div class="hv">数据摸底</div></div>
+      <div style="flex:2;background:var(--accent);color:#fff"><div class="ht">2周·免费</div><div class="hv">POC验证</div></div>
+      <div style="flex:3;background:var(--accent2);color:#fff"><div class="ht">4-6周</div><div class="hv">正式开发</div></div>
+    </div>
+    <div class="g3" style="margin-top:16px">
+      <div class="card">
+        <div style="color:var(--dim);font-size:11px;font-weight:700;letter-spacing:1px;margin-bottom:8px">STEP 01</div>
+        <div style="font-weight:700;margin-bottom:8px">数据摸底 + 标签体系</div>
+        <div class="lbl" style="font-size:12px;line-height:1.7">梳理三系统数据字段<br>定义非经营性采购识别规则<br>建立采购标签体系</div>
+        <div class="tag tag-blue" style="margin-top:8px">输出：数据字典+标签文档</div>
+      </div>
+      <div class="card" style="border-color:rgba(41,151,255,.3)">
+        <div style="color:var(--accent);font-size:11px;font-weight:700;letter-spacing:1px;margin-bottom:8px">STEP 02 · 不收费</div>
+        <div style="font-weight:700;margin-bottom:8px">POC验证</div>
+        <div class="lbl" style="font-size:12px;line-height:1.7">Week1：信息流串联Demo<br>Week2：三单匹配+校验功能<br>给风控部演示确认效果</div>
+        <div class="tag tag-green" style="margin-top:8px">输出：可演示POC+效果报告</div>
+      </div>
+      <div class="card">
+        <div style="color:var(--dim);font-size:11px;font-weight:700;letter-spacing:1px;margin-bottom:8px">STEP 03</div>
+        <div style="font-weight:700;margin-bottom:8px">正式开发（40-60人天）</div>
+        <div class="lbl" style="font-size:12px;line-height:1.7">完整API接入<br>前端页面+审计底稿<br>全部风控规则</div>
+        <div class="tag tag-orange" style="margin-top:8px">输出：完整Agent+用户手册</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ S23: 集成方案 ═══════════════ -->
+<div class="s dark" data-i="22">
+  <div class="scroll">
+    <div class="eyebrow">PART 06 — 集成方案</div>
+    <h2>三种集成方案对比</h2>
+    <div class="sep"></div>
+    <div class="g3" style="margin-top:20px">
+      <div class="card" style="border-color:rgba(48,209,88,.3);border-top:3px solid var(--accent2)">
+        <div class="tag tag-green" style="margin-bottom:12px">推荐</div>
+        <div style="font-weight:700;font-size:16px;margin-bottom:8px">方案A：前端页面</div>
+        <div class="lbl" style="line-height:1.8">快速上线·零改造<br>2周出Demo<br>独立迭代不受限</div>
+      </div>
+      <div class="card">
+        <div class="tag tag-blue" style="margin-bottom:12px">可选</div>
+        <div style="font-weight:700;font-size:16px;margin-bottom:8px">方案B：推送飞书/OA</div>
+        <div class="lbl" style="line-height:1.8">用户在熟悉环境接收<br>需简单webhook对接<br>体验好成本低</div>
+      </div>
+      <div class="card">
+        <div class="tag tag-purple" style="margin-bottom:12px">远期</div>
+        <div style="font-weight:700;font-size:16px;margin-bottom:8px">方案C：嵌入现有系统</div>
+        <div class="lbl" style="line-height:1.8">体验最佳·无感嵌入<br>需OA厂商配合改造<br>周期较长</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ S24: 成本与回报 ═══════════════ -->
+<div class="s dark" data-i="23">
+  <div class="scroll">
+    <div class="eyebrow green">PART 07 — 成本与回报</div>
+    <h2>透明·灵活·按需付费</h2>
+    <div class="sep" style="background:var(--accent2)"></div>
+    <div class="g3" style="margin-top:20px">
+      <div class="card" style="text-align:center;border-color:rgba(48,209,88,.3)"><div style="color:var(--accent2);font-size:12px;font-weight:700;margin-bottom:8px">POC阶段</div><div class="val" style="color:var(--accent2)">0元</div><div class="lbl">2周免费验证</div></div>
+      <div class="card" style="text-align:center"><div style="color:var(--dim);font-size:12px;font-weight:700;margin-bottom:8px">人天单价</div><div class="val">3,000-3,500</div><div class="lbl">元/人天</div></div>
+      <div class="card" style="text-align:center;border-color:rgba(41,151,255,.3)"><div style="color:var(--accent);font-size:12px;font-weight:700;margin-bottom:8px">首个Agent</div><div class="val" style="color:var(--accent)">12-21万</div><div class="lbl">40-60人天</div></div>
+    </div>
+    <div class="card" style="margin-top:16px;border-color:rgba(41,151,255,.2);background:rgba(41,151,255,.03)">
+      <div style="font-size:14px;font-weight:700;color:var(--accent);margin-bottom:8px">框架采购模式（推荐）</div>
+      <div style="font-size:13px;color:var(--dim);line-height:1.8">先签框架协议 → 约定人天单价 → 做一个Agent付一个的钱 → 按月结算 → 风险可控</div>
+    </div>
+    <h3 style="font-size:15px;margin-top:24px">投资回报率（参考得物数据）</h3>
+    <table class="tbl">
+      <tr><th>指标</th><th>当前</th><th>AI后</th><th>价值</th></tr>
+      <tr><td>手工处理时间</td><td>基线</td><td><span class="hl-g">-60%</span></td><td>参考得物实测</td></tr>
+      <tr><td>数据等待时间</td><td>基线</td><td><span class="hl-g">-70%</span></td><td>参考得物实测</td></tr>
+      <tr><td>月度报告</td><td>3天/月</td><td><span class="hl-g">0.5天</span></td><td>节省2.5人月/年</td></tr>
+      <tr><td>异常漏查率</td><td>~20%</td><td><span class="hl-g">&lt;5%</span></td><td>降低风险损失</td></tr>
+    </table>
+    <div class="card" style="text-align:center;margin-top:16px;border-color:rgba(48,209,88,.2)"><div style="font-size:18px;font-weight:700;color:var(--accent2)">预计 6-12 个月收回投资成本</div></div>
+  </div>
+</div>
+
+<!-- ═══════════════ S25: 22个场景 ═══════════════ -->
+<div class="s dark" data-i="24">
+  <div class="scroll">
+    <div class="eyebrow orange">PART 08 — 未来展望</div>
+    <h2>22个风控场景矩阵<br><span style="font-size:.55em;font-weight:400;color:var(--dim)">不只是一个POC，是一个体系</span></h2>
+    <div class="sep" style="background:var(--orange)"></div>
+    <div style="margin-top:16px">
+      <div style="font-size:12px;font-weight:700;color:var(--accent2);margin-bottom:8px;letter-spacing:1px">第一期（本次POC）</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px"><span class="pill" style="border-color:rgba(48,209,88,.3);background:rgba(48,209,88,.08)">非经营性采购智能风控Agent</span></div>
+
+      <div style="font-size:12px;font-weight:700;color:var(--accent);margin-bottom:8px;letter-spacing:1px">第二期（高优先级）</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px">
+        <span class="pill">付款前三单匹配</span><span class="pill">四流一致性审查</span><span class="pill">合同智能审查</span>
+        <span class="pill">供应商画像</span><span class="pill">重复付款检测</span><span class="pill">大额异常预警</span>
+      </div>
+
+      <div style="font-size:12px;font-weight:700;color:var(--orange);margin-bottom:8px;letter-spacing:1px">第三期（中期扩展）</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px">
+        <span class="pill">发票验真</span><span class="pill">审计底稿自动化</span><span class="pill">审批流程合规</span>
+        <span class="pill">关联交易审查</span><span class="pill">内控自评</span><span class="pill">经营性采购风控</span>
+      </div>
+
+      <div style="font-size:12px;font-weight:700;color:var(--purple);margin-bottom:8px;letter-spacing:1px">第四期（远期场景）</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <span class="pill">管报/合报自动化</span><span class="pill">数据口径校验</span><span class="pill">异常根因分析</span>
+        <span class="pill">风控日报周报</span><span class="pill">制度合规差距</span><span class="pill">采购价格基线</span>
+        <span class="pill">预算实时监控</span><span class="pill">费用报销检测</span><span class="pill">印章使用监控</span>
+        <span class="pill">诉讼仲裁预警</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ S26: 未来蓝图 ═══════════════ -->
+<div class="s grad" data-i="25">
+  <div class="center-content" style="max-width:700px;margin:0 auto">
+    <div class="eyebrow orange">PART 08 — 未来蓝图</div>
+    <h2>宝尊 AI 风控<br>未来蓝图</h2>
+    <div class="sep center" style="background:var(--orange)"></div>
+    <div style="width:100%;margin-top:24px;display:flex;flex-direction:column;gap:8px;align-items:center">
+      <div class="layer" style="width:50%;text-align:center;border-color:rgba(255,159,10,.3);background:rgba(255,159,10,.06)"><div class="lt" style="justify-content:center"><span style="color:var(--orange)">🧠</span> AI风控决策大脑</div></div>
+      <div style="color:var(--dim)">▲</div>
+      <div class="layer" style="width:70%;text-align:center;border-color:rgba(255,55,95,.3);background:rgba(255,55,95,.04)"><div class="lt" style="justify-content:center"><span style="color:var(--pink)">🚨</span> 风险预警中心</div></div>
+      <div style="color:var(--dim)">▲</div>
+      <div class="layer" style="width:90%;text-align:center;border-color:rgba(191,90,242,.3);background:rgba(191,90,242,.04)"><div class="lt" style="justify-content:center"><span style="color:var(--purple)">🤖</span> AI Agent 矩阵（22个场景）</div></div>
+      <div style="color:var(--dim)">▲</div>
+      <div class="layer" style="width:100%;text-align:center;border-color:rgba(41,151,255,.3);background:rgba(41,151,255,.06)"><div class="lt" style="justify-content:center"><span style="color:var(--accent)">💾</span> 统一数据底座</div><div class="ld">采购系统 · OA合同 · OA付款 · 财务系统 · ERP · 银行 · 企查查 · 税局</div></div>
+    </div>
+    <div style="margin-top:24px;font-size:15px;font-weight:300;line-height:1.8;color:var(--dim)">让AI成为风控团队的<span style="color:var(--accent);font-weight:600">"数字同事"</span></div>
+  </div>
+</div>
+
+<!-- ═══════════════ S27: 弹药 ═══════════════ -->
+<div class="s dark" data-i="26">
+  <div class="scroll">
+    <div class="eyebrow orange">PART 08 — 给他弹药</div>
+    <h2>作为AI先锋牵头人<br>您需要什么？</h2>
+    <div class="sep" style="background:var(--orange)"></div>
+    <div class="g2" style="margin-top:20px">
+      <div class="card" style="border-top:3px solid var(--accent)">
+        <div style="font-size:48px;margin-bottom:8px">🎯</div>
+        <div style="font-weight:700;font-size:15px;margin-bottom:6px">弹药1：得物案例</div>
+        <div class="lbl">100万投入 · 60%效率提升<br>同行电商已验证路径可行</div>
+      </div>
+      <div class="card" style="border-top:3px solid var(--accent2)">
+        <div style="font-size:48px;margin-bottom:8px">🗂️</div>
+        <div style="font-weight:700;font-size:15px;margin-bottom:6px">弹药2：22个场景矩阵</div>
+        <div class="lbl">不只是一个POC<br>是一个完整的风控AI体系</div>
+      </div>
+      <div class="card" style="border-top:3px solid var(--orange)">
+        <div style="font-size:48px;margin-bottom:8px">🚀</div>
+        <div style="font-weight:700;font-size:15px;margin-bottom:6px">弹药3：战略契合度</div>
+        <div class="lbl">完美契合2026年战略重点<br>仇总、吴总均明确AI部署方向</div>
+      </div>
+      <div class="card" style="border-top:3px solid var(--purple)">
+        <div style="font-size:48px;margin-bottom:8px">🛡️</div>
+        <div style="font-weight:700;font-size:15px;margin-bottom:6px">弹药4：低风险启动</div>
+        <div class="lbl">POC免费 · 框架采购<br>做一个付一个 · 风险可控</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ S28: Q&A ═══════════════ -->
+<div class="s dark" data-i="27">
+  <div class="scroll">
+    <div class="eyebrow red">PART 09 — 常见问题</div>
+    <h2>您可能会问的问题</h2>
+    <div class="sep" style="background:var(--red)"></div>
+    <table class="tbl" style="margin-top:20px">
+      <tr><th style="width:35%">问题</th><th>答案</th></tr>
+      <tr><td style="font-weight:600;color:#fff">数据怎么保证能抓出来？</td><td>三个系统都有API接口，可通过标准接口或数据库只读账号接入，宝尊800人技术团队可配合。</td></tr>
+      <tr><td style="font-weight:600;color:#fff">OA厂商不配合怎么办？</td><td>方案A（前端页面）无需改造OA，2周出Demo。POC阶段先走独立页面。</td></tr>
+      <tr><td style="font-weight:600;color:#fff">40-60人天怎么算的？</td><td>数据摸底5天 + POC开发10天 + 正式开发25-45天（含前端、后端、测试、文档）。</td></tr>
+      <tr><td style="font-weight:600;color:#fff">与得物100万项目比？</td><td>得物做管理报表，我们做风控智能体。我们按人天收费，更灵活。</td></tr>
+      <tr><td style="font-weight:600;color:#fff">比建之/用友/金蝶强在哪？</td><td>建之太浅 · 用友太重 · 金蝶太宽。我们聚焦痛点、2周出Demo、不改系统、懂电商风控。</td></tr>
+      <tr><td style="font-weight:600;color:#fff">需要我配合什么？</td><td>① 三个系统数据接口 ② 1-2个业务人员确认场景 ③ 脱敏测试数据</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ═══════════════ S29: 总结 ═══════════════ -->
+<div class="s grad" data-i="28">
+  <div class="center-content" style="max-width:800px;margin:0 auto">
+    <div class="eyebrow red">PART 09 — 总结</div>
+    <h2>核心价值</h2>
+    <div class="sep center" style="background:var(--red)"></div>
+    <div style="font-size:clamp(15px,1.5vw,19px);line-height:2;color:rgba(255,255,255,.7);margin-top:24px;text-align:left;max-width:700px">
+      用AI把三个系统断掉的信息串起来，<br>
+      让审批人看到完整信息链，<br>
+      自动做<span class="hl">三单匹配</span>、<span class="hl">四流一致</span>校验，<br>
+      每月自动生成内控报告，审计底稿一键导出。
+    </div>
+    <div style="margin-top:32px;font-size:clamp(18px,2vw,28px);font-weight:700;color:var(--accent)">从"事后人工回查"变成<br>"事前自动拦截 + 事中实时监控"</div>
+    <div class="g4" style="margin-top:32px;width:100%">
+      <div class="card" style="text-align:center"><div class="val" style="font-size:24px;color:var(--accent2)">150x</div><div class="lbl">效率提升</div></div>
+      <div class="card" style="text-align:center"><div class="val" style="font-size:24px;color:var(--accent)">12-21万</div><div class="lbl">首个Agent</div></div>
+      <div class="card" style="text-align:center"><div class="val" style="font-size:24px;color:var(--orange)">2周</div><div class="lbl">出Demo</div></div>
+      <div class="card" style="text-align:center"><div class="val" style="font-size:24px;color:var(--purple)">22个</div><div class="lbl">可拓展场景</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ S30: 下一步 ═══════════════ -->
+<div class="s grad" data-i="29">
+  <div class="center-content" style="max-width:800px;margin:0 auto">
+    <div class="eyebrow" style="color:var(--accent2)">NEXT STEPS</div>
+    <h2>下一步行动</h2>
+    <div class="sep center" style="background:var(--accent2)"></div>
+    <div class="g4" style="margin-top:40px;width:100%">
+      <div class="card" style="text-align:center;padding:28px 16px">
+        <div style="font-size:36px;font-weight:900;color:var(--accent);margin-bottom:12px">①</div>
+        <div style="font-size:15px;font-weight:700;margin-bottom:6px">今天确认</div>
+        <div class="lbl">认可方向<br>启动数据摸底</div>
+      </div>
+      <div class="card" style="text-align:center;padding:28px 16px">
+        <div style="font-size:36px;font-weight:900;color:var(--accent2);margin-bottom:12px">②</div>
+        <div style="font-size:15px;font-weight:700;margin-bottom:6px">1周后</div>
+        <div class="lbl">确认数据字段<br>标签体系·风控规则</div>
+      </div>
+      <div class="card" style="text-align:center;padding:28px 16px">
+        <div style="font-size:36px;font-weight:900;color:var(--orange);margin-bottom:12px">③</div>
+        <div style="font-size:15px;font-weight:700;margin-bottom:6px">2周后</div>
+        <div class="lbl">4月24日<br>POC演示</div>
+      </div>
+      <div class="card" style="text-align:center;padding:28px 16px">
+        <div style="font-size:36px;font-weight:900;color:var(--purple);margin-bottom:12px">④</div>
+        <div style="font-size:15px;font-weight:700;margin-bottom:6px">POC后</div>
+        <div class="lbl">确认正式开发<br>按人天报价</div>
+      </div>
+    </div>
+    <div style="margin-top:48px;font-size:clamp(16px,1.6vw,22px);font-weight:300;color:var(--dim);line-height:1.6">
+      感谢您的聆听。<br>
+      期待与您共同探索AI在风控场景的落地，<br>
+      <span style="color:#fff;font-weight:600">让宝尊风控成为行业标杆。</span>
+    </div>
+  </div>
+</div>
+
+</div><!-- deck -->
+
+<!-- NAV -->
+<div class="nav">
+  <div class="pg" id="pg">01 / 30</div>
+  <div style="display:flex;align-items:center;gap:12px">
+    <span style="font-size:11px;color:rgba(255,255,255,.25)">← → 翻页</span>
+    <div class="btns"><button onclick="prev()">‹</button><button onclick="next()">›</button></div>
+  </div>
+</div>
+
+<script>
+let cur=0;const ss=document.querySelectorAll('.s'),tot=ss.length,pr=document.getElementById('prog'),pg=document.getElementById('pg');
+function upd(){ss.forEach((s,i)=>{s.classList.toggle('active',i===cur);if(i===cur)s.scrollTop=0});pr.style.width=((cur+1)/tot*100)+'%';pg.textContent=String(cur+1).padStart(2,'0')+' / '+tot}
+function next(){if(cur<tot-1){cur++;upd()}}
+function prev(){if(cur>0){cur--;upd()}}
+function go(i){if(i>=0&&i<tot){cur=i;upd()}}
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();next()}else if(e.key==='ArrowLeft'){e.preventDefault();prev()}else if(e.key==='Home'){e.preventDefault();go(0)}else if(e.key==='End'){e.preventDefault();go(tot-1)}});
+let tx=0;document.addEventListener('touchstart',e=>tx=e.changedTouches[0].screenX);document.addEventListener('touchend',e=>{const d=tx-e.changedTouches[0].screenX;if(Math.abs(d)>50){d>0?next():prev()}});
+upd();
+</script>
+</body>
+</html>
