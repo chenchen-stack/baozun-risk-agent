@@ -156,9 +156,22 @@ body.resizing .resize-handle{pointer-events:auto!important}
   transition:width .35s cubic-bezier(.4,0,.2,1);flex-shrink:0;
 }
 .chat-panel.open{width:min(520px,92vw);min-width:320px;max-width:min(780px,96vw)}
-/* 桌面：保证对话层在编排区之上，避免被画布/侧栏叠层挡住关闭按钮 */
+/* 桌面：固定到视口最上层，避免编排画布/ LiteGraph 叠层盖住 flex 内的对话栏（关闭键点不到） */
 @media(min-width:769px){
-  .chat-panel.open{position:relative;z-index:80}
+  .chat-panel.open{
+    position:fixed!important;
+    top:0;right:0;bottom:0;
+    width:min(520px,92vw)!important;
+    min-width:320px!important;
+    max-width:min(780px,96vw)!important;
+    z-index:10000;
+    border-left:1px solid var(--border);
+    box-shadow:-10px 0 40px rgba(15,23,42,.14);
+    pointer-events:auto;
+    /* 脱离 flex 占位，主区占满宽；对话浮在右侧 */
+    flex:0 0 0!important;
+    margin:0!important;
+  }
 }
 .resize-handle-chat{display:none}
 .chat-panel.open~.resize-handle-chat,.resize-handle-chat.visible{display:block}
@@ -1922,7 +1935,11 @@ function wfInitWorkflowStudioUI(){
 document.addEventListener('DOMContentLoaded',function(){
   wfInitWorkflowStudioUI();
   var cpClose=document.getElementById('cpCloseBtn');
-  if(cpClose)cpClose.addEventListener('click',function(e){e.stopPropagation();toggleChat();});
+  if(cpClose){
+    /* capture：抢在画布/其它冒泡监听之前关闭 */
+    cpClose.addEventListener('mousedown',function(e){e.stopPropagation();},true);
+    cpClose.addEventListener('click',function(e){e.stopPropagation();toggleChat();},true);
+  }
   document.addEventListener('keydown',function(e){
     if(e.key!=='Escape'||typeof chatOpen==='undefined'||!chatOpen)return;
     var gate=document.getElementById('apiGate');
@@ -1992,9 +2009,11 @@ function toggleChat(){
   const rh=document.getElementById('resizeChat');
   cp.classList.toggle('open',chatOpen);
   document.getElementById('aiBtn').classList.toggle('on',chatOpen);
-  rh.style.display=chatOpen?'block':'none';
+  /* 桌面端对话为 fixed 抽屉，不再用 flex 间分割条（条带曾参与命中/层叠问题） */
+  const desk=typeof window.matchMedia==='function'&&window.matchMedia('(min-width:769px)').matches;
+  rh.style.display=chatOpen&&!desk?'block':'none';
   if(!chatOpen){cp.style.width='';cp.style.transition='';}
-  else{cp.style.transition='width .35s cubic-bezier(.4,0,.2,1)';renderCpQuickBar();}
+  else{cp.style.transition=desk?'transform .28s ease,opacity .28s ease':'width .35s cubic-bezier(.4,0,.2,1)';renderCpQuickBar();}
 }
 
 function openChatAndSend(msg){
