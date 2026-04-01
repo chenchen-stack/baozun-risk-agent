@@ -155,7 +155,7 @@ body.resizing .resize-handle{pointer-events:auto!important}
   display:flex;flex-direction:column;
   transition:width .35s cubic-bezier(.4,0,.2,1);flex-shrink:0;
 }
-.chat-panel.open{width:min(520px,92vw);min-width:320px;max-width:min(780px,96vw)}
+.chat-panel.open{width:min(520px,92vw);min-width:320px;max-width:min(780px,96vw);pointer-events:auto!important}
 /* 桌面：固定到视口最上层，避免编排画布/ LiteGraph 叠层盖住 flex 内的对话栏（关闭键点不到） */
 @media(min-width:769px){
   .chat-panel.open{
@@ -164,7 +164,7 @@ body.resizing .resize-handle{pointer-events:auto!important}
     width:min(520px,92vw)!important;
     min-width:320px!important;
     max-width:min(780px,96vw)!important;
-    z-index:10000;
+    z-index:19850;
     border-left:1px solid var(--border);
     box-shadow:-10px 0 40px rgba(15,23,42,.14);
     pointer-events:auto;
@@ -180,16 +180,19 @@ body.resizing .resize-handle{pointer-events:auto!important}
   padding:12px 16px;border-bottom:1px solid var(--border);
   display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
   background:rgba(255,255,255,.5);
-  position:relative;z-index:5;
+  position:relative;z-index:50;
+  pointer-events:auto;
+  isolation:isolate;
 }
 .cp-header .cp-title{font-size:13px;font-weight:600;display:flex;align-items:center;gap:10px;letter-spacing:-.01em;min-width:0}
 .cp-head-logo{height:26px;width:auto;max-width:min(180px,42vw);object-fit:contain;object-position:left center;flex-shrink:0;display:block}
 .cp-header .cp-title .dot{width:8px;height:8px;border-radius:50%;background:var(--brand-navy);box-shadow:0 0 0 2px rgba(0,74,141,.2);animation:none;flex-shrink:0}
 .cp-close{
-  width:30px;height:30px;border-radius:8px;border:none;background:none;cursor:pointer;
-  font-size:14px;color:var(--text3);display:flex;align-items:center;justify-content:center;
+  width:40px;height:40px;border-radius:10px;border:none;background:rgba(0,0,0,.04);cursor:pointer;
+  font-size:16px;line-height:1;color:var(--text3);display:flex;align-items:center;justify-content:center;
   transition:all .2s;
-  position:relative;z-index:6;flex-shrink:0;pointer-events:auto;
+  position:relative;z-index:60;flex-shrink:0;pointer-events:auto!important;
+  -webkit-tap-highlight-color:transparent;touch-action:manipulation;
 }
 .cp-close:hover{background:rgba(0,0,0,.05);color:var(--text)}
 
@@ -808,7 +811,7 @@ tr:hover td{background:rgba(0,0,0,.02)}
   .sb .logo .nm,.sb .logo .sub,.sb-welcome,.sb nav a span,.sb .ft{display:none}
   .sb .logo{padding:12px 8px}
   .sb nav a{justify-content:center;padding:8px}
-  .chat-panel.open{width:100%;position:fixed;top:0;right:0;bottom:0;z-index:120}
+  .chat-panel.open{width:100%;position:fixed;top:0;right:0;bottom:0;z-index:19850;pointer-events:auto!important}
   .kpi-row{grid-template-columns:1fr 1fr}
   .grid-2,.rpt-grid{grid-template-columns:1fr}
   .content{padding:12px}
@@ -1450,7 +1453,7 @@ body.demo-tour-on[data-demo-zoom="chat"] .mn{transform:none}
         <img src="/static/brand-logo.svg" class="cp-head-logo" width="224" height="52" alt="宝尊 BAOZUN" decoding="async"/>
         <span>风控 AI Agent</span>
       </div>
-      <button type="button" class="cp-close" id="cpCloseBtn" aria-label="关闭对话">✕</button>
+      <button type="button" class="cp-close" id="cpCloseBtn" aria-label="关闭对话" onclick="closeChatPanel();return false;">✕</button>
     </div>
     <div class="cp-messages" id="chatMsgs">
       <div class="cp-empty-welcome" id="chatEmptyWelcome">
@@ -1934,21 +1937,16 @@ function wfInitWorkflowStudioUI(){
 }
 document.addEventListener('DOMContentLoaded',function(){
   wfInitWorkflowStudioUI();
-  var cpClose=document.getElementById('cpCloseBtn');
-  if(cpClose){
-    /* capture：抢在画布/其它冒泡监听之前关闭 */
-    cpClose.addEventListener('mousedown',function(e){e.stopPropagation();},true);
-    cpClose.addEventListener('click',function(e){e.stopPropagation();toggleChat();},true);
-  }
   document.addEventListener('keydown',function(e){
     if(e.key!=='Escape'||typeof chatOpen==='undefined'||!chatOpen)return;
     var gate=document.getElementById('apiGate');
     if(gate&&!gate.classList.contains('hidden'))return;
     var modal=document.getElementById('apiModal');
     if(modal&&modal.classList.contains('open'))return;
-    if(!e.target.closest||!e.target.closest('#chatPanel'))return;
+    var cv=document.getElementById('pipeGraphCanvas');
+    if(cv&&e.target===cv)return;
     e.preventDefault();
-    toggleChat();
+    closeChatPanel();
   });
 });
 document.addEventListener('keydown',function(e){
@@ -2001,20 +1999,40 @@ function go(p,btn){
   return goNavigatePromise;
 }
 
-function toggleChat(){
-  /* 拖动对话宽度时若未收到 mouseup，body.resizing 会让全页 pointer-events:none，关闭键点不到 */
+function setChatOpen(next){
+  /* 拖动对话宽度时若未收到 mouseup，body.resizing 会让全页 pointer-events:none */
   document.body.classList.remove('resizing');
-  chatOpen=!chatOpen;
+  chatOpen=!!next;
   const cp=document.getElementById('chatPanel');
   const rh=document.getElementById('resizeChat');
-  cp.classList.toggle('open',chatOpen);
-  document.getElementById('aiBtn').classList.toggle('on',chatOpen);
-  /* 桌面端对话为 fixed 抽屉，不再用 flex 间分割条（条带曾参与命中/层叠问题） */
+  const ai=document.getElementById('aiBtn');
+  if(cp)cp.classList.toggle('open',chatOpen);
+  if(ai)ai.classList.toggle('on',chatOpen);
   const desk=typeof window.matchMedia==='function'&&window.matchMedia('(min-width:769px)').matches;
-  rh.style.display=chatOpen&&!desk?'block':'none';
-  if(!chatOpen){cp.style.width='';cp.style.transition='';}
-  else{cp.style.transition=desk?'transform .28s ease,opacity .28s ease':'width .35s cubic-bezier(.4,0,.2,1)';renderCpQuickBar();}
+  if(rh)rh.style.display=chatOpen&&!desk?'block':'none';
+  if(!chatOpen){
+    if(cp){cp.style.width='';cp.style.transition='';}
+  }else if(cp){
+    cp.style.transition=desk?'transform .28s ease,opacity .28s ease':'width .35s cubic-bezier(.4,0,.2,1)';
+    renderCpQuickBar();
+  }
 }
+function toggleChat(){ setChatOpen(!chatOpen); }
+function closeChatPanel(){ setChatOpen(false); }
+window.closeChatPanel=closeChatPanel;
+
+document.addEventListener('pointerdown',function(e){
+  if(e.isPrimary===false)return;
+  var t=e.target;
+  if(t&&t.nodeType===3)t=t.parentElement;
+  if(!t||typeof t.closest!=='function')return;
+  if(!t.closest('#cpCloseBtn'))return;
+  var cp=document.getElementById('chatPanel');
+  if(!cp||!cp.classList.contains('open'))return;
+  e.preventDefault();
+  e.stopImmediatePropagation();
+  closeChatPanel();
+},true);
 
 function openChatAndSend(msg){
   if(!chatOpen)toggleChat();
@@ -3175,7 +3193,7 @@ function demoSafeClick(el){
 }
 async function demoCloseChatIfOpen(){
   if(!demoRunning)return;
-  if(typeof chatOpen!=='undefined'&&chatOpen)toggleChat();
+  if(typeof chatOpen!=='undefined'&&chatOpen)closeChatPanel();
   await demoSleep(DEMO_CHAT_PANEL_SETTLE_MS);
   await demoPaintSettle();
 }
