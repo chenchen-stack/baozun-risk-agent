@@ -475,8 +475,6 @@ body.resizing .resize-handle{pointer-events:auto!important}
 
 /* ─────────── PAGES ─────────── */
 .pg{display:none}.pg.on{display:block}
-.pipe-grid{display:grid;grid-template-columns:1fr minmax(300px,1.05fr);gap:18px;align:start}
-@media(max-width:1100px){.pipe-grid{grid-template-columns:1fr}}
 .pipe-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;margin-bottom:14px}
 .pipe-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;box-shadow:var(--shadow)}
 .pipe-card h4{margin:0 0 8px;font-size:13px;color:var(--brand-navy);font-weight:650}
@@ -505,6 +503,14 @@ body.resizing .resize-handle{pointer-events:auto!important}
 .pipe-arrow{color:rgba(45,212,191,.55);font-size:12px;font-weight:700;padding:0 1px;user-select:none}
 .pipe-wf-foot{margin-top:10px;font-size:11px;color:var(--text3);line-height:1.5}
 .pipe-wf-foot a{color:var(--brand-navy);font-weight:600}
+.pipe-editor-section{margin-top:18px;border-top:1px solid var(--border2);padding-top:16px}
+.pipe-lg-toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
+.pipe-lg-toolbar .hint{font-size:11px;color:var(--text3);margin-left:4px;flex:1;min-width:200px}
+.pipe-lg-host{width:100%;min-height:min(62vh,720px);height:min(62vh,720px);position:relative;background:#0c1222;border:1px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow)}
+.pipe-lg-host canvas#pipeGraphCanvas{display:block;width:100%;height:100%;touch-action:none;cursor:grab}
+#pipeGraphLoadErr{display:none;padding:10px 12px;background:var(--red-bg);color:var(--red);font-size:12px;border-radius:8px;margin-bottom:8px}
+.pipe-summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;align:start}
+@media(max-width:1000px){.pipe-summary-grid{grid-template-columns:1fr}}
 .pipe-roadmap{border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;background:var(--bg2);margin-top:14px}
 .pipe-roadmap > h3{margin:0 0 10px;font-size:13px;color:var(--brand-navy)}
 .pipe-phase{margin-bottom:10px;padding:10px 12px;background:var(--white);border-radius:10px;border-left:3px solid var(--text4)}
@@ -1210,9 +1216,11 @@ body.demo-tour-on[data-demo-zoom="chat"] .mn{transform:none}
           </div>
         </div>
         <div id="pipeBanner" class="pipe-banner info" style="display:none" role="status"></div>
-        <div class="pipe-grid">
+        <div class="pipe-summary-grid">
           <div>
             <div id="pipeStatus"><div style="padding:24px;color:var(--text4);font-size:13px">加载中…</div></div>
+          </div>
+          <div>
             <div class="pipe-bind" id="pipeBindWrap" style="display:none">
               <table><thead><tr><th>侧栏模块</th><th>API</th><th>上游（工作流视角）</th></tr></thead><tbody id="pipeBindTbl"></tbody></table>
             </div>
@@ -1221,37 +1229,21 @@ body.demo-tour-on[data-demo-zoom="chat"] .mn{transform:none}
               <div id="pipePhaseList"></div>
             </div>
           </div>
-          <div>
-            <div class="section-title" style="margin-bottom:8px">节点编排示意（类 Dify · 内嵌，不依赖 iframe）</div>
-            <div class="pipe-flow-visual" aria-label="工作流节点">
-              <div class="lane">触发层</div>
-              <div class="pipe-flow-row">
-                <div class="pipe-fn"><b>定时轮询</b><span>增量扫描兜底</span></div>
-                <span class="pipe-arrow">→</span>
-                <div class="pipe-fn"><b>Webhook</b><span>审批事件准实时</span></div>
-              </div>
-              <div class="lane">数据源适配（按系统三选一或混用）</div>
-              <div class="pipe-flow-row">
-                <div class="pipe-fn api"><b>REST</b><span>OA / ERP / 采购中台</span></div>
-                <div class="pipe-fn db"><b>只读库</b><span>视图 / SelectDB</span></div>
-                <div class="pipe-fn rpa"><b>RPA</b><span>封闭系统抓取</span></div>
-                <span class="pipe-arrow">→</span>
-                <div class="pipe-fn"><b>ETL</b><span>标准风控宽表</span></div>
-              </div>
-              <div class="lane">智能体与闭环</div>
-              <div class="pipe-flow-row">
-                <span class="pipe-arrow">→</span>
-                <div class="pipe-fn agent"><b>风控 Agent</b><span>规则 + 语义 → 等级 / 依据</span></div>
-                <span class="pipe-arrow">→</span>
-                <div class="pipe-fn"><b>决策</b><span>低/中/高分流</span></div>
-                <span class="pipe-arrow">→</span>
-                <div class="pipe-fn"><b>回调</b><span>OA · 飞书</span></div>
-                <span class="pipe-arrow">→</span>
-                <div class="pipe-fn"><b>审计</b><span>留痕 / 月报</span></div>
-              </div>
-            </div>
-            <p class="pipe-wf-foot">大图版（深色全屏样式）：<a id="pipeWfOpen" href="#" target="_blank" rel="noopener">新窗口打开 workflow-risk-nodes.html</a> · 仓库内 <code style="font-size:10px">docs/workflow-risk-nodes.html</code></p>
+        </div>
+        <div class="pipe-editor-section">
+          <div class="section-title" style="margin-bottom:8px">节点编排画布（LiteGraph · 真实可编辑，类 Dify / n8n）</div>
+          <div id="pipeGraphLoadErr" role="alert"></div>
+          <div class="pipe-lg-toolbar">
+            <button type="button" class="btn btn-teal" onclick="savePipelineGraphToServer()">保存到服务器</button>
+            <button type="button" class="btn btn-ghost" onclick="loadPipelineGraphFromServer()">从服务器加载</button>
+            <button type="button" class="btn btn-ghost" onclick="resetPipelineGraphDefault()">恢复默认拓扑</button>
+            <button type="button" class="btn btn-ghost" onclick="exportPipelineGraphJson()">导出 JSON</button>
+            <button type="button" class="btn btn-ghost" onclick="importPipelineGraphJson()">导入 JSON</button>
+            <button type="button" class="btn btn-ghost" onclick="resizePipelineGraphEditor()">适应窗口</button>
+            <span class="hint">空白处<strong>右键</strong> → 添加节点（分类 <code style="font-size:10px">wf</code>）· 拖节点 · 拉线连接 · 滚轮缩放 · 中键/Alt+拖动画布</span>
           </div>
+          <div class="pipe-lg-host"><canvas id="pipeGraphCanvas" tabindex="0" width="960" height="560"></canvas></div>
+          <p class="pipe-wf-foot">另可打开静态方案大图：<a id="pipeWfOpen" href="#" target="_blank" rel="noopener">workflow-risk-nodes.html</a> · 编排数据持久化：<code style="font-size:10px">agent-app/data/pipeline_graph.json</code>（已 .gitignore）</p>
         </div>
       </div>
 
@@ -1307,6 +1299,7 @@ body.demo-tour-on[data-demo-zoom="chat"] .mn{transform:none}
   <button type="button" class="demo-stop" id="demoStopBtn" onclick="stopProductDemo()">结束 · Esc</button>
 </div>
 
+<script src="/static/pipeline-graph.js"></script>
 <script>
 const TOOL_LABELS={
   query_procurement_system:'查询采购系统',
@@ -1551,6 +1544,7 @@ async function reloadProcurementHot(){
 }
 let goNavigatePromise=Promise.resolve();
 function go(p,btn){
+  if(p!=='pipe'&&typeof pausePipelineGraph==='function')pausePipelineGraph();
   document.querySelectorAll('.pg').forEach(el=>el.classList.remove('on'));
   document.getElementById('pg-'+p).classList.add('on');
   document.querySelectorAll('.sb nav a').forEach(a=>a.classList.toggle('on',a.dataset.p===p));
@@ -1568,6 +1562,11 @@ function go(p,btn){
   if(p==='ast')jobs.push(loadAssets());
   if(p==='pipe')jobs.push(loadPipelineStatus());
   goNavigatePromise=jobs.length?Promise.all(jobs):Promise.resolve();
+  if(p==='pipe'){
+    goNavigatePromise=goNavigatePromise.finally(function(){
+      setTimeout(function(){if(typeof initPipelineGraphEditor==='function')initPipelineGraphEditor();},80);
+    });
+  }
   return goNavigatePromise;
 }
 

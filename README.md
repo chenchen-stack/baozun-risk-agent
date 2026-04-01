@@ -98,7 +98,8 @@ python server.py
 - 健康检查：`/api/health`  
 - 集成状态：`/api/integrations/status`  
 - 数据源状态：`/api/datasources/status`  
-- **数据接入与工作流总览**：`GET /api/pipeline/status`（侧栏 **「数据接入 · 工作流」** 页）；节点图**内嵌在页面中**（不依赖 iframe）。**请勿用 `file://` 直接打开 `index.html`**，否则无法请求 API——请始终通过 `python server.py` 访问 `http://127.0.0.1:8800/`。  
+- **数据接入与工作流总览**：`GET /api/pipeline/status`（侧栏 **「数据接入 · 工作流」** 页）。**节点编排画布**为 [LiteGraph.js](https://github.com/jagenjo/litegraph.js) 全功能编辑器（拖拽、连线、右键加节点、缩放平移）；编排持久化 **`GET/POST /api/pipeline/graph`** → `agent-app/data/pipeline_graph.json`（已 `.gitignore`）。画布脚本依赖 jsDelivr CDN，离线环境需自备 `litegraph.min.js`。  
+- **请勿用 `file://` 直接打开 `index.html`**，否则无法请求 API——请通过 `python server.py` 访问 `http://127.0.0.1:8800/`。若 **`/api/pipeline/status` 返回 404**，说明运行中的进程不是当前代码版本，请重新部署或重启本地服务。  
 
 ---
 

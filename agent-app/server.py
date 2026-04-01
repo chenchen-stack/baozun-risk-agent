@@ -27,6 +27,8 @@ from agent import (run_agent_stream, get_dashboard_data, get_work_orders, get_no
 BASE_DIR = Path(__file__).resolve().parent
 REPORTS_DIR = BASE_DIR / "reports"
 STATIC_DIR = BASE_DIR / "static"
+DATA_DIR = BASE_DIR / "data"
+PIPELINE_GRAPH_FILE = DATA_DIR / "pipeline_graph.json"
 _log = logging.getLogger("uvicorn.error")
 
 
@@ -172,6 +174,27 @@ async def pipeline_status():
             },
         ],
     }
+
+
+@app.get("/api/pipeline/graph")
+async def get_pipeline_graph():
+    """节点编排画布持久化（LiteGraph.serialize 结构，包装在 JSON 根字段 litegraph）。"""
+    if PIPELINE_GRAPH_FILE.is_file():
+        try:
+            return json.loads(PIPELINE_GRAPH_FILE.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            _log.warning("pipeline_graph.json corrupt, ignoring")
+    return {"litegraph": None}
+
+
+@app.post("/api/pipeline/graph")
+async def post_pipeline_graph(request: Request):
+    body = await request.json()
+    if not isinstance(body, dict):
+        raise HTTPException(status_code=400, detail="expected JSON object")
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    PIPELINE_GRAPH_FILE.write_text(json.dumps(body, ensure_ascii=False, indent=2), encoding="utf-8")
+    return {"ok": True}
 
 
 @app.post("/api/datasources/reload-procurement")
