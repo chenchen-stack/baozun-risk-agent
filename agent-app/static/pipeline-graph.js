@@ -338,7 +338,7 @@
         if (window.__pipeRunSeqActive) {
           setNodeLastRun(
             this,
-            "批量运行：未自动打开对话（避免与「运行结果」同时占屏）。请在运行结果侧栏点「问 AI 处置」，或取消运行后单点本节点 ▶ 仅执行。"
+            "批量运行：未自动打开对话（避免与「运行输出」同时占屏）。请在侧栏「摘要」点「问 AI 处置」，或单点本节点 ▶ 仅执行。"
           );
           return;
         }
@@ -754,6 +754,7 @@
       resizeCanvas();
       if (typeof window.wfZoomToFit === "function") window.wfZoomToFit();
       if (typeof window.__wfTouchAutosave === "function") window.__wfTouchAutosave();
+      if (typeof window.wfRenderRunExecutionSteps === "function") window.wfRenderRunExecutionSteps();
       return true;
     } catch (e) {
       console.warn("wfApplyGraphPayload", e);
@@ -1626,6 +1627,17 @@
     gc.setZoom(ns, [gc.canvas.width * 0.5, gc.canvas.height * 0.5]);
   };
 
+  /** 与运行结果「执行」页签联动：按画布节点顺序下标定位 */
+  window.wfFocusPipeNodeAtIndex = function (idx) {
+    var g = window.__pipeLGraph;
+    var gc = window.__pipeLgCanvas;
+    if (!g || !g._nodes || idx < 0 || idx >= g._nodes.length || !gc) return;
+    var n = g._nodes[idx];
+    if (typeof gc.selectNodes === "function") gc.selectNodes([n]);
+    if (typeof gc.centerOnNode === "function") gc.centerOnNode(n);
+    if (typeof gc.setDirty === "function") gc.setDirty(true, true);
+  };
+
   window.wfRunSelectedNode = function () {
     var gc = window.__pipeLgCanvas;
     if (!gc || !gc.selected_nodes) return;
@@ -1748,6 +1760,7 @@
           wfZoomToFit();
         }, 60);
         if (typeof window.wfRefreshScenarioRail === "function") window.wfRefreshScenarioRail();
+        if (typeof window.wfRenderRunExecutionSteps === "function") window.wfRenderRunExecutionSteps();
       }
 
       var localPayload =
