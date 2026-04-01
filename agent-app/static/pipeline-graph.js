@@ -108,12 +108,12 @@
     applyLiteGraphLightTheme._ok = true;
     LG.NODE_DEFAULT_BGCOLOR = "#FFFFFF";
     LG.NODE_DEFAULT_BOXCOLOR = "#E5E7EB";
-    LG.NODE_DEFAULT_COLOR = "#155EEF";
+    LG.NODE_DEFAULT_COLOR = "#3E5C76";
     LG.NODE_TEXT_COLOR = "#4B5563";
     LG.NODE_TITLE_COLOR = "#FFFFFF";
     LG.NODE_SELECTED_TITLE_COLOR = "#FFFFFF";
     LG.NODE_BOX_OUTLINE_COLOR = "#D1D5DB";
-    LG.LINK_COLOR = "#155EEF";
+    LG.LINK_COLOR = "#94A3B8";
     LG.CONNECTING_LINK_COLOR = "#10B981";
     LG.EVENT_LINK_COLOR = "#8B5CF6";
     LG.DEFAULT_SHADOW_COLOR = "rgba(15,23,42,0.06)";
@@ -246,7 +246,7 @@
         for (o = 0; outs && o < outs.length; o++) this.addOutput(outs[o][0], outs[o][1] || SLOT);
         this.properties = { last_run: "", source_system: "", adapter_notes: "", obs_hint: "可观测 · 运行日志" };
         this.size = [240, 108];
-        this.color = headerColor || "#155EEF";
+        this.color = headerColor || "#3E5C76";
         this.bgcolor = "#FFFFFF";
         this.boxcolor = "#E8ECF3";
         this.shape = "round";
@@ -400,11 +400,11 @@
     };
 
     var types = [
-      ["wf/poll", "定时巡检 · 异常队列", [["触发", SLOT]], null, "#155EEF"],
-      ["wf/webhook", "OA 审批流事件", [["触发", SLOT]], null, "#2563EB"],
-      ["wf/rest", "采购系统 API（PO/申请）", [["原始数据", SLOT]], null, "#10B981"],
-      ["wf/db", "SelectDB / 合同·付款只读", [["原始数据", SLOT]], null, "#8B5CF6"],
-      ["wf/rpa", "RPA 兜底（无接口系统）", [["原始数据", SLOT]], null, "#F59E0B"],
+      ["wf/poll", "定时巡检 · 异常队列", [["触发", SLOT]], null, "#3D5A73"],
+      ["wf/webhook", "OA 审批流事件", [["触发", SLOT]], null, "#4A6B86"],
+      ["wf/rest", "采购系统 API（PO/申请）", [["原始数据", SLOT]], null, "#4D7A6E"],
+      ["wf/db", "SelectDB / 合同·付款只读", [["原始数据", SLOT]], null, "#5B5F82"],
+      ["wf/rpa", "RPA 兜底（无接口系统）", [["原始数据", SLOT]], null, "#8B7355"],
       [
         "wf/merge2",
         "触发源汇聚（调度+事件）",
@@ -413,7 +413,7 @@
           ["调度触发", SLOT],
           ["审批事件", SLOT],
         ],
-        "#64748B",
+        "#6B7C8F",
       ],
       [
         "wf/merge3",
@@ -424,7 +424,7 @@
           ["合同/OA侧", SLOT],
           ["付款/财务侧", SLOT],
         ],
-        "#64748B",
+        "#6B7C8F",
       ],
       [
         "wf/etl",
@@ -434,11 +434,11 @@
           ["触发侧", SLOT],
           ["数据侧", SLOT],
         ],
-        "#059669",
+        "#5A7D7A",
       ],
-      ["wf/threeway", "三单匹配引擎（PO·GRN·票）", [["三单结果", SLOT]], [["标准宽表", SLOT]], "#047857"],
-      ["wf/fourflow", "四流一致校验", [["四流结果", SLOT]], [["三单结果", SLOT]], "#0D9488"],
-      ["wf/agent", "非经营性采购风控智能体", [["研判", SLOT]], [["四流结果", SLOT]], "#7C3AED"],
+      ["wf/threeway", "三单匹配引擎（PO·GRN·票）", [["三单结果", SLOT]], [["标准宽表", SLOT]], "#3D6B7A"],
+      ["wf/fourflow", "四流一致校验", [["四流结果", SLOT]], [["三单结果", SLOT]], "#4A756E"],
+      ["wf/agent", "非经营性采购风控智能体", [["研判", SLOT]], [["四流结果", SLOT]], "#5B4E72"],
       [
         "wf/decision",
         "风险等级分流（低/中/高）",
@@ -448,10 +448,10 @@
           ["高风险", SLOT],
         ],
         [["研判", SLOT]],
-        "#0891B2",
+        "#456B82",
       ],
-      ["wf/callback", "飞书 / OA 工单推送", [["已推送", SLOT]], [["任一路径", SLOT]], "#0D9488"],
-      ["wf/audit", "审计留痕 · 月报接口", null, [["已推送", SLOT]], "#6B7280"],
+      ["wf/callback", "飞书 / OA 工单推送", [["已推送", SLOT]], [["任一路径", SLOT]], "#4A756E"],
+      ["wf/audit", "审计留痕 · 月报接口", null, [["已推送", SLOT]], "#78716C"],
     ];
 
     types.forEach(function (row) {
@@ -1716,18 +1716,18 @@
       var graphcanvas = new window.LGraphCanvas(canvas, graph);
       graphcanvas.background_image = null;
       graphcanvas.clear_background = true;
-      graphcanvas.clear_background_color = "#F4F5F8";
+      graphcanvas.clear_background_color = "#EEF1F4";
       graphcanvas.render_canvas_border = false;
       graphcanvas.render_curved_connections = true;
       graphcanvas.links_render_mode = window.LiteGraph.SPLINE_LINK;
       graphcanvas.round_radius = 10;
       graphcanvas.default_connection_color = {
-        input_off: "#9CA3AF",
-        input_on: "#155EEF",
-        output_off: "#9CA3AF",
-        output_on: "#155EEF",
+        input_off: "#B8C0CC",
+        input_on: "#3E5C76",
+        output_off: "#B8C0CC",
+        output_on: "#3E5C76",
       };
-      graphcanvas.default_link_color = "#155EEF";
+      graphcanvas.default_link_color = "#9CA8B8";
 
       attachDotGridPattern(graphcanvas);
       wireInspector(graphcanvas);
