@@ -4,6 +4,9 @@
 > 面向企业非经营性采购场景的可演示工程：**对话式风控 Agent**、**异常洞察看板**、**全链路溯源**与**自动化月报**，并为企业协作与数据源落地预留标准接口。
 
 [![Repo](https://img.shields.io/badge/GitHub-baozun--risk--agent-181717?logo=github)](https://github.com/chenchen-stack/baozun-risk-agent)
+[![Live Demo](https://img.shields.io/badge/在线演示-Render-46E3B7?logo=render)](https://baozun-risk-agent.onrender.com/)
+
+**公网演示（Render）：** [https://baozun-risk-agent.onrender.com/](https://baozun-risk-agent.onrender.com/) · 推送 `main` 后由 [Render Blueprint](https://github.com/chenchen-stack/baozun-risk-agent/blob/main/render.yaml) 自动构建部署（免费档冷启动约 30～60 秒）。
 
 <a id="readme-toc"></a>
 
@@ -49,6 +52,7 @@
 | **月报 HTML 自动化** | 定时生成可读性好的 HTML 报告，减轻月初手工汇总与排版成本。 |
 | **企业协作就绪** | 飞书 / OA Webhook 可选接入，关键事件可推到现有协作流，而不是再造一个孤岛系统。 |
 | **数据源可演进** | 同一套 `integrations/datasources` 分层：**Mock 演示**、**采购 REST（OpenAPI 样例）**、**SelectDB / MySQL 只读视图（SQL 样例）**，按客户环境逐步替换，无需推翻前端与 Agent 框架。 |
+| **风控编排画布** | 侧栏「风控编排」：触发 → API/库/RPA → 标准化 → 智能体 → 决策 → 回调/审计；一键运行串联真实 API，结果区可联动 AI 对话（演示）。 |
 
 ---
 
@@ -76,7 +80,7 @@
 | `app.py`、`static/` | 历史极简 Demo（OpenAI SDK 直连），**与 `agent-app` 数据与能力不一致**；正式演示请用 `agent-app`。 |
 | `presentation.html`、`ppt-diagrams/` | 汇报与演示材料。 |
 | `参考材料-*.md` | 业务流程、风控控制点与竞品/业务知识等参考资料。 |
-| `docs/workflow-risk-nodes.html` | **工作流节点示意（类 Dify）**；与 `agent-app/static/workflow-risk-nodes.html` 同源（Docker 仅打包 `static/`）。运行主应用后侧栏 **「数据接入 · 工作流」** 内嵌该图，并拉取 `/api/pipeline/status`。 |
+| `docs/workflow-risk-nodes.html` | **工作流节点静态示意**；与 `agent-app/static/workflow-risk-nodes.html` 同源。主应用侧栏 **「风控编排」** 为 [LiteGraph.js](https://github.com/jagenjo/litegraph.js) 可编辑画布（浅色 Dify 风 UI、节点顺序运行、底部运行结果卡片可点「问 AI / 联系业务」）；编排持久化见下。可选总览接口：`GET /api/pipeline/status`。 |
 
 ---
 
@@ -98,8 +102,9 @@ python server.py
 - 健康检查：`/api/health`  
 - 集成状态：`/api/integrations/status`  
 - 数据源状态：`/api/datasources/status`  
-- **数据接入与工作流总览**：`GET /api/pipeline/status`（侧栏 **「数据接入 · 工作流」** 页）。**节点编排画布**为 [LiteGraph.js](https://github.com/jagenjo/litegraph.js) 全功能编辑器（拖拽、连线、右键加节点、缩放平移）；编排持久化 **`GET/POST /api/pipeline/graph`** → `agent-app/data/pipeline_graph.json`（已 `.gitignore`）。画布脚本依赖 jsDelivr CDN，离线环境需自备 `litegraph.min.js`。  
-- **请勿用 `file://` 直接打开 `index.html`**，否则无法请求 API——请通过 `python server.py` 访问 `http://127.0.0.1:8800/`。若 **`/api/pipeline/status` 返回 404**，说明运行中的进程不是当前代码版本，请重新部署或重启本地服务。  
+- **风控编排（工作流画布）**：侧栏 **「风控编排」**。[LiteGraph.js](https://github.com/jagenjo/litegraph.js) 拖拽连线、右键加节点、缩放平移；**运行**按节点顺序执行各节点 `onExecute`（同源时真实请求 `/api/health`、`/api/datasources/status` 等）；编排持久化 **`GET/POST /api/pipeline/graph`** → `agent-app/data/pipeline_graph.json`（已 `.gitignore`）。脚本依赖 jsDelivr CDN，离线请自备 `litegraph.min.js`。  
+- **可选总览接口**：`GET /api/pipeline/status`（集成态摘要；与画布页解耦）。若返回 **404**，说明运行进程不是当前版本，请重新部署或重启服务。  
+- **请勿用 `file://` 直接打开 `index.html`**，否则无法请求 API——请通过 `python server.py` 或公网演示地址以 **http(s)** 访问。  
 
 ---
 
@@ -259,7 +264,9 @@ copy .env.example .env   # Windows；Unix 用 cp
 
 ### 场景十：公网演示地址（推荐 Render）
 
-适合：**几分钟内得到 `https://xxx.onrender.com` 这类可分享链接**（免费档冷启动约 30～60 秒，无人访问会休眠；正式商用建议付费档或阿里云）。
+适合：**几分钟内得到可分享 HTTPS 链接**（免费档冷启动约 30～60 秒，无人访问会休眠；正式商用建议付费档或阿里云）。
+
+**与本仓库同步的演示地址：** **[https://baozun-risk-agent.onrender.com/](https://baozun-risk-agent.onrender.com/)**（源码：[github.com/chenchen-stack/baozun-risk-agent](https://github.com/chenchen-stack/baozun-risk-agent)）。向 `main` 推送后，Render 会自动重新构建；若页面仍是旧版，在 Render Dashboard 查看部署日志或手动 **Clear build cache & deploy**。
 
 **不推荐用 Vercel 部署本仓库主应用**：当前主工程是 **FastAPI 长驻进程**，与 Vercel 默认 Serverless 模型不匹配；用下面方式更省事。
 

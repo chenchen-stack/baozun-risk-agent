@@ -475,48 +475,89 @@ body.resizing .resize-handle{pointer-events:auto!important}
 
 /* ─────────── PAGES ─────────── */
 .pg{display:none}.pg.on{display:block}
-.pipe-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;margin-bottom:14px}
-.pipe-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;box-shadow:var(--shadow)}
-.pipe-card h4{margin:0 0 8px;font-size:13px;color:var(--brand-navy);font-weight:650}
-.pipe-card p{margin:4px 0;font-size:12px;color:var(--text2);line-height:1.45}
-.pipe-err{color:var(--red);font-size:11px;margin-top:6px}
-.pipe-bind{border:1px solid var(--border);border-radius:var(--r);background:var(--white);overflow:hidden;margin-bottom:14px}
-.pipe-bind table{width:100%;border-collapse:collapse;font-size:11.5px}
-.pipe-bind th,.pipe-bind td{padding:8px 12px;text-align:left;border-bottom:1px solid var(--border2);vertical-align:top}
-.pipe-bind th{background:var(--bg2);color:var(--text3);font-weight:600}
-.pipe-bind tr:last-child td{border-bottom:none}
-.pipe-iframe-wrap{border:1px solid var(--border);border-radius:var(--r);overflow:hidden;background:#0c1222;box-shadow:var(--shadow)}
-.pipe-iframe-wrap iframe{width:100%;height:min(540px,56vh);border:none;display:block;vertical-align:top}
-.pipe-banner{display:none;margin-bottom:12px;padding:10px 14px;border-radius:var(--r);font-size:12px;line-height:1.55;border:1px solid var(--border)}
-.pipe-banner.warn{background:var(--orange-bg);border-color:rgba(245,166,35,.35);color:var(--text)}
-.pipe-banner.info{background:var(--blue-bg);border-color:rgba(0,74,141,.15);color:var(--text)}
-.pipe-flow-visual{background:linear-gradient(165deg,#0c1222 0%,#141c30 100%);border-radius:var(--r);padding:14px 12px 18px;border:1px solid var(--border);box-shadow:var(--shadow)}
-.pipe-flow-visual .lane{font-size:9px;letter-spacing:.1em;color:rgba(255,255,255,.4);margin:0 0 6px;font-weight:600}
-.pipe-flow-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:12px}
-.pipe-fn{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:7px 9px;min-width:68px;max-width:104px}
-.pipe-fn b{display:block;font-size:10.5px;color:#fff;margin-bottom:2px;font-weight:650}
-.pipe-fn span{display:block;font-size:9px;color:rgba(255,255,255,.52);line-height:1.3}
-.pipe-fn.api{border-left:2px solid #3b82f6}
-.pipe-fn.db{border-left:2px solid #8b5cf6}
-.pipe-fn.rpa{border-left:2px solid #f59e0b}
-.pipe-fn.agent{border-left:3px solid #2dd4bf;max-width:140px}
-.pipe-arrow{color:rgba(45,212,191,.55);font-size:12px;font-weight:700;padding:0 1px;user-select:none}
-.pipe-wf-foot{margin-top:10px;font-size:11px;color:var(--text3);line-height:1.5}
-.pipe-wf-foot a{color:var(--brand-navy);font-weight:600}
-.pipe-editor-section{margin-top:18px;border-top:1px solid var(--border2);padding-top:16px}
-.pipe-lg-toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
-.pipe-lg-toolbar .hint{font-size:11px;color:var(--text3);margin-left:4px;flex:1;min-width:200px}
-.pipe-lg-host{width:100%;min-height:min(62vh,720px);height:min(62vh,720px);position:relative;background:#0c1222;border:1px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow)}
+.content.content-pipe-only{padding:0;overflow:hidden;display:flex;flex-direction:column;min-height:0;flex:1;background:#F4F5F8}
+.content.content-pipe-only > .pg.on{flex:1;min-height:0;display:flex!important;flex-direction:column;overflow:hidden}
+/* ─── Dify-like workflow studio (风控编排) ─── */
+.wf-studio{flex:1;min-height:0;display:flex;flex-direction:column;font-family:system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;color:#111827}
+.wf-studio-top{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 14px;background:#fff;border-bottom:1px solid #E5E7EB}
+.wf-studio-top-left{display:flex;align-items:center;gap:12px;min-width:0;flex:1}
+.wf-breadcrumb{font-size:14px;font-weight:650;color:#111827;letter-spacing:-.02em}
+.wf-run-step-hint{font-size:12px;color:#6B7280;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:min(280px,36vw)}
+.wf-autosave{font-size:11px;color:#9CA3AF;white-space:nowrap}
+.wf-studio-top-right{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.wf-more{position:relative}
+.wf-more>summary{list-style:none;cursor:pointer;font-size:12px;color:#6B7280;padding:6px 10px;border-radius:8px;border:1px solid #E5E7EB;background:#fff}
+.wf-more>summary::-webkit-details-marker{display:none}
+.wf-more[open]>summary{background:#F3F4F6}
+.wf-more-panel{position:absolute;right:0;top:100%;margin-top:4px;padding:6px;min-width:160px;background:#fff;border:1px solid #E5E7EB;border-radius:10px;box-shadow:0 8px 24px rgba(15,23,42,.1);z-index:20;display:flex;flex-direction:column;gap:2px}
+.wf-more-panel button{width:100%;text-align:left;padding:8px 10px;border:none;border-radius:6px;background:transparent;font-size:12px;color:#374151;cursor:pointer}
+.wf-more-panel button:hover{background:#F3F4F6}
+.wf-btn-ghost{padding:7px 12px;border-radius:8px;font-size:12px;font-weight:500;background:#fff;border:1px solid #E5E7EB;color:#374151;cursor:pointer;transition:background .15s,border-color .15s}
+.wf-btn-ghost:hover{background:#F9FAFB;border-color:#D1D5DB}
+.wf-btn-primary{padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;background:#155EEF;border:1px solid #155EEF;color:#fff;cursor:pointer;display:inline-flex;align-items:center;gap:6px;box-shadow:0 1px 2px rgba(21,94,239,.2)}
+.wf-btn-primary:hover{background:#1249CC;border-color:#1249CC}
+.wf-btn-primary kbd{font-size:10px;opacity:.85;font-weight:500;padding:2px 5px;border-radius:4px;background:rgba(255,255,255,.2)}
+.wf-studio-body{flex:1;min-height:0;display:flex;overflow:hidden}
+.wf-palette{width:168px;flex-shrink:0;background:#fff;border-right:1px solid #E5E7EB;display:flex;flex-direction:column;min-height:0}
+.wf-palette-h{padding:10px 12px 6px;font-size:11px;font-weight:600;color:#9CA3AF}
+.wf-palette-compact{padding:0 8px 12px;display:flex;flex-direction:column;gap:6px}
+.wf-palette-compact button{width:100%;text-align:left;padding:8px 10px;border:1px solid #E5E7EB;border-radius:8px;background:#F9FAFB;font-size:12px;font-weight:600;color:#111827;cursor:pointer;transition:border-color .12s,background .12s}
+.wf-palette-compact button:hover{border-color:#155EEF;background:#EFF6FF;color:#155EEF}
+.wf-canvas-col{flex:1;min-width:0;display:flex;flex-direction:column;position:relative;background:#F4F5F8}
+.pipe-canvas-full{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;position:relative}
+.pipe-lg-host{flex:1;min-height:240px;height:auto;position:relative;background:#F4F5F8;border:none;border-radius:0;overflow:hidden;box-shadow:none}
 .pipe-lg-host canvas#pipeGraphCanvas{display:block;width:100%;height:100%;touch-action:none;cursor:grab}
-#pipeGraphLoadErr{display:none;padding:10px 12px;background:var(--red-bg);color:var(--red);font-size:12px;border-radius:8px;margin-bottom:8px}
-.pipe-summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;align:start}
-@media(max-width:1000px){.pipe-summary-grid{grid-template-columns:1fr}}
-.pipe-roadmap{border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;background:var(--bg2);margin-top:14px}
-.pipe-roadmap > h3{margin:0 0 10px;font-size:13px;color:var(--brand-navy)}
-.pipe-phase{margin-bottom:10px;padding:10px 12px;background:var(--white);border-radius:10px;border-left:3px solid var(--text4)}
-.pipe-phase.done{border-left-color:var(--green)}
-.pipe-phase h4{margin:0 0 6px;font-size:12px;font-weight:650;color:var(--text)}
-.pipe-phase ul{margin:0;padding-left:18px;font-size:11.5px;color:var(--text2);line-height:1.55}
+.wf-zoom-bar{position:absolute;right:16px;bottom:14px;z-index:5;display:flex;align-items:center;gap:4px;padding:4px 8px;background:rgba(255,255,255,.95);border:1px solid #E5E7EB;border-radius:10px;font-size:12px;font-weight:500;color:#6B7280;box-shadow:0 2px 12px rgba(15,23,42,.06)}
+.wf-zoom-bar button{width:28px;height:28px;border:none;border-radius:6px;background:transparent;cursor:pointer;color:#374151;font-size:16px;line-height:1}
+.wf-zoom-bar button:hover{background:#F3F4F6;color:#155EEF}
+#pipeGraphLoadErr{display:none;margin:8px 12px 0;padding:10px 12px;border-radius:8px;font-size:12px;background:#FEF3C7;border:1px solid #F59E0B;color:#92400E}
+.wf-inspector{width:260px;flex-shrink:0;background:#fff;border-left:1px solid #E5E7EB;display:flex;flex-direction:column;min-height:0}
+.wf-run-dock{flex-shrink:0;border-top:1px solid #E5E7EB;background:#fff;padding:0 12px 12px;max-height:42vh;overflow:auto;box-shadow:0 -4px 20px rgba(15,23,42,.04)}
+.wf-run-dock-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 4px 8px}
+.wf-run-dock-title{font-size:13px;font-weight:650;color:#111827}
+.wf-run-dock-toggle{border:none;background:transparent;font-size:12px;color:#155EEF;cursor:pointer;font-weight:600;padding:4px 8px;border-radius:6px}
+.wf-run-dock-toggle:hover{background:#EFF6FF}
+.wf-run-dock-body{display:flex;flex-direction:column;gap:10px}
+.wf-run-dock.collapsed .wf-run-dock-body{display:none!important}
+.wf-match-card{border:1px solid #E5E7EB;border-radius:10px;padding:12px;background:#FAFAFA}
+.wf-match-card h5{margin:0 0 8px;font-size:12px;font-weight:650;color:#374151}
+.wf-match-row{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:12px;color:#6B7280;margin-bottom:8px}
+.wf-match-row b{color:#111827;font-weight:600}
+.wf-match-ok{font-size:15px;font-weight:700;color:#059669;margin:4px 0}
+.wf-match-sub{font-size:11px;color:#6B7280}
+.wf-banner-ok{padding:8px 10px;border-radius:8px;background:#ECFDF5;border:1px solid #A7F3D0;font-size:11px;color:#065F46;line-height:1.45}
+.wf-banner-warn{padding:8px 10px;border-radius:8px;background:#FEF2F2;border:1px solid #FECACA;font-size:12px;color:#B91C1C;line-height:1.45}
+.wf-wo-card{border:1px solid #FECACA;border-radius:10px;overflow:hidden;background:#fff}
+.wf-wo-head{background:#DC2626;color:#fff;padding:8px 12px;font-size:12px;font-weight:650}
+.wf-wo-body{padding:10px 12px;font-size:12px;color:#374151;line-height:1.55}
+.wf-wo-body dt{font-size:10px;color:#9CA3AF;font-weight:600;margin-top:6px}
+.wf-wo-body dt:first-child{margin-top:0}
+.wf-wo-body dd{margin:2px 0 0;font-size:12px;color:#111827}
+.wf-run-actions{display:flex;flex-wrap:wrap;gap:8px;padding-top:4px}
+.wf-act-ai{padding:9px 16px;border:none;border-radius:8px;background:#1E3A5F;color:#fff;font-size:12px;font-weight:600;cursor:pointer}
+.wf-act-ai:hover{filter:brightness(1.08)}
+.wf-act-biz{padding:9px 16px;border:none;border-radius:8px;background:#EA580C;color:#fff;font-size:12px;font-weight:600;cursor:pointer}
+.wf-act-biz:hover{filter:brightness(1.06)}
+.wf-act-collapse{padding:9px 14px;border:1px solid #FCA5A5;border-radius:8px;background:#fff;color:#DC2626;font-size:12px;font-weight:600;cursor:pointer}
+.wf-act-collapse:hover{background:#FEF2F2}
+.wf-run-foot{margin:0;font-size:10px;color:#9CA3AB;text-align:center}
+.wf-inspector-head{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid #F3F4F6}
+.wf-inspector-head span{font-size:13px;font-weight:650;color:#111827}
+.wf-icon-btn{width:32px;height:32px;border:1px solid #E5E7EB;border-radius:8px;background:#fff;cursor:pointer;color:#155EEF;font-size:12px}
+.wf-icon-btn:hover{background:#EFF6FF}
+.wf-inspector-tabs{display:flex;gap:0;padding:0 10px;border-bottom:1px solid #E5E7EB}
+.wf-inspector-tabs button{flex:1;padding:10px 8px;border:none;background:none;font-size:12px;font-weight:500;color:#6B7280;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+.wf-inspector-tabs button.on{color:#155EEF;border-bottom-color:#155EEF}
+.wf-insp-panel{flex:1;overflow-y:auto;padding:12px 14px 20px;display:flex;flex-direction:column;gap:10px}
+.wf-insp-panel label{font-size:11px;font-weight:600;color:#6B7280;display:block;margin-bottom:4px}
+.wf-insp-panel input,.wf-insp-panel textarea{width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid #E5E7EB;border-radius:8px;font-size:12px;color:#111827;font-family:inherit}
+.wf-insp-panel input:focus,.wf-insp-panel textarea:focus{outline:none;border-color:#155EEF;box-shadow:0 0 0 3px rgba(21,94,239,.1)}
+.wf-insp-panel textarea{min-height:72px;resize:vertical}
+.wf-insp-panel pre{margin:0;padding:10px;background:#F9FAFB;border:1px solid #F3F4F6;border-radius:8px;font-size:11px;line-height:1.5;color:#374151;white-space:pre-wrap;word-break:break-word;max-height:220px;overflow-y:auto}
+.wf-inspector-empty{flex:1;display:flex;align-items:center;justify-content:center;padding:24px;text-align:center;font-size:12px;color:#9CA3AF;line-height:1.6}
+#wfToast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);z-index:9999;padding:10px 18px;background:#111827;color:#fff;font-size:13px;border-radius:10px;box-shadow:0 8px 32px rgba(0,0,0,.2);opacity:0;transition:transform .25s ease,opacity .25s ease;pointer-events:none;max-width:min(420px,92vw)}
+#wfToast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#wfInspBody{display:flex;flex-direction:column;flex:1;min-height:0}
 
 /* KPI Cards */
 .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;min-width:0}
@@ -535,8 +576,6 @@ body.resizing .resize-handle{pointer-events:auto!important}
 .grid-2 > *{min-width:0}
 .section-title{font-size:12px;font-weight:600;margin-bottom:10px;color:var(--text2);letter-spacing:.02em;text-transform:uppercase;display:flex;align-items:center;gap:8px}
 .card{border:1px solid var(--border);background:var(--white);border-radius:var(--r2);overflow-x:auto;overflow-y:hidden;transition:all .25s}
-.card:hover{}
-
 table{width:100%;border-collapse:collapse;table-layout:auto}
 th{text-align:left;font-size:10px;color:var(--text3);font-weight:600;padding:8px 10px;border-bottom:1px solid var(--border);background:transparent;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
 td{padding:8px 10px;font-size:12px;border-bottom:1px solid var(--border2);color:var(--text);white-space:nowrap}
@@ -642,7 +681,6 @@ tr:hover td{background:rgba(0,0,0,.02)}
 .rpt-metric .rl{font-size:10px;color:var(--text3);margin-top:4px;font-weight:500;letter-spacing:.04em;text-transform:uppercase}
 
 .rpt-section{border:1px solid var(--border);background:var(--white);border-radius:var(--r);margin-bottom:12px;overflow:hidden;transition:all .25s}
-.rpt-section:hover{}
 .rpt-section .rpt-st{padding:12px 14px;font-size:13px;font-weight:600;border-bottom:1px solid var(--border2);display:flex;align-items:center;gap:8px;letter-spacing:-.01em}
 
 .rp-item{
@@ -1027,7 +1065,7 @@ body.demo-tour-on[data-demo-zoom="chat"] .mn{transform:none}
       </a>
       <a onclick="go('pipe')" data-p="pipe">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-        <span>数据接入 · 工作流</span>
+        <span>风控编排</span>
       </a>
     </nav>
     <div class="ft">LangChain + DeepSeek V3<br>Powered by AI Agent v3.0<br>10阶段全流程覆盖</div>
@@ -1202,50 +1240,118 @@ body.demo-tour-on[data-demo-zoom="chat"] .mn{transform:none}
         <div class="card"><table><thead><tr><th>编号</th><th>名称</th><th>类别</th><th>原值</th><th>月折旧</th><th>净值</th><th>位置</th><th>盘点</th></tr></thead><tbody id="astTbl"></tbody></table></div>
       </div>
 
-      <!-- ─────────── PIPELINE / WORKFLOW (数据接入 · 工作流) ─────────── -->
+      <!-- ─────────── PIPELINE / WORKFLOW：Dify 风工作室 ─────────── -->
       <div class="pg" id="pg-pipe">
-        <div class="rpt-header">
-          <div>
-            <h2>数据接入与工作流编排</h2>
-            <div class="rs">将各信息系统抽象为工作流节点 → API / 只读库 / RPA 拉数 → 标准化 → 风控 Agent → 决策与回调；本页展示<strong>运行态</strong>与侧栏模块映射。</div>
-          </div>
-          <div class="ra">
-            <button class="btn btn-teal" onclick="openChatAndSend('请根据当前数据接入配置，说明从采购 REST 同步到异常看板的数据路径，并列出还需要客户侧提供的接口或视图')">AI 解读接入状态</button>
-            <button class="btn btn-ghost" onclick="reloadProcurementHot()">热拉取采购数据</button>
-            <button class="btn btn-ghost" onclick="loadPipelineStatus()">刷新状态</button>
-          </div>
-        </div>
-        <div id="pipeBanner" class="pipe-banner info" style="display:none" role="status"></div>
-        <div class="pipe-summary-grid">
-          <div>
-            <div id="pipeStatus"><div style="padding:24px;color:var(--text4);font-size:13px">加载中…</div></div>
-          </div>
-          <div>
-            <div class="pipe-bind" id="pipeBindWrap" style="display:none">
-              <table><thead><tr><th>侧栏模块</th><th>API</th><th>上游（工作流视角）</th></tr></thead><tbody id="pipeBindTbl"></tbody></table>
+        <div class="wf-studio">
+          <header class="wf-studio-top">
+            <div class="wf-studio-top-left">
+              <span class="wf-breadcrumb">风控编排</span>
+              <span class="wf-run-step-hint" id="wfRunStepHint" aria-live="polite"></span>
             </div>
-            <div class="pipe-roadmap" id="pipeRoadmap" style="display:none">
-              <h3>交付阶段（真正「做完」的路线图）</h3>
-              <div id="pipePhaseList"></div>
+            <div class="wf-studio-top-right">
+              <span class="wf-autosave" id="wfAutosaveHint">未保存</span>
+              <button type="button" class="wf-btn-primary" onclick="runPipelineGraphOnce()" title="按顺序执行节点并拉取真实接口（若已启动后端）">运行</button>
+              <button type="button" class="wf-btn-ghost" onclick="savePipelineGraphToServer()">保存</button>
+              <button type="button" class="wf-btn-ghost" onclick="wfZoomToFit()" title="画布缩放到全部节点">适应</button>
+              <details class="wf-more">
+                <summary>更多</summary>
+                <div class="wf-more-panel" onclick="event.stopPropagation()">
+                  <button type="button" onclick="loadPipelineGraphFromServer()">从服务器加载</button>
+                  <button type="button" onclick="resetPipelineGraphDefault()">恢复示例拓扑</button>
+                  <button type="button" onclick="exportPipelineGraphJson()">导出 JSON</button>
+                  <button type="button" onclick="importPipelineGraphJson()">导入 JSON</button>
+                  <button type="button" onclick="reloadProcurementHot()">热拉取采购数据</button>
+                </div>
+              </details>
             </div>
+          </header>
+          <div class="wf-studio-body">
+            <aside class="wf-palette" aria-label="添加节点">
+              <div class="wf-palette-h">点击加到画布</div>
+              <div class="wf-palette-compact" id="wfPaletteScroll">
+                <button type="button" data-wf-type="wf/poll" title="定时扫各系统">+ 定时轮询</button>
+                <button type="button" data-wf-type="wf/webhook" title="审批事件推送">+ 审批 Webhook</button>
+                <button type="button" data-wf-type="wf/rest" title="HTTP 拉数">+ API 拉数</button>
+                <button type="button" data-wf-type="wf/db" title="只读 SQL">+ 数据库</button>
+                <button type="button" data-wf-type="wf/rpa" title="机器人抓取">+ RPA</button>
+                <button type="button" data-wf-type="wf/merge2" title="两路合流">+ 2 路合并</button>
+                <button type="button" data-wf-type="wf/merge3" title="三路合流">+ 3 路合并</button>
+                <button type="button" data-wf-type="wf/etl" title="清洗标准化">+ 标准化</button>
+                <button type="button" data-wf-type="wf/agent" title="规则+模型研判">+ 风控智能体</button>
+                <button type="button" data-wf-type="wf/decision" title="低/中/高分流">+ 决策分流</button>
+                <button type="button" data-wf-type="wf/callback" title="回写 OA/IM">+ 回调通知</button>
+                <button type="button" data-wf-type="wf/audit" title="留痕报告">+ 审计日志</button>
+              </div>
+            </aside>
+            <div class="wf-canvas-col">
+              <div class="pipe-canvas-full" style="flex:1;min-height:0">
+                <div id="pipeGraphLoadErr" role="alert"></div>
+                <div class="pipe-lg-host"><canvas id="pipeGraphCanvas" tabindex="0" width="960" height="560"></canvas></div>
+                <div class="wf-zoom-bar" id="wfZoomBar" aria-label="缩放">
+                  <button type="button" onclick="wfZoomDelta(-0.12)" aria-label="缩小">−</button>
+                  <span id="wfZoomPct">100%</span>
+                  <button type="button" onclick="wfZoomDelta(0.12)" aria-label="放大">+</button>
+                </div>
+              </div>
+              <div class="wf-run-dock collapsed" id="wfRunDock">
+                <div class="wf-run-dock-head">
+                  <span class="wf-run-dock-title">运行结果 <span style="font-weight:400;color:#9CA3AF;font-size:11px">（演示样例）</span></span>
+                  <button type="button" class="wf-run-dock-toggle" id="wfRunDockToggle" onclick="wfToggleRunDock()">展开</button>
+                </div>
+                <div class="wf-run-dock-body" id="wfRunDockBody">
+                  <div class="wf-match-card">
+                    <h5>三单比对</h5>
+                    <div class="wf-match-row">合同 <b>¥980,000</b> · PO <b>¥980,000</b> · 发票 <b>—</b> · 验收 <b>—</b></div>
+                    <div class="wf-match-ok">一致</div>
+                    <div class="wf-match-sub">主金额字段一致（演示）</div>
+                    <div class="wf-banner-ok">四流抽样：合同主体、收款方、发票销方、物流信息一致（POC 演示数据）。</div>
+                  </div>
+                  <div class="wf-banner-warn">存在异常，已关联工单待闭环</div>
+                  <div class="wf-wo-card">
+                    <div class="wf-wo-head">异常工单 WO-2026-002</div>
+                    <div class="wf-wo-body">
+                      <dl style="margin:0">
+                        <dt>采购单</dt><dd>PO-2026-005</dd>
+                        <dt>类型</dt><dd>合同类型错误 + 审批流异常</dd>
+                        <dt>摘要</dt><dd>GAP 成都太古里门店装修，合同类型误标为门店运营</dd>
+                        <dt>状态</dt><dd><code style="font-size:11px">in_progress</code></dd>
+                      </dl>
+                    </div>
+                  </div>
+                  <div class="wf-run-actions">
+                    <button type="button" class="wf-act-ai" onclick="wfRiskCardAskAi()">问 AI 处置</button>
+                    <button type="button" class="wf-act-biz" onclick="wfRiskCardContactBiz()">联系业务</button>
+                    <button type="button" class="wf-act-collapse" onclick="wfRiskCardCollapse()">收起结果</button>
+                  </div>
+                  <p class="wf-run-foot">以上为模拟结果，用于演示完整交互；真实环境由接口与智能体生成。</p>
+                </div>
+              </div>
+            </div>
+            <aside class="wf-inspector" id="wfInspector" aria-label="节点">
+              <div class="wf-inspector-empty" id="wfInspEmpty">点选画布上的节点<br/>可改名称备注、单步运行</div>
+              <div id="wfInspBody" style="display:none;flex:1;flex-direction:column;min-height:0">
+                <div class="wf-inspector-head">
+                  <span id="wfInspTitle">节点</span>
+                  <button type="button" class="wf-icon-btn" onclick="wfRunSelectedNode()" title="只跑这个节点">▶</button>
+                </div>
+                <div class="wf-inspector-tabs">
+                  <button type="button" class="on" data-wf-tab="set">备注</button>
+                  <button type="button" data-wf-tab="run">运行日志</button>
+                </div>
+                <div class="wf-insp-panel" id="wfInspPanelSet">
+                  <div><label for="wfInpSys">系统名</label><input type="text" id="wfInpSys" placeholder="如 OA / ERP" autocomplete="off"/></div>
+                  <div><label for="wfInpNotes">说明</label><textarea id="wfInpNotes" placeholder="接口路径或表名…" style="min-height:56px"></textarea></div>
+                </div>
+                <div class="wf-insp-panel" id="wfInspPanelRun" style="display:none">
+                  <label>节点输出</label>
+                  <pre id="wfInpLastRun">—</pre>
+                </div>
+              </div>
+            </aside>
           </div>
-        </div>
-        <div class="pipe-editor-section">
-          <div class="section-title" style="margin-bottom:8px">节点编排画布（LiteGraph · 真实可编辑，类 Dify / n8n）</div>
-          <div id="pipeGraphLoadErr" role="alert"></div>
-          <div class="pipe-lg-toolbar">
-            <button type="button" class="btn btn-teal" onclick="savePipelineGraphToServer()">保存到服务器</button>
-            <button type="button" class="btn btn-ghost" onclick="loadPipelineGraphFromServer()">从服务器加载</button>
-            <button type="button" class="btn btn-ghost" onclick="resetPipelineGraphDefault()">恢复默认拓扑</button>
-            <button type="button" class="btn btn-ghost" onclick="exportPipelineGraphJson()">导出 JSON</button>
-            <button type="button" class="btn btn-ghost" onclick="importPipelineGraphJson()">导入 JSON</button>
-            <button type="button" class="btn btn-ghost" onclick="resizePipelineGraphEditor()">适应窗口</button>
-            <span class="hint">空白处<strong>右键</strong> → 添加节点（分类 <code style="font-size:10px">wf</code>）· 拖节点 · 拉线连接 · 滚轮缩放 · 中键/Alt+拖动画布</span>
-          </div>
-          <div class="pipe-lg-host"><canvas id="pipeGraphCanvas" tabindex="0" width="960" height="560"></canvas></div>
-          <p class="pipe-wf-foot">另可打开静态方案大图：<a id="pipeWfOpen" href="#" target="_blank" rel="noopener">workflow-risk-nodes.html</a> · 编排数据持久化：<code style="font-size:10px">agent-app/data/pipeline_graph.json</code>（已 .gitignore）</p>
         </div>
       </div>
+      <div id="wfToast" role="status" aria-live="polite"></div>
 
     </div>
   </div>
@@ -1452,81 +1558,12 @@ async function initApp(){
   refreshDemoBtnState();
 }
 
-const PAGE_TITLES={dash:'异常看板',exc:'预警列表',wo:'工单管理',rpt:'月度报告',notif:'通知记录',sup:'供应商画像',bgt:'预算管控',dlv:'交付跟踪',ast:'资产台账',pipe:'数据接入 · 工作流'};
-/** 后端不可达时（file:// 或未启动 server）用于填满本页，避免空白 */
-var PIPELINE_FALLBACK={
-  integrations:{
-    feishu_webhook_configured:false,oa_webhook_configured:false,
-    llm_openai_api_base:'(default https://api.deepseek.com)',llm_model:'deepseek-chat',
-    scheduled_monthly_report:false,external_data_dir_exists:true,external_overlay_files:[]
-  },
-  procurement_datasource:{mode:'mock',ok:true,error:'',merged_count:0,at:''},
-  sidebar_binding:[
-    {page:'异常看板 / 预警列表',api:'GET /api/dashboard，Agent 工具链',upstream:'各信息系统数据经适配与校验后的异常集合'},
-    {page:'工单管理 / 通知记录 / 月度报告',api:'/api/workorders · /api/notifications · /api/reports',upstream:'风控决策后的闭环：派单、触达、月报 HTML'},
-    {page:'供应商 / 预算 / 交付 / 资产',api:'/api/suppliers · /api/budgets · /api/deliveries · /api/assets',upstream:'外围系统适配节点（REST / 只读库 / RPA）'}
-  ],
-  delivery_phases:[
-    {phase:'P0 · 当前 POC',done:true,items:['侧栏九大模块与现有 API 已贯通（演示数据 + LangChain 工具）','采购域：mock / HTTP REST / SelectDB 只读 SQL 适配层','飞书·OA Webhook、external_data、定时月报可选集成']},
-    {phase:'P1 · 准实时与标准宽表',done:false,items:['客户审批流 Webhook / 消息队列与定时轮询双触发','ETL 统一单据模型（跨 OA·ERP·费控）','合同/付款等域独立 Adapter，与采购并列接入']},
-    {phase:'P2 · 生产闭环',done:false,items:['决策结果回写 OA 审批意见 / 加签节点','RPA 兜底与异常重试队列','审计日志外置存储与权限分级']}
-  ]
-};
+const PAGE_TITLES={dash:'异常看板',exc:'预警列表',wo:'工单管理',rpt:'月度报告',notif:'通知记录',sup:'供应商画像',bgt:'预算管控',dlv:'交付跟踪',ast:'资产台账',pipe:'风控编排'};
 function canReachBackend(){
   return typeof location!=='undefined' && (location.protocol==='http:'||location.protocol==='https:');
 }
-function setPipeBanner(show,html,cls){
-  var b=document.getElementById('pipeBanner');
-  if(!b)return;
-  if(!show){b.style.display='none';b.innerHTML='';b.className='pipe-banner info';return;}
-  b.className='pipe-banner '+(cls||'info');
-  b.innerHTML=html;
-  b.style.display='block';
-}
-function updatePipeWorkflowLink(){
-  var a=document.getElementById('pipeWfOpen');
-  if(!a)return;
-  if(canReachBackend()){try{a.href=new URL('/static/workflow-risk-nodes.html',location.href).href;}catch(e){a.href='/static/workflow-risk-nodes.html';}}
-  else{a.href='https://github.com/chenchen-stack/baozun-risk-agent/blob/main/docs/workflow-risk-nodes.html';a.title='当前为离线打开；完整功能请 python server.py 后访问 http://127.0.0.1:8800/';}
-}
-function renderPipelinePageData(j){
-  var root=document.getElementById('pipeStatus');
-  var bindWrap=document.getElementById('pipeBindWrap');
-  var bindTbl=document.getElementById('pipeBindTbl');
-  var rm=document.getElementById('pipeRoadmap');
-  var phaseList=document.getElementById('pipePhaseList');
-  if(!root)return;
-  var int=j.integrations||{};
-  var ds=j.procurement_datasource||{};
-  var yn=function(v){return v?'已配置':'未配置';};
-  var cards='';
-  cards+='<div class="pipe-cards">';
-  cards+='<div class="pipe-card"><h4>采购数据源</h4><p><strong>模式</strong> '+escHtml(String(ds.mode||'—'))+'</p><p><strong>结果</strong> '+(ds.ok?'成功':'失败')+' · 合并 <strong>'+escHtml(String(ds.merged_count!=null?ds.merged_count:'—'))+'</strong> 条</p>';
-  if(ds.at)cards+='<p style="font-size:11px;color:var(--text3)">'+escHtml(String(ds.at))+'</p>';
-  if(ds.error)cards+='<div class="pipe-err">'+escHtml(String(ds.error))+'</div>';
-  cards+='</div>';
-  cards+='<div class="pipe-card"><h4>大模型</h4><p><strong>端点</strong> '+escHtml(String(int.llm_openai_api_base||'—'))+'</p><p><strong>模型</strong> '+escHtml(String(int.llm_model||'—'))+'</p></div>';
-  cards+='<div class="pipe-card"><h4>协作 Webhook</h4><p>飞书 '+yn(int.feishu_webhook_configured)+'</p><p>OA '+yn(int.oa_webhook_configured)+'</p></div>';
-  cards+='<div class="pipe-card"><h4>月报调度</h4><p>'+(int.scheduled_monthly_report?'已开启 ENABLE_SCHEDULED_MONTHLY_REPORT':'未开启')+'</p></div>';
-  cards+='<div class="pipe-card"><h4>external_data</h4><p>'+(int.external_data_dir_exists?'目录存在':'无目录')+'</p><p style="font-size:11px">'+(int.external_overlay_files&&int.external_overlay_files.length?'文件：'+escHtml(int.external_overlay_files.join(', ')):'无 JSON 覆盖文件')+'</p></div>';
-  cards+='</div>';
-  root.innerHTML=cards;
-  var rows=j.sidebar_binding||[];
-  if(rows.length&&bindTbl&&bindWrap){
-    bindTbl.innerHTML=rows.map(function(row){
-      return '<tr><td><strong>'+escHtml(row.page||'')+'</strong></td><td>'+escHtml(row.api||'')+'</td><td>'+escHtml(row.upstream||'')+'</td></tr>';
-    }).join('');
-    bindWrap.style.display='block';
-  }else if(bindWrap)bindWrap.style.display='none';
-  var phases=j.delivery_phases||[];
-  if(phases.length&&phaseList&&rm){
-    phaseList.innerHTML=phases.map(function(ph){
-      var cls=ph.done?'pipe-phase done':'pipe-phase';
-      var lis=(ph.items||[]).map(function(t){return '<li>'+escHtml(t)+'</li>';}).join('');
-      return '<div class="'+cls+'"><h4>'+escHtml(ph.phase||'')+'</h4><ul>'+lis+'</ul></div>';
-    }).join('');
-    rm.style.display='block';
-  }else if(rm)rm.style.display='none';
+function escHtml(s){
+  return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
 }
 async function reloadProcurementHot(){
   if(!canReachBackend()){alert('请先通过后端访问：在 agent-app 目录执行 python server.py，再打开 http://127.0.0.1:8800/');return;}
@@ -1539,12 +1576,95 @@ async function reloadProcurementHot(){
     var j=await r.json().catch(function(){return {detail:'非 JSON 响应'};});
     if(!r.ok){alert('HTTP '+r.status+'：'+(j.detail||JSON.stringify(j)));return;}
     alert('采购同步完成：模式 '+String(j.mode||'')+'，合并 '+String(j.merged_count!=null?j.merged_count:'—')+' 条'+(j.error?'\n错误：'+j.error:''));
-    loadPipelineStatus();
   }catch(e){alert('请求失败：'+(e.message||String(e)));}
 }
+function wfShowToast(msg){
+  var t=document.getElementById('wfToast');
+  if(!t){alert(msg);return;}
+  t.textContent=msg;
+  t.classList.add('show');
+  clearTimeout(window._wfToastTimer);
+  window._wfToastTimer=setTimeout(function(){t.classList.remove('show');},2800);
+}
+function __wfTouchAutosave(){
+  var el=document.getElementById('wfAutosaveHint');
+  if(!el)return;
+  var d=new Date();
+  var pad=function(n){return n<10?'0'+n:''+n;};
+  el.textContent='已存 '+pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds());
+}
+function wfSetRunHint(s){
+  var el=document.getElementById('wfRunStepHint');
+  if(el)el.textContent=s||'';
+}
+function wfToggleRunDock(){
+  var d=document.getElementById('wfRunDock');
+  var t=document.getElementById('wfRunDockToggle');
+  if(!d)return;
+  d.classList.toggle('collapsed');
+  if(t)t.textContent=d.classList.contains('collapsed')?'展开':'收起';
+}
+function wfRiskCardCollapse(){
+  var d=document.getElementById('wfRunDock');
+  var t=document.getElementById('wfRunDockToggle');
+  if(d)d.classList.add('collapsed');
+  if(t)t.textContent='展开';
+}
+window.wfOnPipelineRunComplete=function(){
+  var d=document.getElementById('wfRunDock');
+  var t=document.getElementById('wfRunDockToggle');
+  if(d)d.classList.remove('collapsed');
+  if(t)t.textContent='收起';
+};
+function wfRiskCardAskAi(){
+  var q='请针对异常工单 WO-2026-002、采购单 PO-2026-005（合同类型与审批链疑点）给出处置步骤与需业务补充的材料。';
+  if(typeof openChatAndSend==='function')openChatAndSend(q);
+  else wfShowToast('无法打开对话：请点右上角 AI Agent');
+}
+function wfRiskCardContactBiz(){
+  wfShowToast('演示：已记入待办，将通知采购负责人复核合同类型（真实环境对接飞书/企微 Webhook）');
+}
+function wfInitWorkflowStudioUI(){
+  if(wfInitWorkflowStudioUI._done)return;
+  wfInitWorkflowStudioUI._done=true;
+  var scroll=document.getElementById('wfPaletteScroll');
+  if(scroll)scroll.addEventListener('click',function(e){
+    var row=e.target.closest('[data-wf-type]');
+    if(!row)return;
+    var ty=row.getAttribute('data-wf-type');
+    if(typeof wfAddNode==='function')wfAddNode(ty);
+  });
+  document.querySelectorAll('.wf-more-panel button').forEach(function(b){
+    b.addEventListener('click',function(){
+      var det=b.closest('.wf-more');
+      if(det)det.open=false;
+    });
+  });
+  var insp=document.getElementById('wfInspector');
+  if(insp)insp.querySelectorAll('.wf-inspector-tabs [data-wf-tab]').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var tab=btn.getAttribute('data-wf-tab');
+      insp.querySelectorAll('.wf-inspector-tabs button').forEach(function(b){b.classList.toggle('on',b===btn);});
+      var pSet=document.getElementById('wfInspPanelSet');
+      var pRun=document.getElementById('wfInspPanelRun');
+      if(pSet)pSet.style.display=tab==='set'?'flex':'none';
+      if(pRun)pRun.style.display=tab==='run'?'flex':'none';
+    });
+  });
+}
+document.addEventListener('DOMContentLoaded',function(){wfInitWorkflowStudioUI();});
+document.addEventListener('keydown',function(e){
+  if(!e.altKey||e.code!=='KeyR')return;
+  var pg=document.getElementById('pg-pipe');
+  if(!pg||!pg.classList.contains('on'))return;
+  e.preventDefault();
+  if(typeof runPipelineGraphOnce==='function')runPipelineGraphOnce();
+});
 let goNavigatePromise=Promise.resolve();
 function go(p,btn){
   if(p!=='pipe'&&typeof pausePipelineGraph==='function')pausePipelineGraph();
+  document.querySelector('.content')?.classList.toggle('content-pipe-only',p==='pipe');
+  if(p==='pipe')wfInitWorkflowStudioUI();
   document.querySelectorAll('.pg').forEach(el=>el.classList.remove('on'));
   document.getElementById('pg-'+p).classList.add('on');
   document.querySelectorAll('.sb nav a').forEach(a=>a.classList.toggle('on',a.dataset.p===p));
@@ -1560,37 +1680,16 @@ function go(p,btn){
   if(p==='bgt')jobs.push(loadBudgets());
   if(p==='dlv')jobs.push(loadDeliveries());
   if(p==='ast')jobs.push(loadAssets());
-  if(p==='pipe')jobs.push(loadPipelineStatus());
   goNavigatePromise=jobs.length?Promise.all(jobs):Promise.resolve();
   if(p==='pipe'){
     goNavigatePromise=goNavigatePromise.finally(function(){
-      setTimeout(function(){if(typeof initPipelineGraphEditor==='function')initPipelineGraphEditor();},80);
+      setTimeout(function(){
+        if(typeof initPipelineGraphEditor==='function')initPipelineGraphEditor();
+        if(typeof resizePipelineGraphEditor==='function')resizePipelineGraphEditor();
+      },100);
     });
   }
   return goNavigatePromise;
-}
-
-async function loadPipelineStatus(){
-  var root=document.getElementById('pipeStatus');
-  if(!root)return;
-  updatePipeWorkflowLink();
-  root.innerHTML='<div style="padding:24px;color:var(--text4);font-size:13px">加载中…</div>';
-  if(!canReachBackend()){
-    setPipeBanner(true,'<strong>离线或未通过 HTTP 访问。</strong> 节点图已内嵌可用；运行态卡片为<strong>演示数据</strong>。请在本机执行 <code style="font-size:11px">cd agent-app &amp;&amp; python server.py</code> 后访问 <strong>http://127.0.0.1:8800/</strong> 以连接真实 <code>/api/pipeline/status</code>。','warn');
-    renderPipelinePageData(PIPELINE_FALLBACK);
-    return;
-  }
-  setPipeBanner(false);
-  try{
-    var u=new URL('/api/pipeline/status',location.href);
-    var r=await fetch(u.toString(),{credentials:'same-origin',cache:'no-store'});
-    if(!r.ok)throw new Error('HTTP '+r.status);
-    var j=await r.json();
-    renderPipelinePageData(j);
-  }catch(e){
-    setPipeBanner(true,'<strong>无法拉取运行态（'+escHtml(e.message||String(e))+'）。</strong> 以下为内置演示数据；请确认已启动 <code style="font-size:11px">python server.py</code> 且当前地址与后端同源。','warn');
-    renderPipelinePageData(PIPELINE_FALLBACK);
-  }
 }
 
 function toggleChat(){
@@ -1618,9 +1717,6 @@ function traceSegClass(a,b){
   if(a.state==='ok'&&b.state==='ok')return'on';
   if(a.state==='fail'||b.state==='fail')return'fail';
   return'warn';
-}
-function escHtml(s){
-  return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
 }
 function formatToolPayload(raw,maxLen){
   maxLen=maxLen||420;
