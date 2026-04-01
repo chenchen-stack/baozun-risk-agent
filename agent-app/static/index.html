@@ -493,6 +493,34 @@ body.resizing #resizeChat{pointer-events:auto!important}
 .wf-btn-primary:hover{background:#1249CC;border-color:#1249CC}
 .wf-btn-primary kbd{font-size:10px;opacity:.85;font-weight:500;padding:2px 5px;border-radius:4px;background:rgba(255,255,255,.2)}
 .wf-studio-body{flex:1;min-height:0;display:flex;overflow:hidden;transition:none}
+.wf-scenario-rail{
+  width:196px;flex:0 0 196px;flex-shrink:0;background:#F8FAFC;border-right:1px solid #E5E7EB;
+  display:flex;flex-direction:column;min-height:0;overflow:hidden;
+}
+.wf-scenario-rail-h{padding:10px 12px 6px;font-size:11px;font-weight:700;color:#64748B;letter-spacing:.04em;text-transform:uppercase}
+.wf-scenario-list{flex:1;overflow-y:auto;padding:0 8px 8px;display:flex;flex-direction:column;gap:5px;min-height:0}
+.wf-scenario-item{
+  text-align:left;padding:10px 10px;border-radius:10px;border:1px solid #E2E8F0;background:#fff;cursor:pointer;
+  transition:border-color .15s,background .15s,box-shadow .15s;
+}
+.wf-scenario-item:hover{border-color:#CBD5E1;box-shadow:0 1px 6px rgba(15,23,42,.06)}
+.wf-scenario-item.on{border-color:#155EEF;background:#EFF6FF;box-shadow:inset 0 0 0 1px rgba(21,94,239,.12)}
+.wf-scenario-item .wf-si-name{font-weight:650;color:#0F172A;display:block;font-size:12px;line-height:1.3}
+.wf-scenario-item .wf-si-sub{font-size:10px;color:#64748B;margin-top:5px;line-height:1.45;display:block}
+.wf-scenario-new{
+  width:calc(100% - 16px);margin:4px 8px 10px;padding:9px 10px;border:1px dashed #CBD5E1;border-radius:10px;background:#fff;
+  font-size:11px;font-weight:600;color:#155EEF;cursor:pointer;
+}
+.wf-scenario-new:hover{border-color:#155EEF;background:#F8FAFF}
+.wf-trigger-hint{
+  flex-shrink:0;font-size:10px;color:#475569;line-height:1.45;padding:10px 12px;border-top:1px solid #E5E7EB;
+  background:#fff;
+}
+.wf-trigger-hint strong{display:block;font-size:10px;color:#0F172A;margin-bottom:4px;font-weight:650}
+@media (max-width:900px){
+  .wf-scenario-rail{width:160px;flex-basis:160px}
+  .wf-scenario-item .wf-si-sub{display:none}
+}
 .wf-layout-toggles{display:inline-flex;align-items:center;gap:4px;margin-right:8px;padding-right:10px;border-right:1px solid #E5E7EB}
 .wf-layout-btn{
   padding:5px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;
@@ -1299,7 +1327,7 @@ body.demo-tour-on[data-demo-zoom="chat"] .mn{transform:none}
           <header class="wf-studio-top">
             <div class="wf-studio-top-left">
               <span class="wf-breadcrumb">风控编排</span>
-              <span class="wf-breadcrumb-sub" style="font-size:11px;font-weight:500;color:#9CA3AF;margin-left:8px">非经营性采购 · 10 阶段链路 · 三单/四流（POC）</span>
+              <span class="wf-breadcrumb-sub" id="wfSceneSub" style="font-size:11px;font-weight:500;color:#9CA3AF;margin-left:8px">非经营性采购 · 10 阶段链路 · 三单/四流（POC）</span>
               <span class="wf-run-step-hint" id="wfRunStepHint" aria-live="polite"></span>
             </div>
             <div class="wf-studio-top-right">
@@ -1325,6 +1353,15 @@ body.demo-tour-on[data-demo-zoom="chat"] .mn{transform:none}
             </div>
           </header>
           <div class="wf-studio-body">
+            <aside class="wf-scenario-rail" id="wfScenarioRail" aria-label="风控场景">
+              <div class="wf-scenario-rail-h">风控场景</div>
+              <div class="wf-scenario-list" id="wfScenarioList" role="list"></div>
+              <button type="button" class="wf-scenario-new" id="wfScenarioNewBtn" title="基于当前拓扑新建一场景副本">＋ 新建场景工作流</button>
+              <div class="wf-trigger-hint" id="wfTriggerHint" aria-live="polite">
+                <strong>触发策略说明</strong>
+                <span id="wfTriggerHintText">优先事件回调；无 WebHook 时采用 1～5 分钟增量轮询，在汇聚节点合流后进入规则引擎。</span>
+              </div>
+            </aside>
             <aside class="wf-palette" aria-label="添加节点">
               <div class="wf-palette-h">点击加到画布（对齐需求书第一期 F01–F14）</div>
               <div class="wf-palette-compact" id="wfPaletteScroll">
@@ -1691,6 +1728,137 @@ function wfSetRunHint(s){
   var el=document.getElementById('wfRunStepHint');
   if(el)el.textContent=s||'';
 }
+(function wfScenarioBootstrap(){
+  var MANIFEST_KEY='wfScenarioManifest_v1';
+  var GRAPH_PREFIX='wfScenarioGraph_v1_';
+  function defaultManifest(){
+    return{
+      activeId:'scene-proc',
+      scenes:[
+        {id:'scene-proc',name:'非经营性采购风控',sub:'10 阶段 · 三单匹配 · 四流一致（POC）',triggerHint:'优先审批事件推送；无 WebHook 时用 1～5 分钟增量轮询 OA/采购/付款待办，在「触发汇聚」合流后进入规则引擎。'},
+        {id:'scene-expense',name:'费用报销与费控',sub:'报销单 · 预算科目 · 发票合规',triggerHint:'费控待办以定时增量为主；若厂商开放回调可并联事件源，汇聚后跑报销侧三单/四流规则。'},
+        {id:'scene-contract',name:'合同履约与付款',sub:'合同台账 · 付款计划 · 超付预警',triggerHint:'合同与在途付款库定时对齐；付款申请节点有推送则并联，用于超合同累计付款识别。'},
+        {id:'scene-supplier',name:'供应商风险监测',sub:'招投标 · 关联关系 · 围标线索',triggerHint:'中标库与外部工商数据定时同步；准入审批可选事件驱动，输出至围标/关联规则引擎。'}
+      ]
+    };
+  }
+  function readManifest(){
+    try{
+      var j=localStorage.getItem(MANIFEST_KEY);
+      if(j)return JSON.parse(j);
+    }catch(e){}
+    var d=defaultManifest();
+    localStorage.setItem(MANIFEST_KEY,JSON.stringify(d));
+    return d;
+  }
+  function writeManifest(m){
+    localStorage.setItem(MANIFEST_KEY,JSON.stringify(m));
+  }
+  window.__wfActiveSceneId=readManifest().activeId;
+  window.wfGetActiveSceneId=function(){return readManifest().activeId;};
+  window.wfLoadActiveSceneGraph=function(){
+    var m=readManifest();
+    window.__wfActiveSceneId=m.activeId;
+    try{
+      var raw=localStorage.getItem(GRAPH_PREFIX+m.activeId);
+      if(!raw)return null;
+      return JSON.parse(raw);
+    }catch(e){return null;}
+  };
+  window.wfPersistSceneGraph=function(sceneId){
+    if(typeof window.wfGetGraphPayload!=='function')return;
+    var body=window.wfGetGraphPayload();
+    if(!body)return;
+    try{localStorage.setItem(GRAPH_PREFIX+sceneId,JSON.stringify(body));}catch(e){console.warn(e);}
+  };
+  window.wfMigrateServerGraphToActiveScene=function(data){
+    if(!data||!data.litegraph)return;
+    var m=readManifest();
+    var key=GRAPH_PREFIX+m.activeId;
+    if(localStorage.getItem(key))return;
+    try{
+      var payload={litegraph:data.litegraph,version:data.version||1,saved_at:new Date().toISOString()};
+      localStorage.setItem(key,JSON.stringify(payload));
+    }catch(e){}
+  };
+  function sceneById(id){
+    var m=readManifest();
+    for(var i=0;i<m.scenes.length;i++)if(m.scenes[i].id===id)return m.scenes[i];
+    return null;
+  }
+  function wfUpdateSceneHeader(){
+    var sc=sceneById(readManifest().activeId);
+    var el=document.getElementById('wfSceneSub');
+    var th=document.getElementById('wfTriggerHintText');
+    if(sc&&el)el.textContent=(sc.sub||sc.name)||'';
+    if(sc&&th)th.textContent=sc.triggerHint||'';
+  }
+  window.wfRefreshScenarioRail=function(){
+    var m=readManifest();
+    window.__wfActiveSceneId=m.activeId;
+    var list=document.getElementById('wfScenarioList');
+    if(!list)return;
+    list.innerHTML='';
+    m.scenes.forEach(function(sc){
+      var btn=document.createElement('button');
+      btn.type='button';
+      btn.className='wf-scenario-item'+(sc.id===m.activeId?' on':'');
+      btn.setAttribute('role','listitem');
+      btn.dataset.sceneId=sc.id;
+      btn.innerHTML='<span class="wf-si-name">'+escHtml(sc.name)+'</span><span class="wf-si-sub">'+escHtml(sc.sub||'')+'</span>';
+      btn.addEventListener('click',function(){window.wfSwitchWfScenario(sc.id);});
+      list.appendChild(btn);
+    });
+    wfUpdateSceneHeader();
+  };
+  window.wfSwitchWfScenario=function(newId){
+    var m=readManifest();
+    if(m.activeId===newId)return;
+    if(window.__pipeLGraph&&typeof window.wfPersistSceneGraph==='function')window.wfPersistSceneGraph(m.activeId);
+    m.activeId=newId;
+    writeManifest(m);
+    window.__wfActiveSceneId=newId;
+    window.wfRefreshScenarioRail();
+    var raw=null;
+    try{raw=localStorage.getItem(GRAPH_PREFIX+newId);}catch(e){}
+    var parsed=null;
+    if(raw)try{parsed=JSON.parse(raw);}catch(e2){}
+    if(parsed&&parsed.litegraph&&parsed.litegraph.nodes&&parsed.litegraph.nodes.length&&typeof window.wfApplyGraphPayload==='function'){
+      window.wfApplyGraphPayload(parsed);
+    }else if(window.__pipeLGraph&&typeof window.wfBuildGraphForActiveScene==='function'){
+      window.wfBuildGraphForActiveScene(window.__pipeLGraph);
+      window.__pipeLGraph.stop();
+      window.__pipeLGraph.start();
+      if(typeof resizePipelineGraphEditor==='function')resizePipelineGraphEditor();
+      if(typeof wfZoomToFit==='function')wfZoomToFit();
+    }
+    var nm=sceneById(newId);
+    wfShowToast('已切换场景：'+(nm&&nm.name?nm.name:newId));
+    if(typeof __wfTouchAutosave==='function')__wfTouchAutosave();
+  };
+  document.addEventListener('DOMContentLoaded',function(){
+    if(typeof window.wfRefreshScenarioRail==='function')window.wfRefreshScenarioRail();
+    var nb=document.getElementById('wfScenarioNewBtn');
+    if(nb)nb.addEventListener('click',function(){
+      var name=(prompt('新建场景工作流名称（将复制当前画布拓扑）','我的风控场景')||'').trim();
+      if(!name)return;
+      var sub=(prompt('一句话副标题（显示在顶栏）','POC 演示')||'').trim();
+      var id='scene-'+Date.now();
+      var m=readManifest();
+      if(window.__pipeLGraph&&typeof window.wfPersistSceneGraph==='function')window.wfPersistSceneGraph(m.activeId);
+      var body=null;
+      if(typeof window.wfGetGraphPayload==='function')body=window.wfGetGraphPayload();
+      m.scenes.push({id:id,name:name,sub:sub||'自定义场景',triggerHint:'与平台默认一致：事件回调优先，无 WebHook 则定时增量拉取，经汇聚节点进入规则引擎与智能体。'});
+      m.activeId=id;
+      writeManifest(m);
+      window.__wfActiveSceneId=id;
+      if(body)try{localStorage.setItem(GRAPH_PREFIX+id,JSON.stringify(body));}catch(e){}
+      window.wfRefreshScenarioRail();
+      if(body&&typeof window.wfApplyGraphPayload==='function'&&window.__pipeLGraph)window.wfApplyGraphPayload(body);
+      wfShowToast('已新建场景（副本），可继续编辑');
+    });
+  });
+})();
 function wfFmtMoneyDock(v){
   if(v==null||v==='')return '—';
   return '¥'+Number(v).toLocaleString('zh-CN',{maximumFractionDigits:0});
@@ -1995,6 +2163,7 @@ function go(p,btn){
         if(typeof wfLoadStudioLayout==='function')wfLoadStudioLayout();
         if(typeof initPipelineGraphEditor==='function')initPipelineGraphEditor();
         if(typeof resizePipelineGraphEditor==='function')resizePipelineGraphEditor();
+        if(typeof wfRefreshScenarioRail==='function')wfRefreshScenarioRail();
         var cv=document.getElementById('pipeGraphCanvas');
         if(cv&&typeof cv.focus==='function')try{cv.focus();}catch(e){}
       },100);

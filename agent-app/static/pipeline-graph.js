@@ -167,8 +167,8 @@
         var i, o;
         for (i = 0; ins && i < ins.length; i++) this.addInput(ins[i][0], ins[i][1] || SLOT);
         for (o = 0; outs && o < outs.length; o++) this.addOutput(outs[o][0], outs[o][1] || SLOT);
-        this.properties = { last_run: "", source_system: "", adapter_notes: "" };
-        this.size = [236, 92];
+        this.properties = { last_run: "", source_system: "", adapter_notes: "", obs_hint: "可观测 · 运行日志" };
+        this.size = [240, 108];
         this.color = headerColor || "#155EEF";
         this.bgcolor = "#FFFFFF";
         this.boxcolor = "#E8ECF3";
@@ -377,6 +377,160 @@
       if (fn) Ctor.prototype.onExecute = fn;
       G.registerNodeType(row[0], Ctor);
     });
+
+    var OBS_DEFAULTS = {
+      "wf/poll": "调度 · 增量水位",
+      "wf/webhook": "事件 · 投递健康",
+      "wf/rest": "接口 · 延迟/错误率",
+      "wf/db": "库表 · 同步位点",
+      "wf/rpa": "RPA · 执行轨迹",
+      "wf/merge2": "汇聚 · 双源去重",
+      "wf/merge3": "汇聚 · 三源对齐",
+      "wf/etl": "主数据 · 对账条数",
+      "wf/threeway": "规则引擎 · 三单命中",
+      "wf/fourflow": "规则引擎 · 四流命中",
+      "wf/agent": "智能体 · 研判轨迹",
+      "wf/decision": "策略 · 分流统计",
+      "wf/callback": "闭环 · 推送回执",
+      "wf/audit": "审计 · 月报/底稿",
+    };
+
+    function patchWfObservabilityDraw() {
+      Object.keys(OBS_DEFAULTS).forEach(function (typeName) {
+        var info = G.registered_node_types[typeName];
+        if (!info || !info.prototype) return;
+        var prev = info.prototype.onDrawForeground;
+        info.prototype.onDrawForeground = function (ctx) {
+          if (prev) prev.apply(this, arguments);
+          if (this.flags && this.flags.collapsed) return;
+          var hint =
+            (this.properties && this.properties.obs_hint) || OBS_DEFAULTS[typeName] || "可观测 · 日志";
+          ctx.save();
+          ctx.fillStyle = "#94A3B8";
+          ctx.font = "10px system-ui,-apple-system,'Segoe UI','PingFang SC',sans-serif";
+          var y = (this.size && this.size[1] ? this.size[1] : 92) - 8;
+          ctx.fillText(hint.slice(0, 28), 10, y);
+          ctx.restore();
+        };
+      });
+    }
+    patchWfObservabilityDraw();
+  }
+
+  /** 按场景覆盖节点标题/说明/可观测文案（同一拓扑，多场景演示） */
+  function applyScenarioPreset(graph, sceneId) {
+    if (!graph || !graph._nodes) return;
+    var sid = sceneId || "scene-proc";
+    var PRESETS = {
+      "scene-proc": {
+        "wf/poll": {
+          adapter_notes: "1～5 分钟增量：待办/异常队列（厂商无 WebHook 时主路径）",
+          obs_hint: "调度 · 增量水位监控",
+        },
+        "wf/webhook": {
+          adapter_notes: "合同/付款审批节点推送（对方开放回调时准实时）",
+          obs_hint: "事件 · 订阅健康度",
+        },
+        "wf/merge2": {
+          title: "触发源汇聚（调度+事件）",
+          obs_hint: "汇聚 · 去重与就绪信号",
+        },
+        "wf/merge3": {
+          title: "三系统数据汇聚",
+          adapter_notes: "采购 + 合同/OA + 付款/财务 三路合流",
+          obs_hint: "汇聚 · 断点串联监控",
+        },
+        "wf/threeway": { obs_hint: "规则引擎 · F04 三单命中" },
+        "wf/fourflow": { obs_hint: "规则引擎 · F05 四流命中" },
+      },
+      "scene-expense": {
+        "wf/poll": {
+          adapter_notes: "费控/OA 报销单待办 · 1～5 分钟增量（无推送接口时）",
+          obs_hint: "调度 · 报销待办堆积",
+        },
+        "wf/webhook": {
+          adapter_notes: "报销提交/驳回/通过事件（若费控开放回调）",
+          obs_hint: "事件 · 审批 SLA",
+        },
+        "wf/merge2": {
+          title: "费控触发汇聚（调度+事件）",
+          obs_hint: "汇聚 · 员工+科目维度",
+        },
+        "wf/rest": { adapter_notes: "费控系统 API：报销单头行、发票影像索引", obs_hint: "接口 · 票据拉取" },
+        "wf/db": { adapter_notes: "预算科目执行率只读视图", obs_hint: "库表 · 预算执行快照" },
+        "wf/merge3": {
+          title: "费控·预算·发票 三源汇聚",
+          adapter_notes: "报销 + 预算额度 + 发票验真结果",
+          obs_hint: "汇聚 · 三单前置数据",
+        },
+        "wf/etl": {
+          title: "主数据对齐 · 报销宽表",
+          adapter_notes: "员工、部门、科目、供应商归一",
+          obs_hint: "主数据 · 对齐条数",
+        },
+        "wf/threeway": {
+          title: "三单匹配（申请·报销·发票）",
+          obs_hint: "规则引擎 · 超额/串号",
+        },
+        "wf/fourflow": {
+          title: "四流一致（事由·资金·票·附件）",
+          obs_hint: "规则引擎 · 主体/金额一致性",
+        },
+        "wf/agent": {
+          title: "费用报销风控智能体",
+          obs_hint: "智能体 · 政策/票据研判",
+        },
+      },
+      "scene-contract": {
+        "wf/poll": {
+          adapter_notes: "合同台账/付款计划 · 定时对齐在途与已付",
+          obs_hint: "调度 · 超付风险扫描",
+        },
+        "wf/webhook": { adapter_notes: "付款申请节点状态（OA 推送或轮询补偿）", obs_hint: "事件 · 付款闸口" },
+        "wf/merge2": { title: "履约触发汇聚（计划+审批）", obs_hint: "汇聚 · 应付日历" },
+        "wf/rest": { adapter_notes: "采购订单与收货（对账履约进度）", obs_hint: "接口 · PO/GRN" },
+        "wf/db": { adapter_notes: "合同金额、变更单、付款条款只读库", obs_hint: "库表 · 合同余额" },
+        "wf/merge3": {
+          title: "合同·履约·付款 三源汇聚",
+          adapter_notes: "合同总额 vs 在途付款 vs 发票",
+          obs_hint: "汇聚 · 超合同线索",
+        },
+        "wf/threeway": { title: "三单匹配（合同·订单·付款）", obs_hint: "规则引擎 · 累计付款/订单" },
+        "wf/fourflow": { title: "四流一致（签约·付款·票·收货）", obs_hint: "规则引擎 · 主体链路" },
+        "wf/agent": { title: "合同履约风控智能体", obs_hint: "智能体 · 违约/超付解释" },
+      },
+      "scene-supplier": {
+        "wf/poll": {
+          adapter_notes: "采购中标/投标库 · 定时增量（关联企业图谱）",
+          obs_hint: "调度 · 中标率偏离",
+        },
+        "wf/webhook": { adapter_notes: "供应商准入审批事件（可选）", obs_hint: "事件 · 准入闸口" },
+        "wf/merge2": { title: "供应商风险触发汇聚", obs_hint: "汇聚 · 内外部信号" },
+        "wf/rest": { adapter_notes: "采购招投标与供应商主数据 API", obs_hint: "接口 · 投标明细" },
+        "wf/db": { adapter_notes: "工商/关联关系只读库或第三方风控视图", obs_hint: "库表 · 关联边" },
+        "wf/merge3": {
+          title: "投标·主体·外部风险 三源汇聚",
+          adapter_notes: "同标段多投标方 + 股权穿透",
+          obs_hint: "汇聚 · 围标特征输入",
+        },
+        "wf/etl": { title: "主数据对齐 · 供应商宽表", adapter_notes: "统一社会信用代码、别名、集团", obs_hint: "主数据 · 实体解析" },
+        "wf/threeway": { title: "围标线索规则（报价·时间·IP）", obs_hint: "规则引擎 · 相似度命中" },
+        "wf/fourflow": { title: "关系一致性（投标·收款·联系人）", obs_hint: "规则引擎 · 异常关联" },
+        "wf/agent": { title: "供应商风险智能体", obs_hint: "智能体 · 解释与取证建议" },
+      },
+    };
+
+    var preset = PRESETS[sid] || PRESETS["scene-proc"];
+    for (var i = 0; i < graph._nodes.length; i++) {
+      var n = graph._nodes[i];
+      if (!n || !n.type) continue;
+      var ov = preset[n.type];
+      if (!ov) continue;
+      if (ov.title) n.title = ov.title;
+      if (!n.properties) n.properties = {};
+      if (ov.adapter_notes != null) n.properties.adapter_notes = ov.adapter_notes;
+      if (ov.obs_hint) n.properties.obs_hint = ov.obs_hint;
+    }
   }
 
   function buildDefaultGraph(graph) {
@@ -439,6 +593,14 @@
     tag(aud, "内控", "F14 月报 / 审计底稿入口");
   }
 
+  window.wfBuildGraphForActiveScene = function (graph) {
+    if (!graph) graph = window.__pipeLGraph;
+    if (!graph) return;
+    buildDefaultGraph(graph);
+    var sid = (typeof window.__wfActiveSceneId !== "undefined" && window.__wfActiveSceneId) || "scene-proc";
+    applyScenarioPreset(graph, sid);
+  };
+
   function resizeCanvas() {
     var host = document.querySelector("#pg-pipe .pipe-lg-host") || document.querySelector(".pipe-lg-host");
     var canvas = document.getElementById("pipeGraphCanvas");
@@ -495,6 +657,25 @@
     if (!window.__pipeLGraph) return null;
     return { litegraph: window.__pipeLGraph.serialize(), version: 1, saved_at: new Date().toISOString() };
   }
+
+  window.wfGetGraphPayload = getGraphPayload;
+
+  window.wfApplyGraphPayload = function (data) {
+    if (!data || !data.litegraph || !window.__pipeLGraph) return false;
+    try {
+      window.__pipeLGraph.configure(data.litegraph);
+      normalizePipelineWfModes(window.__pipeLGraph);
+      window.__pipeLGraph.stop();
+      window.__pipeLGraph.start();
+      resizeCanvas();
+      if (typeof window.wfZoomToFit === "function") window.wfZoomToFit();
+      if (typeof window.__wfTouchAutosave === "function") window.__wfTouchAutosave();
+      return true;
+    } catch (e) {
+      console.warn("wfApplyGraphPayload", e);
+      return false;
+    }
+  };
 
   window.savePipelineGraphToServer = function () {
     if (!canHttp()) {
@@ -560,8 +741,9 @@
 
   window.resetPipelineGraphDefault = function () {
     if (!window.__pipeLGraph) return;
-    if (!confirm("重置为默认示例拓扑？")) return;
-    buildDefaultGraph(window.__pipeLGraph);
+    if (!confirm("重置为当前场景的默认示例拓扑？")) return;
+    if (typeof window.wfBuildGraphForActiveScene === "function") window.wfBuildGraphForActiveScene(window.__pipeLGraph);
+    else buildDefaultGraph(window.__pipeLGraph);
     normalizePipelineWfModes(window.__pipeLGraph);
     window.__pipeLGraph.stop();
     window.__pipeLGraph.start();
@@ -819,6 +1001,15 @@
       var graph = new window.LGraph();
       graph.onAfterChange = function () {
         scheduleAutosave();
+        clearTimeout(window.__wfSceneLocSaveT);
+        window.__wfSceneLocSaveT = setTimeout(function () {
+          if (
+            typeof window.wfPersistSceneGraph === "function" &&
+            typeof window.wfGetActiveSceneId === "function"
+          ) {
+            window.wfPersistSceneGraph(window.wfGetActiveSceneId());
+          }
+        }, 2000);
       };
       var graphcanvas = new window.LGraphCanvas(canvas, graph);
       graphcanvas.background_image = null;
@@ -858,7 +1049,22 @@
 
       startZoomLabelPoll(graphcanvas);
 
-      if (canHttp()) {
+      function finishGraphBoot() {
+        normalizePipelineWfModes(graph);
+        graph.start();
+        setTimeout(function () {
+          resizeCanvas();
+          wfZoomToFit();
+        }, 60);
+        if (typeof window.wfRefreshScenarioRail === "function") window.wfRefreshScenarioRail();
+      }
+
+      var localPayload =
+        typeof window.wfLoadActiveSceneGraph === "function" ? window.wfLoadActiveSceneGraph() : null;
+      if (localPayload && localPayload.litegraph && localPayload.litegraph.nodes && localPayload.litegraph.nodes.length) {
+        graph.configure(localPayload.litegraph);
+        finishGraphBoot();
+      } else if (canHttp()) {
         var u = new URL("/api/pipeline/graph", location.href);
         fetch(u.toString(), { credentials: "same-origin", cache: "no-store" })
           .then(function (r) {
@@ -867,34 +1073,31 @@
           .then(function (data) {
             if (data && data.litegraph && data.litegraph.nodes && data.litegraph.nodes.length) {
               graph.configure(data.litegraph);
-              normalizePipelineWfModes(graph);
+              if (typeof window.wfMigrateServerGraphToActiveScene === "function")
+                window.wfMigrateServerGraphToActiveScene(data);
+            } else if (typeof window.wfBuildGraphForActiveScene === "function") {
+              window.wfBuildGraphForActiveScene(graph);
             } else {
               buildDefaultGraph(graph);
-              normalizePipelineWfModes(graph);
+              applyScenarioPreset(graph, window.__wfActiveSceneId || "scene-proc");
             }
-            graph.start();
-            setTimeout(function () {
-              resizeCanvas();
-              wfZoomToFit();
-            }, 60);
+            finishGraphBoot();
           })
           .catch(function () {
-            buildDefaultGraph(graph);
-            normalizePipelineWfModes(graph);
-            graph.start();
-            setTimeout(function () {
-              resizeCanvas();
-              wfZoomToFit();
-            }, 60);
+            if (typeof window.wfBuildGraphForActiveScene === "function") window.wfBuildGraphForActiveScene(graph);
+            else {
+              buildDefaultGraph(graph);
+              applyScenarioPreset(graph, window.__wfActiveSceneId || "scene-proc");
+            }
+            finishGraphBoot();
           });
       } else {
-        buildDefaultGraph(graph);
-        normalizePipelineWfModes(graph);
-        graph.start();
-        setTimeout(function () {
-          resizeCanvas();
-          wfZoomToFit();
-        }, 60);
+        if (typeof window.wfBuildGraphForActiveScene === "function") window.wfBuildGraphForActiveScene(graph);
+        else {
+          buildDefaultGraph(graph);
+          applyScenarioPreset(graph, window.__wfActiveSceneId || "scene-proc");
+        }
+        finishGraphBoot();
       }
 
       window.addEventListener("resize", resizeCanvas);
