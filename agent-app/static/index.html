@@ -195,21 +195,21 @@ body.resizing .resize-handle{pointer-events:auto!important}
 .msg.ai .av{background:var(--brand-navy);color:#fff;}
 .msg.u .av{background:var(--bg);font-size:11px;color:var(--text2)}
 .msg .bb{padding:12px 16px;border-radius:14px;font-size:13px;line-height:1.75;max-width:calc(100% - 44px);min-width:0;flex:1;overflow-x:auto}
-.msg.ai .bb{border:1px solid rgba(0,0,0,.06);background:#fafafa;box-shadow:0 1px 0 rgba(255,255,255,.8) inset;}
+.msg.ai .bb{border:1px solid var(--border2);background:#fff;box-shadow:none;border-radius:10px}
 .msg.u .bb{background:var(--text);color:#fff;border-radius:14px 14px 4px 14px;}
 
-/* Agent 回复：阶段条 + 执行轨迹 + 报告正文（极简信息层次） */
+/* Agent 回复：阶段条 + 执行轨迹（克制后台风，少装饰色） */
 .agent-bubble{max-width:100%;width:100%;min-width:0}
 .agent-phaserail{
   display:flex;align-items:center;justify-content:flex-start;gap:0;
-  margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid rgba(0,0,0,.06);
-  font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--text4);
+  margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border2);
+  font-size:11px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--text3);
 }
 .agent-phaserail .aph{
-  flex:0 0 auto;padding:3px 0;border-bottom:2px solid transparent;color:var(--text3);
-  transition:color .2s,border-color .2s;
+  flex:0 0 auto;padding:2px 0;border-bottom:2px solid transparent;color:var(--text3);
+  transition:color .15s,border-color .15s;
 }
-.agent-phaserail .aph-gap{flex:1;min-width:8px;height:1px;background:rgba(0,0,0,.06);margin:0 6px;max-width:28px}
+.agent-phaserail .aph-gap{flex:1;min-width:8px;height:1px;background:var(--border2);margin:0 8px;max-width:32px}
 .agent-phaserail[data-agent-phase="1"] .aph[data-step="1"]{color:var(--text);border-color:var(--text)}
 .agent-phaserail[data-agent-phase="2"] .aph[data-step="1"]{color:var(--text3);border-color:transparent}
 .agent-phaserail[data-agent-phase="2"] .aph[data-step="2"]{color:var(--text);border-color:var(--text)}
@@ -217,98 +217,70 @@ body.resizing .resize-handle{pointer-events:auto!important}
 .agent-phaserail[data-agent-phase="3"] .aph[data-step="2"]{color:var(--text3);border-color:transparent}
 .agent-phaserail[data-agent-phase="3"] .aph[data-step="3"]{color:var(--text);border-color:var(--text)}
 
-/* 客户向 POC：实时可视化条（单据链路 → 规则矩阵） */
-.agent-bubble.customer-facing .agent-phaserail{
-  margin-bottom:10px;padding-bottom:8px;
-}
-.agent-bubble.customer-facing .agent-phaserail .aph{
-  font-size:10px;letter-spacing:.14em;font-weight:700;
-}
+.agent-bubble.customer-facing .agent-phaserail{margin-bottom:8px;padding-bottom:6px}
+.agent-bubble.customer-facing .agent-phaserail .aph{font-size:11px;font-weight:500;letter-spacing:0}
 .agent-bubble.customer-facing .agent-phaserail[data-agent-phase="1"] .aph[data-step="1"],
 .agent-bubble.customer-facing .agent-phaserail[data-agent-phase="2"] .aph[data-step="2"],
 .agent-bubble.customer-facing .agent-phaserail[data-agent-phase="3"] .aph[data-step="3"]{
-  color:var(--brand-navy);border-color:var(--brand-navy);
-  text-shadow:0 0 28px rgba(0,74,141,.12);
+  color:var(--text);border-color:var(--text);text-shadow:none;
 }
 .agent-live-viz{
-  margin:0 0 12px;min-height:52px;border-radius:14px;overflow:hidden;
-  background:linear-gradient(165deg,rgba(0,74,141,.06) 0%,rgba(255,255,255,.92) 42%,rgba(45,184,77,.04) 100%);
-  border:1px solid rgba(0,74,141,.1);
-  box-shadow:0 8px 28px rgba(0,53,102,.06),inset 0 1px 0 rgba(255,255,255,.75);
+  margin:0 0 10px;min-height:48px;border-radius:8px;overflow:hidden;
+  background:#F4F5F7;border:1px solid var(--border2);box-shadow:none;
 }
-.agent-live-viz .alv-inner{min-height:52px;transition:opacity .35s ease}
-.agent-live-viz[data-viz-phase="analyze"] .alv-inner{animation:pocVizSwap .45s ease}
-@keyframes pocVizSwap{0%{opacity:.35;filter:blur(2px)}100%{opacity:1;filter:none}}
+.agent-live-viz .alv-inner{min-height:48px;transition:opacity .2s ease}
+.agent-live-viz[data-viz-phase="analyze"] .alv-inner{animation:none}
 .poc-flow{
   display:flex;align-items:flex-end;justify-content:space-between;gap:0;
-  padding:12px 10px 14px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;
+  padding:10px 8px 12px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;
 }
 .poc-flow-node{
-  flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:6px;min-width:48px;
+  flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:44px;
 }
 .poc-flow-node .poc-n-dot{
-  width:11px;height:11px;border-radius:50%;background:var(--text4);
-  transition:transform .35s cubic-bezier(.34,1.2,.64,1),background .3s,box-shadow .4s;
+  width:8px;height:8px;border-radius:50%;background:#C5CDD6;
+  transition:background .2s,transform .2s;
 }
-.poc-flow-node .poc-n-lb{font-size:9px;font-weight:700;color:var(--text3);letter-spacing:.02em;white-space:nowrap}
+.poc-flow-node .poc-n-lb{font-size:9px;font-weight:500;color:var(--text3);letter-spacing:0;white-space:nowrap}
 .poc-flow-node.active .poc-n-dot{
   background:var(--brand-navy);
-  transform:scale(1.25);
-  box-shadow:0 0 0 5px rgba(0,74,141,.18);
-  animation:pocNodePulse 1.05s ease-in-out infinite;
+  transform:scale(1.12);
+  box-shadow:none;
+  animation:none;
 }
-.poc-flow-node.done .poc-n-dot{
-  background:var(--green);
-  box-shadow:0 0 0 4px rgba(45,184,77,.22),0 6px 20px rgba(45,184,77,.28);
-}
-.poc-flow-node.warn .poc-n-dot{
-  background:var(--orange);
-  box-shadow:0 0 0 4px rgba(245,166,35,.28);
-}
-.poc-flow-node.fail .poc-n-dot{
-  background:var(--red);
-  box-shadow:0 0 0 4px rgba(229,57,53,.22);
-}
-.poc-flow-node.glow .poc-n-dot{
-  animation:pocGlowPay 1.4s ease-in-out infinite;
-}
+.poc-flow-node.done .poc-n-dot{background:#64748B;box-shadow:none}
+.poc-flow-node.warn .poc-n-dot{background:var(--orange);box-shadow:none}
+.poc-flow-node.fail .poc-n-dot{background:var(--red);box-shadow:none}
+.poc-flow-node.glow .poc-n-dot{animation:none}
 .poc-flow-rib{
-  flex:1 1 12px;min-width:8px;max-width:36px;height:3px;border-radius:3px;
-  background:rgba(0,74,141,.1);margin-bottom:18px;position:relative;overflow:hidden;
+  flex:1 1 12px;min-width:8px;max-width:36px;height:2px;border-radius:1px;
+  background:#E5E7EB;margin-bottom:14px;position:relative;overflow:hidden;
 }
 .poc-flow-rib::after{
   content:'';position:absolute;inset:0;transform:scaleX(0);transform-origin:left;
-  background:linear-gradient(90deg,rgba(0,74,141,.45),rgba(45,184,77,.55));
-  border-radius:3px;transition:transform .42s cubic-bezier(.4,0,.2,1);
+  background:#94A3B8;
+  border-radius:1px;transition:transform .35s ease;
 }
 .poc-flow-rib.lit::after{transform:scaleX(1)}
-@keyframes pocNodePulse{
-  0%,100%{box-shadow:0 0 0 5px rgba(0,74,141,.18)}
-  50%{box-shadow:0 0 0 8px rgba(0,74,141,.08)}
-}
-@keyframes pocGlowPay{
-  0%,100%{box-shadow:0 0 0 4px rgba(45,184,77,.22),0 6px 20px rgba(45,184,77,.28)}
-  50%{box-shadow:0 0 0 7px rgba(45,184,77,.12),0 10px 28px rgba(45,184,77,.4)}
-}
 .poc-matrix-h{
-  font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);
-  padding:10px 14px 4px;
+  font-size:10px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--text3);
+  padding:8px 12px 4px;
 }
-.poc-matrix{border-top:1px solid rgba(0,74,141,.06)}
+.poc-matrix{border-top:1px solid var(--border2)}
 .poc-mr{
   display:grid;grid-template-columns:20px 1fr auto;align-items:center;gap:10px;
-  padding:9px 14px;font-size:11px;border-bottom:1px solid rgba(0,0,0,.04);
-  opacity:0;transform:translateY(6px);
+  padding:8px 12px;font-size:11px;border-bottom:1px solid var(--border2);
+  opacity:0;transform:translateY(4px);
 }
-.poc-mr.poc-mr-in{animation:pocRowIn .5s cubic-bezier(.22,1,.36,1) forwards}
+.poc-mr.poc-mr-in{animation:pocRowIn .35s ease forwards}
 .poc-mr:last-child{border-bottom:none}
-.poc-m-dot{width:7px;height:7px;border-radius:50%;background:var(--text4)}
-.poc-mr.pass .poc-m-dot{background:var(--green);box-shadow:0 0 0 3px rgba(45,184,77,.2)}
-.poc-mr.warn .poc-m-dot{background:var(--orange);box-shadow:0 0 0 3px rgba(245,166,35,.22)}
-.poc-mr.fail .poc-m-dot{background:var(--red);box-shadow:0 0 0 3px rgba(229,57,53,.18)}
-.poc-m-lb{font-weight:600;color:var(--text);letter-spacing:-.02em}
-.poc-m-st{font-size:10px;font-weight:700;letter-spacing:.04em}
-.poc-mr.pass .poc-m-st{color:var(--green)}
+.poc-m-dot{width:6px;height:6px;border-radius:50%;background:var(--text4)}
+.poc-mr.pass .poc-m-dot{background:#64748B;box-shadow:none}
+.poc-mr.warn .poc-m-dot{background:var(--orange);box-shadow:none}
+.poc-mr.fail .poc-m-dot{background:var(--red);box-shadow:none}
+.poc-m-lb{font-weight:500;color:var(--text);letter-spacing:0}
+.poc-m-st{font-size:10px;font-weight:600;letter-spacing:0}
+.poc-mr.pass .poc-m-st{color:var(--text2)}
 .poc-mr.warn .poc-m-st{color:var(--orange)}
 .poc-mr.fail .poc-m-st{color:var(--red)}
 @keyframes pocRowIn{to{opacity:1;transform:none}}
@@ -317,23 +289,23 @@ body.resizing .resize-handle{pointer-events:auto!important}
 }
 @media(max-width:420px){.poc-month-strip{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .poc-mcard{
-  text-align:center;padding:12px 8px;border-radius:12px;
-  background:rgba(255,255,255,.72);border:1px solid rgba(0,74,141,.08);
-  box-shadow:0 4px 16px rgba(0,53,102,.05);
-  opacity:0;transform:translateY(10px) scale(.96);
+  text-align:center;padding:10px 8px;border-radius:8px;
+  background:#fff;border:1px solid var(--border2);
+  box-shadow:none;
+  opacity:0;transform:translateY(6px);
 }
-.poc-mcard.poc-mc-in{animation:pocCardPop .55s cubic-bezier(.34,1.3,.64,1) forwards}
+.poc-mcard.poc-mc-in{animation:pocCardPop .4s ease forwards}
 .poc-mcard:nth-child(1){animation-delay:0ms}
 .poc-mcard:nth-child(2){animation-delay:55ms}
 .poc-mcard:nth-child(3){animation-delay:110ms}
 .poc-mcard:nth-child(4){animation-delay:165ms}
 @keyframes pocCardPop{to{opacity:1;transform:none}}
 .poc-mc-n{
-  display:block;font-size:17px;font-weight:800;color:var(--brand-navy);letter-spacing:-.03em;line-height:1.2;
+  display:block;font-size:15px;font-weight:700;color:var(--text);letter-spacing:-.02em;line-height:1.2;
 }
-.poc-mc-t{display:block;font-size:9px;font-weight:600;color:var(--text3);margin-top:4px;letter-spacing:.02em}
-.poc-wait-anim{display:inline-block;animation:pocWaitPulse 1.8s ease-in-out infinite}
-@keyframes pocWaitPulse{0%,100%{opacity:.5}50%{opacity:1;color:var(--brand-navy)}}
+.poc-mc-t{display:block;font-size:10px;font-weight:500;color:var(--text3);margin-top:4px;letter-spacing:0}
+.poc-wait-anim{display:inline-block;animation:pocWaitPulse 1.4s ease-in-out infinite}
+@keyframes pocWaitPulse{0%,100%{opacity:.55}50%{opacity:1;color:var(--text2)}}
 .agent-bubble.customer-facing .ts.agent-steps{max-height:min(380px,46vh)}
 @media (prefers-reduced-motion:reduce){
   .poc-flow-node.active .poc-n-dot,.poc-flow-node.glow .poc-n-dot{animation:none!important}
@@ -342,40 +314,40 @@ body.resizing .resize-handle{pointer-events:auto!important}
 }
 
 .agent-run{
-  border-radius:10px;border:1px solid rgba(0,0,0,.06);
-  background:#fff;margin-bottom:12px;
+  border-radius:8px;border:1px solid var(--border2);
+  background:#FAFAFB;margin-bottom:10px;
   overflow-x:auto;overflow-y:visible;
   -webkit-overflow-scrolling:touch;
 }
-.agent-run-head{padding:10px 14px 8px;border-bottom:1px solid rgba(0,0,0,.04);display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;min-width:0}
-.agent-run-title{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text2);flex:1;min-width:0}
-.agent-run-sub{font-size:9px;color:var(--text4);font-weight:500;flex-shrink:0;white-space:nowrap;margin-left:auto}
+.agent-run-head{padding:8px 12px 6px;border-bottom:1px solid var(--border2);display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;min-width:0}
+.agent-run-title{font-size:11px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--text2);flex:1;min-width:0}
+.agent-run-sub{font-size:10px;color:var(--text3);font-weight:500;flex-shrink:0;white-space:nowrap;margin-left:auto}
 
-.ts.agent-steps{display:flex;flex-direction:column;gap:0;padding:6px 12px 10px 4px;margin:0;border:none;max-height:280px;overflow-y:auto;overflow-x:hidden;min-width:0}
+.ts.agent-steps{display:flex;flex-direction:column;gap:0;padding:4px 10px 8px 2px;margin:0;border:none;max-height:260px;overflow-y:auto;overflow-x:hidden;min-width:0}
 .ts.agent-steps .tp{
-  display:flex;flex-direction:row;align-items:flex-start;gap:0;font-size:11px;padding:0;animation:fadeIn .28s ease;
-  border-left:2px solid rgba(52,199,89,.35);margin-left:6px;padding-left:12px;padding-right:2px;min-width:0;
+  display:flex;flex-direction:row;align-items:flex-start;gap:0;font-size:11px;padding:0;animation:fadeIn .22s ease;
+  border-left:2px solid #E5E7EB;margin-left:6px;padding-left:10px;padding-right:2px;min-width:0;
 }
-.ts.agent-steps .tp.run{border-left-color:rgba(0,0,0,.1)}
-.ts.agent-steps .tp.ok{border-left-color:rgba(52,199,89,.45)}
-.tp-body{flex:1;min-width:0;padding:6px 0 8px 0}
+.ts.agent-steps .tp.run{border-left-color:#E5E7EB}
+.ts.agent-steps .tp.ok{border-left-color:#CBD5E1}
+.tp-body{flex:1;min-width:0;padding:5px 0 6px 0}
 .tp-line{display:flex;align-items:flex-start;justify-content:space-between;gap:10px 14px;margin-bottom:2px;min-width:0}
-.tp-name{font-weight:600;color:var(--text);font-size:11px;letter-spacing:-.01em;flex:1;min-width:0;line-height:1.35}
+.tp-name{font-weight:500;color:var(--text);font-size:11px;letter-spacing:0;flex:1;min-width:0;line-height:1.35}
 .ts .tp.run .tp-name{color:var(--text2)}
-.tp-st{font-size:9px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--text4);flex-shrink:0;padding-top:1px;line-height:1.3;text-align:right;white-space:nowrap}
-.ts .tp.ok .tp-st{color:var(--green)}
+.tp-st{font-size:10px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--text3);flex-shrink:0;padding-top:1px;line-height:1.3;text-align:right;white-space:nowrap}
+.ts .tp.ok .tp-st{color:var(--text2)}
 .ts .tp.run .tp-st{color:var(--text3)}
 .tp-payload{
-  font-family:'JetBrains Mono',monospace;font-size:9.5px;line-height:1.45;
-  color:var(--text3);word-break:break-word;overflow-wrap:anywhere;margin-top:4px;padding:8px 10px;
-  background:rgba(0,0,0,.025);border-radius:6px;border:1px solid rgba(0,0,0,.04);max-width:100%;box-sizing:border-box
+  font-family:'JetBrains Mono',monospace;font-size:9px;line-height:1.4;
+  color:var(--text3);word-break:break-word;overflow-wrap:anywhere;margin-top:3px;padding:6px 8px;
+  background:#F1F2F4;border-radius:4px;border:none;max-width:100%;box-sizing:border-box
 }
-.tp-dot-wrap{width:18px;display:flex;align-items:flex-start;justify-content:center;padding:8px 6px 0 0;flex-shrink:0}
-.tp-dot{width:6px;height:6px;border-radius:50%;background:var(--text4);flex-shrink:0}
-.ts .tp.ok .tp-dot{background:var(--green);box-shadow:0 0 0 3px rgba(52,199,89,.15)}
-.ts .tp.run .tp-dot{background:transparent;border:2px solid rgba(0,0,0,.12);border-top-color:var(--text);animation:spin .65s linear infinite}
+.tp-dot-wrap{width:16px;display:flex;align-items:flex-start;justify-content:center;padding:7px 4px 0 0;flex-shrink:0}
+.tp-dot{width:5px;height:5px;border-radius:50%;background:#9CA3AF;flex-shrink:0}
+.ts .tp.ok .tp-dot{background:#64748B;box-shadow:none}
+.ts .tp.run .tp-dot{background:transparent;border:2px solid #D1D5DB;border-top-color:var(--text3);animation:spin .65s linear infinite}
 
-.agent-answer{border-top:1px solid rgba(0,0,0,.06);padding-top:10px;margin-top:2px}
+.agent-answer{border-top:1px solid var(--border2);padding-top:10px;margin-top:4px}
 .agent-answer .answer{opacity:1!important}
 .agent-placeholder,.agent-answer .answer.agent-wait{color:var(--text3);font-size:12px;line-height:1.6}
 .poc-trace-divider{height:1px;margin:14px 0;background:rgba(0,0,0,.08);border:0}
@@ -497,28 +469,82 @@ body.resizing .resize-handle{pointer-events:auto!important}
 .wf-btn-primary{padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;background:#155EEF;border:1px solid #155EEF;color:#fff;cursor:pointer;display:inline-flex;align-items:center;gap:6px;box-shadow:0 1px 2px rgba(21,94,239,.2)}
 .wf-btn-primary:hover{background:#1249CC;border-color:#1249CC}
 .wf-btn-primary kbd{font-size:10px;opacity:.85;font-weight:500;padding:2px 5px;border-radius:4px;background:rgba(255,255,255,.2)}
-.wf-studio-body{flex:1;min-height:0;display:flex;overflow:hidden}
-.wf-palette{width:168px;flex-shrink:0;background:#fff;border-right:1px solid #E5E7EB;display:flex;flex-direction:column;min-height:0}
+.wf-studio-body{flex:1;min-height:0;display:flex;overflow:hidden;transition:none}
+.wf-layout-toggles{display:inline-flex;align-items:center;gap:4px;margin-right:8px;padding-right:10px;border-right:1px solid #E5E7EB}
+.wf-layout-btn{
+  padding:5px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;
+  border:1px solid #E5E7EB;background:#fff;color:#6B7280;transition:background .15s,border-color .15s,color .15s;
+}
+.wf-layout-btn:hover{border-color:#D1D5DB;color:#374151}
+.wf-layout-btn.on{background:#EFF6FF;border-color:#BFDBFE;color:#155EEF}
+.wf-layout-btn:not(.on){opacity:.72}
+.wf-palette{
+  width:168px;flex:0 0 168px;flex-shrink:0;background:#fff;border-right:1px solid #E5E7EB;
+  display:flex;flex-direction:column;min-height:0;overflow:hidden;
+  transition:flex-basis .22s ease,width .22s ease,opacity .18s ease,border-color .2s;
+}
+.wf-studio-body.wf-coll-palette .wf-palette{
+  flex:0 0 0;width:0;min-width:0;max-width:0;padding:0;border:none;opacity:0;pointer-events:none;
+}
 .wf-palette-h{padding:10px 12px 6px;font-size:11px;font-weight:600;color:#9CA3AF}
 .wf-palette-compact{padding:0 8px 12px;display:flex;flex-direction:column;gap:6px}
 .wf-palette-compact button{width:100%;text-align:left;padding:8px 10px;border:1px solid #E5E7EB;border-radius:8px;background:#F9FAFB;font-size:12px;font-weight:600;color:#111827;cursor:pointer;transition:border-color .12s,background .12s}
 .wf-palette-compact button:hover{border-color:#155EEF;background:#EFF6FF;color:#155EEF}
 .wf-canvas-col{flex:1;min-width:0;display:flex;flex-direction:column;position:relative;background:#F4F5F8}
-.pipe-canvas-full{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;position:relative}
-.pipe-lg-host{flex:1;min-height:240px;height:auto;position:relative;background:#F4F5F8;border:none;border-radius:0;overflow:hidden;box-shadow:none}
-.pipe-lg-host canvas#pipeGraphCanvas{display:block;width:100%;height:100%;touch-action:none;cursor:grab}
+.pipe-canvas-full{flex:1 1 auto;min-height:min(48vh,560px);display:flex;flex-direction:column;overflow:hidden;position:relative}
+.pipe-lg-host{flex:1 1 auto;min-height:min(42vh,480px);height:auto;position:relative;z-index:1;background:#F4F5F8;border:none;border-radius:0;overflow:hidden;box-shadow:none}
+.pipe-lg-host canvas#pipeGraphCanvas{display:block;width:100%;height:100%;touch-action:none;cursor:grab;position:relative;z-index:2;outline:none}
+.wf-canvas-toolbar{position:absolute;left:14px;top:50%;transform:translateY(-50%);z-index:6;display:flex;flex-direction:column;gap:4px;padding:8px 6px;background:rgba(255,255,255,.96);border:1px solid #E5E7EB;border-radius:14px;box-shadow:0 4px 24px rgba(15,23,42,.08)}
+.wf-canvas-toolbar button{width:36px;height:36px;border:none;border-radius:10px;background:transparent;cursor:pointer;color:#374151;font-size:18px;line-height:1;display:flex;align-items:center;justify-content:center}
+.wf-canvas-toolbar button:hover{background:#F3F4F6;color:#155EEF}
+.wf-canvas-toolbar button.on{background:#EFF6FF;color:#155EEF;box-shadow:inset 0 0 0 1px rgba(21,94,239,.25)}
+.wf-canvas-toolbar .wf-ct-label{font-size:9px;color:#9CA3AF;text-align:center;padding:0 2px 4px;letter-spacing:.02em}
 .wf-zoom-bar{position:absolute;right:16px;bottom:14px;z-index:5;display:flex;align-items:center;gap:4px;padding:4px 8px;background:rgba(255,255,255,.95);border:1px solid #E5E7EB;border-radius:10px;font-size:12px;font-weight:500;color:#6B7280;box-shadow:0 2px 12px rgba(15,23,42,.06)}
 .wf-zoom-bar button{width:28px;height:28px;border:none;border-radius:6px;background:transparent;cursor:pointer;color:#374151;font-size:16px;line-height:1}
 .wf-zoom-bar button:hover{background:#F3F4F6;color:#155EEF}
+.wf-reveal-stack{
+  position:absolute;left:10px;bottom:50px;z-index:6;display:flex;flex-direction:column;align-items:flex-start;gap:6px;pointer-events:none;
+}
+.wf-reveal-item{
+  pointer-events:auto;display:none;align-items:center;padding:6px 10px;border-radius:8px;border:1px solid #E5E7EB;
+  background:rgba(255,255,255,.97);font-size:11px;font-weight:600;color:#155EEF;cursor:pointer;
+  box-shadow:0 2px 10px rgba(15,23,42,.07);
+}
+.wf-reveal-item:hover{background:#EFF6FF}
+.wf-studio-body.wf-coll-palette .wf-reveal-palette{display:inline-flex}
+.wf-studio-body.wf-coll-insp .wf-reveal-insp{display:inline-flex}
+.wf-studio-body.wf-coll-rdock .wf-reveal-rdock{display:inline-flex}
 #pipeGraphLoadErr{display:none;margin:8px 12px 0;padding:10px 12px;border-radius:8px;font-size:12px;background:#FEF3C7;border:1px solid #F59E0B;color:#92400E}
-.wf-inspector{width:260px;flex-shrink:0;background:#fff;border-left:1px solid #E5E7EB;display:flex;flex-direction:column;min-height:0}
-.wf-run-dock{flex-shrink:0;border-top:1px solid #E5E7EB;background:#fff;padding:0 12px 12px;max-height:42vh;overflow:auto;box-shadow:0 -4px 20px rgba(15,23,42,.04)}
-.wf-run-dock-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 4px 8px}
+.wf-inspector{
+  width:240px;flex:0 0 240px;flex-shrink:0;background:#fff;border-left:1px solid #E5E7EB;
+  display:flex;flex-direction:column;min-height:0;overflow:hidden;
+  transition:flex-basis .22s ease,width .22s ease,opacity .18s ease,border-color .2s;
+}
+.wf-studio-body.wf-coll-insp .wf-inspector{
+  flex:0 0 0;width:0;min-width:0;max-width:0;padding:0;border:none;opacity:0;pointer-events:none;
+}
+.wf-run-dock{
+  flex:0 0 auto;width:min(300px,28vw);min-width:240px;max-width:320px;
+  background:#fff;border-left:1px solid #E5E7EB;display:flex;flex-direction:column;min-height:0;
+  box-shadow:none;z-index:3;overflow:hidden;
+  transition:width .22s ease,min-width .22s ease,opacity .18s ease,border-color .2s,max-width .22s;
+}
+.wf-studio-body.wf-coll-rdock .wf-run-dock{
+  flex:0 0 0!important;width:0!important;min-width:0!important;max-width:0!important;
+  padding:0;border:none;opacity:0;pointer-events:none;
+}
+.wf-run-dock-head{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 14px 8px;border-bottom:1px solid #F3F4F6}
 .wf-run-dock-title{font-size:13px;font-weight:650;color:#111827}
 .wf-run-dock-toggle{border:none;background:transparent;font-size:12px;color:#155EEF;cursor:pointer;font-weight:600;padding:4px 8px;border-radius:6px}
 .wf-run-dock-toggle:hover{background:#EFF6FF}
-.wf-run-dock-body{display:flex;flex-direction:column;gap:10px}
-.wf-run-dock.collapsed .wf-run-dock-body{display:none!important}
+.wf-run-dock-tabs{flex-shrink:0;display:flex;gap:0;padding:0 10px;border-bottom:1px solid #E5E7EB}
+.wf-run-dock-tabs button{flex:1;padding:10px 6px;border:none;background:none;font-size:12px;font-weight:500;color:#6B7280;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+.wf-run-dock-tabs button.on{color:#155EEF;border-bottom-color:#155EEF;font-weight:600}
+.wf-run-dock-panel-stack{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden}
+.wf-run-tab-panel{display:none;flex:1;min-height:0;flex-direction:column;overflow:hidden}
+.wf-run-tab-panel.on{display:flex}
+.wf-run-dock-body{flex:1;min-height:0;overflow-y:auto;padding:12px 14px 16px;display:flex;flex-direction:column;gap:10px}
+.wf-run-detail-pre,.wf-run-trace-pre{margin:0;padding:12px;font-size:11px;line-height:1.5;font-family:'JetBrains Mono','Consolas',monospace;color:#374151;background:#F9FAFB;border:1px solid #F3F4F6;border-radius:8px;white-space:pre-wrap;word-break:break-word;flex:1;min-height:120px;overflow-y:auto}
 .wf-match-card{border:1px solid #E5E7EB;border-radius:10px;padding:12px;background:#FAFAFA}
 .wf-match-card h5{margin:0 0 8px;font-size:12px;font-weight:650;color:#374151}
 .wf-match-row{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:12px;color:#6B7280;margin-bottom:8px}
@@ -820,55 +846,59 @@ tr:hover td{background:rgba(0,0,0,.02)}
 .api-modal-overlay.open{display:flex}
 .api-modal-overlay .api-gate-card{max-width:420px;margin:0;animation:fadeIn .28s ease}
 
-/* ─────────── 右侧对话内：全链路图示（步骤条 + 三单 + 工单）─────────── */
-.msg .bb .chat-trace-root{margin-top:2px;font-size:11.5px;line-height:1.45;max-width:100%}
-.ct-head{font-weight:700;font-size:12.5px;margin-bottom:2px;letter-spacing:-.01em}
-.ct-head .mono{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--brand-navy)}
-.ct-sub{color:var(--text3);font-size:10.5px;margin-bottom:8px;line-height:1.4}
-.ct-track{display:flex;align-items:flex-start;gap:1px;overflow-x:auto;padding:4px 0 8px;margin-bottom:8px;-webkit-overflow-scrolling:touch}
-.ct-node{flex:0 0 auto;min-width:48px;max-width:56px;text-align:center}
+/* ─────────── 右侧对话内：全链路图示（扁平、少色块）─────────── */
+.msg .bb .chat-trace-root{margin-top:4px;font-size:11px;line-height:1.5;max-width:100%}
+.ct-head{font-weight:600;font-size:12px;margin-bottom:2px;color:var(--text)}
+.ct-head .mono{font-family:'JetBrains Mono',monospace;font-weight:500;color:var(--text2)}
+.ct-sub{color:var(--text3);font-size:10px;margin-bottom:6px;line-height:1.4}
+.ct-track{display:flex;align-items:flex-start;gap:0;overflow-x:auto;padding:2px 0 6px;margin-bottom:6px;-webkit-overflow-scrolling:touch}
+.ct-node{flex:0 0 auto;min-width:44px;max-width:52px;text-align:center}
 .ct-tic{
-  width:26px;height:26px;border-radius:50%;margin:0 auto 3px;display:flex;align-items:center;justify-content:center;
-  position:relative;
+  width:22px;height:22px;border-radius:50%;margin:0 auto 2px;display:flex;align-items:center;justify-content:center;
+  position:relative;background:#F3F4F6;border:1px solid #E5E7EB;
 }
-.ct-tic.ok{background:rgba(52,199,89,.12);border:1px solid rgba(52,199,89,.35)}
-.ct-tic.ok::after{content:'';width:8px;height:8px;border-radius:50%;background:var(--green)}
-.ct-tic.fail{background:rgba(255,59,48,.1);border:1px solid rgba(255,59,48,.3)}
-.ct-tic.fail::after{content:'';width:8px;height:8px;border-radius:50%;background:var(--red)}
-.ct-tic.warn{background:rgba(255,149,0,.1);border:1px solid rgba(255,149,0,.35)}
-.ct-tic.warn::after{content:'';width:5px;height:5px;border-radius:50%;background:var(--orange);box-shadow:0 0 0 3px rgba(255,149,0,.2)}
-.ct-lb{font-size:9px;font-weight:600;line-height:1.15}
-.ct-hint{font-size:8px;color:var(--text3);margin-top:2px;line-height:1.15;word-break:break-all;max-height:28px;overflow:hidden}
+.ct-tic.ok::after{content:'';width:6px;height:6px;border-radius:50%;background:#64748B}
+.ct-tic.fail::after{content:'';width:6px;height:6px;border-radius:50%;background:var(--red)}
+.ct-tic.warn::after{content:'';width:5px;height:5px;border-radius:50%;background:var(--orange)}
+.ct-lb{font-size:9px;font-weight:500;line-height:1.15;color:var(--text2)}
+.ct-hint{font-size:8px;color:var(--text3);margin-top:2px;line-height:1.15;word-break:break-all;max-height:26px;overflow:hidden}
 .ct-seg{
-  flex:1;min-width:8px;max-width:14px;height:2px;background:var(--border2);border-radius:1px;margin-top:12px;align-self:flex-start;
+  flex:1;min-width:6px;max-width:12px;height:1px;background:#E5E7EB;margin-top:10px;align-self:flex-start;
 }
-.ct-seg.on{background:var(--brand-navy);opacity:1}
-.ct-seg.warn{background:var(--orange);opacity:.75}
-.ct-seg.fail{background:var(--red);opacity:.75}
-.ct-cons{background:var(--bg);border-radius:10px;padding:8px 10px;margin-bottom:8px;font-size:10.5px}
-.ct-cons .ct-cr{display:flex;flex-wrap:wrap;gap:6px 10px;margin-top:4px}
+.ct-seg.on{background:#94A3B8}
+.ct-seg.warn{background:var(--orange);opacity:.8}
+.ct-seg.fail{background:var(--red);opacity:.8}
+.ct-cons{background:#fff;border:1px solid var(--border2);border-radius:6px;padding:8px 10px;margin-bottom:6px;font-size:10px}
+.ct-cons .ct-cr{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:4px}
 .ct-cons .ct-it{color:var(--text2)}
-.ct-cons .ct-it b{color:var(--text);font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600}
-.ct-status{padding:8px;border-radius:8px;font-weight:600;text-align:center;font-size:11px;margin-bottom:4px}
-.ct-status.released{background:var(--green-bg);color:var(--green);border:1px solid rgba(52,199,89,.22)}
-.ct-status.blocked{background:var(--red-bg);color:var(--red);border:1px solid rgba(255,59,48,.18)}
-.ct-wo{margin-top:8px;border-radius:10px;overflow:hidden;border:1px solid var(--border)}
-.ct-wo-h{
-  background:var(--red);color:#fff;padding:8px 10px;font-weight:700;font-size:11px;
-  display:flex;align-items:center;gap:6px;
+.ct-cons .ct-it b{color:var(--text);font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:500}
+.ct-align-line{margin-top:6px;font-weight:500;font-size:10px}
+.ct-align-line.ok{color:var(--text2)}
+.ct-align-line.bad{color:var(--red)}
+.ct-cons .ct-note-line{margin-top:4px;color:var(--text3);font-size:10px;line-height:1.4}
+.ct-status{
+  padding:6px 8px;border-radius:4px;font-weight:500;text-align:left;font-size:11px;margin-bottom:4px;
+  border-left:3px solid var(--border2);background:#FAFAFB;color:var(--text2);
 }
-.ct-wo-b{padding:8px 10px;font-size:10.5px;line-height:1.5}
-.ct-wo-b .cwol{margin-bottom:6px}
-.ct-wo-b .cwol span{color:var(--text3);display:inline-block;min-width:56px}
-.ct-wo-act{display:flex;flex-wrap:wrap;gap:5px;padding:6px 8px 8px;border-top:1px solid var(--border2)}
-.ct-b-blue,.ct-b-or,.ct-b-muted{flex:1;min-width:68px;padding:6px 8px;border-radius:7px;font-size:10px;font-weight:600;border:none;cursor:pointer}
-.ct-b-blue{background:var(--blue);color:#fff}
-.ct-b-or{background:var(--orange);color:#fff}
-.ct-b-muted{background:var(--red-bg);color:var(--red);border:1px solid rgba(255,59,48,.3)!important}
+.ct-status.released{border-left-color:#64748B;background:#F8FAFC;color:var(--text)}
+.ct-status.blocked{border-left-color:var(--red);background:#FEF2F2;color:var(--red)}
+.ct-wo{margin-top:6px;border-radius:6px;overflow:hidden;border:1px solid var(--border2)}
+.ct-wo-h{
+  background:#F1F5F9;color:var(--text);padding:6px 10px;font-weight:600;font-size:11px;
+  display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--border2);
+}
+.ct-wo-b{padding:8px 10px;font-size:10px;line-height:1.5}
+.ct-wo-b .cwol{margin-bottom:5px}
+.ct-wo-b .cwol span{color:var(--text3);display:inline-block;min-width:52px}
+.ct-wo-act{display:flex;flex-wrap:wrap;gap:6px;padding:6px 8px;border-top:1px solid var(--border2);background:#FAFAFB}
+.ct-b-blue,.ct-b-or,.ct-b-muted{flex:1;min-width:72px;padding:6px 8px;border-radius:6px;font-size:10px;font-weight:500;border:1px solid var(--border2);cursor:pointer;background:#fff;color:var(--text)}
+.ct-b-blue{background:var(--brand-navy);color:#fff;border-color:var(--brand-navy)}
+.ct-b-or{background:#fff;color:var(--orange);border-color:#FDBA74}
+.ct-b-muted{color:var(--red);border-color:#FECACA;background:#fff}
 .ct-note{margin-top:6px;font-size:9px;color:var(--text3)}
-.ct-ff{margin-top:8px;padding:8px 10px;border-radius:9px;font-size:10.5px;line-height:1.45;border:1px solid var(--border2)}
-.ct-ff.ok{background:rgba(52,199,89,.08);color:var(--green);border-color:rgba(52,199,89,.25)}
-.ct-ff.bad{background:var(--red-bg);color:var(--red);border-color:rgba(255,59,48,.22);font-weight:600}
+.ct-ff{margin-top:6px;padding:6px 8px;border-radius:4px;font-size:10px;line-height:1.45;border-left:2px solid #E5E7EB;background:#FAFAFB;color:var(--text2)}
+.ct-ff.ok{border-left-color:#94A3B8}
+.ct-ff.bad{border-left-color:var(--red);background:#FEF2F2;color:var(--text);font-weight:500}
 
 /* 二级菜单：分组小标题 */
 .cp-sub-heading{
@@ -1249,6 +1279,11 @@ body.demo-tour-on[data-demo-zoom="chat"] .mn{transform:none}
               <span class="wf-run-step-hint" id="wfRunStepHint" aria-live="polite"></span>
             </div>
             <div class="wf-studio-top-right">
+              <span class="wf-layout-toggles" role="toolbar" aria-label="侧栏显示">
+                <button type="button" class="wf-layout-btn on" id="wfBtnPalette" onclick="wfLayoutToggle('palette')" title="显示/隐藏左侧节点库">节点</button>
+                <button type="button" class="wf-layout-btn on" id="wfBtnInsp" onclick="wfLayoutToggle('insp')" title="显示/隐藏节点属性">属性</button>
+                <button type="button" class="wf-layout-btn on" id="wfBtnRdock" onclick="wfLayoutToggle('rdock')" title="显示/隐藏右侧测试运行">结果</button>
+              </span>
               <span class="wf-autosave" id="wfAutosaveHint">未保存</span>
               <button type="button" class="wf-btn-primary" onclick="runPipelineGraphOnce()" title="按顺序执行节点并拉取真实接口（若已启动后端）">运行</button>
               <button type="button" class="wf-btn-ghost" onclick="savePipelineGraphToServer()">保存</button>
@@ -1286,44 +1321,23 @@ body.demo-tour-on[data-demo-zoom="chat"] .mn{transform:none}
             <div class="wf-canvas-col">
               <div class="pipe-canvas-full" style="flex:1;min-height:0">
                 <div id="pipeGraphLoadErr" role="alert"></div>
+                <nav class="wf-canvas-toolbar wf-canvas-tool" id="wfCanvasToolbar" aria-label="画布工具">
+                  <div class="wf-ct-label">画布</div>
+                  <button type="button" title="添加节点（或点左侧列表；空白处双击搜索）" onclick="wfToolbarAddNode()">+</button>
+                  <button type="button" data-tool="pointer" class="on" title="指针：拖拽节点与连线（快捷键 V）" onclick="wfSetCanvasTool&&wfSetCanvasTool('pointer')">⤡</button>
+                  <button type="button" data-tool="hand" title="手型：拖空白平移画布；节点上可按住空格拖移（快捷键 H）" onclick="wfSetCanvasTool&&wfSetCanvasTool('hand')">✋</button>
+                  <button type="button" title="缩放到全部节点" onclick="wfZoomToFit()">⛶</button>
+                </nav>
                 <div class="pipe-lg-host"><canvas id="pipeGraphCanvas" tabindex="0" width="960" height="560"></canvas></div>
                 <div class="wf-zoom-bar" id="wfZoomBar" aria-label="缩放">
                   <button type="button" onclick="wfZoomDelta(-0.12)" aria-label="缩小">−</button>
                   <span id="wfZoomPct">100%</span>
                   <button type="button" onclick="wfZoomDelta(0.12)" aria-label="放大">+</button>
                 </div>
-              </div>
-              <div class="wf-run-dock collapsed" id="wfRunDock">
-                <div class="wf-run-dock-head">
-                  <span class="wf-run-dock-title">运行结果 <span style="font-weight:400;color:#9CA3AF;font-size:11px">（演示样例）</span></span>
-                  <button type="button" class="wf-run-dock-toggle" id="wfRunDockToggle" onclick="wfToggleRunDock()">展开</button>
-                </div>
-                <div class="wf-run-dock-body" id="wfRunDockBody">
-                  <div class="wf-match-card">
-                    <h5>三单比对</h5>
-                    <div class="wf-match-row">合同 <b>¥980,000</b> · PO <b>¥980,000</b> · 发票 <b>—</b> · 验收 <b>—</b></div>
-                    <div class="wf-match-ok">一致</div>
-                    <div class="wf-match-sub">主金额字段一致（演示）</div>
-                    <div class="wf-banner-ok">四流抽样：合同主体、收款方、发票销方、物流信息一致（POC 演示数据）。</div>
-                  </div>
-                  <div class="wf-banner-warn">存在异常，已关联工单待闭环</div>
-                  <div class="wf-wo-card">
-                    <div class="wf-wo-head">异常工单 WO-2026-002</div>
-                    <div class="wf-wo-body">
-                      <dl style="margin:0">
-                        <dt>采购单</dt><dd>PO-2026-005</dd>
-                        <dt>类型</dt><dd>合同类型错误 + 审批流异常</dd>
-                        <dt>摘要</dt><dd>GAP 成都太古里门店装修，合同类型误标为门店运营</dd>
-                        <dt>状态</dt><dd><code style="font-size:11px">in_progress</code></dd>
-                      </dl>
-                    </div>
-                  </div>
-                  <div class="wf-run-actions">
-                    <button type="button" class="wf-act-ai" onclick="wfRiskCardAskAi()">问 AI 处置</button>
-                    <button type="button" class="wf-act-biz" onclick="wfRiskCardContactBiz()">联系业务</button>
-                    <button type="button" class="wf-act-collapse" onclick="wfRiskCardCollapse()">收起结果</button>
-                  </div>
-                  <p class="wf-run-foot">以上为模拟结果，用于演示完整交互；真实环境由接口与智能体生成。</p>
+                <div class="wf-reveal-stack" aria-label="展开已隐藏的侧栏">
+                  <button type="button" class="wf-reveal-item wf-reveal-palette" onclick="wfLayoutReveal('palette')">› 节点库</button>
+                  <button type="button" class="wf-reveal-item wf-reveal-insp" onclick="wfLayoutReveal('insp')">› 节点属性</button>
+                  <button type="button" class="wf-reveal-item wf-reveal-rdock" onclick="wfLayoutReveal('rdock')">› 运行结果</button>
                 </div>
               </div>
             </div>
@@ -1345,6 +1359,60 @@ body.demo-tour-on[data-demo-zoom="chat"] .mn{transform:none}
                 <div class="wf-insp-panel" id="wfInspPanelRun" style="display:none">
                   <label>节点输出</label>
                   <pre id="wfInpLastRun">—</pre>
+                </div>
+              </div>
+            </aside>
+            <aside class="wf-run-dock" id="wfRunDock" aria-label="测试运行结果">
+              <div class="wf-run-dock-head">
+                <span class="wf-run-dock-title">测试运行 <span id="wfRunDockBadge" style="font-weight:400;color:#9CA3AF;font-size:11px">（演示样例）</span></span>
+                <button type="button" class="wf-run-dock-toggle" id="wfRunDockToggle" onclick="wfToggleRunDock()" title="隐藏整列，画布更宽">收起</button>
+              </div>
+              <div class="wf-run-dock-tabs" role="tablist" aria-label="运行结果视图">
+                <button type="button" role="tab" class="on" data-wf-run-tab="res" aria-selected="true">结果</button>
+                <button type="button" role="tab" data-wf-run-tab="det" aria-selected="false">详情</button>
+                <button type="button" role="tab" data-wf-run-tab="trc" aria-selected="false">追踪</button>
+              </div>
+              <div class="wf-run-dock-panel-stack">
+                <div id="wfRunPanelRes" class="wf-run-tab-panel on" role="tabpanel">
+                  <div class="wf-run-dock-body" id="wfRunDockBody">
+                    <div class="wf-match-card">
+                      <h5>三单比对</h5>
+                      <div class="wf-match-row">合同 <b>¥980,000</b> · PO <b>¥980,000</b> · 发票 <b>—</b> · 验收 <b>—</b></div>
+                      <div class="wf-match-ok">一致</div>
+                      <div class="wf-match-sub">主金额字段一致（演示）</div>
+                      <div class="wf-banner-ok">四流抽样：合同主体、收款方、发票销方、物流信息一致（POC 演示数据）。</div>
+                    </div>
+                    <div class="wf-banner-warn">存在异常，已关联工单待闭环</div>
+                    <div class="wf-wo-card">
+                      <div class="wf-wo-head">异常工单 WO-2026-002</div>
+                      <div class="wf-wo-body">
+                        <dl style="margin:0">
+                          <dt>采购单</dt><dd>PO-2026-005</dd>
+                          <dt>类型</dt><dd>合同类型错误 + 审批流异常</dd>
+                          <dt>摘要</dt><dd>GAP 成都太古里门店装修，合同类型误标为门店运营</dd>
+                          <dt>状态</dt><dd><code style="font-size:11px">in_progress</code></dd>
+                        </dl>
+                      </div>
+                    </div>
+                    <div class="wf-run-actions">
+                      <button type="button" class="wf-act-ai" onclick="wfRiskCardAskAi()">问 AI 处置</button>
+                      <button type="button" class="wf-act-biz" onclick="wfRiskCardContactBiz()">联系业务</button>
+                      <button type="button" class="wf-act-collapse" onclick="wfRiskCardCollapse()">收起面板</button>
+                    </div>
+                    <p class="wf-run-foot">以上为模拟结果，用于演示完整交互；真实环境由接口与智能体生成。</p>
+                  </div>
+                </div>
+                <div id="wfRunPanelDet" class="wf-run-tab-panel" role="tabpanel">
+                  <div class="wf-run-dock-body" style="padding-top:10px">
+                    <p style="margin:0 0 8px;font-size:11px;color:#6B7280">最近一次 <code style="font-size:10px">/api/pipeline/risk-insights</code> 返回 JSON（运行后更新）。</p>
+                    <pre class="wf-run-detail-pre" id="wfRunDockDetail">{}</pre>
+                  </div>
+                </div>
+                <div id="wfRunPanelTrc" class="wf-run-tab-panel" role="tabpanel">
+                  <div class="wf-run-dock-body" style="padding-top:10px">
+                    <p style="margin:0 0 8px;font-size:11px;color:#6B7280">按画布节点顺序的执行轨迹（演示）。</p>
+                    <pre class="wf-run-trace-pre" id="wfRunDockTrace">点击顶部「运行」后，将列出本次顺序执行的节点。</pre>
+                  </div>
                 </div>
               </div>
             </aside>
@@ -1597,27 +1665,214 @@ function wfSetRunHint(s){
   var el=document.getElementById('wfRunStepHint');
   if(el)el.textContent=s||'';
 }
+function wfFmtMoneyDock(v){
+  if(v==null||v==='')return '—';
+  return '¥'+Number(v).toLocaleString('zh-CN',{maximumFractionDigits:0});
+}
+function wfToolbarAddNode(){
+  var root=wfStudioLayoutRoot();
+  if(root&&root.classList.contains('wf-coll-palette'))wfLayoutReveal('palette');
+  var el=document.getElementById('wfPaletteScroll');
+  if(el){
+    try{el.scrollIntoView({behavior:'smooth',block:'nearest'});}catch(e){}
+    var first=el.querySelector('[data-wf-type]');
+    if(first&&typeof first.focus==='function')try{first.focus();}catch(e2){}
+  }
+  var c=document.getElementById('pipeGraphCanvas');
+  if(c&&typeof c.focus==='function')try{c.focus();}catch(e3){}
+  wfShowToast('点左侧列表添加节点；在画布空白处双击可搜索添加；拖空白平移，或按住空格拖移');
+}
+function wfRefreshRunDockFromServer(){
+  if(typeof location==='undefined'||(location.protocol!=='http:'&&location.protocol!=='https:'))return;
+  var g=window.__pipeLGraph;
+  var nodes=g&&g._nodes?g._nodes.map(function(n){
+    return{
+      type:n.type||'',
+      title:n.title||'',
+      source_system:(n.properties&&n.properties.source_system)||'',
+      adapter_notes:(n.properties&&n.properties.adapter_notes)||'',
+      last_run:(n.properties&&n.properties.last_run)||''
+    };
+  }):[];
+  var u=new URL('/api/pipeline/risk-insights',location.href);
+  fetch(u.toString(),{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    credentials:'same-origin',
+    body:JSON.stringify({nodes:nodes})
+  }).then(function(r){
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    return r.json();
+  }).then(function(data){
+    window.__wfLastRiskInsight=data||{};
+    var badge=document.getElementById('wfRunDockBadge');
+    if(badge)badge.textContent='（'+((data&&data.source)==='dashboard'?'看板数据':'聚合')+'）';
+    var body=document.getElementById('wfRunDockBody');
+    if(!body)return;
+    var tw=(data&&data.three_way)||{};
+    var wo=(data&&data.work_order)||null;
+    var woid=wo?(wo.id||wo.work_order_id||'—'):'—';
+    var po=wo?(wo.po_number||tw.po||'—'):(tw.po||'—');
+    var wtype=wo?(wo.type||'—'):'—';
+    var wstat=wo?(wo.status||'—'):'—';
+    var desc=wo?(wo.description||wo.title||'—'):'—';
+    var alertTxt=(data&&data.alert)||'—';
+    var match=(data&&data.match_label)||'—';
+    var sub=tw.subtitle||'';
+    var hints=(data&&data.hints)||[];
+    var hintHtml=hints.length?('<ul style="margin:4px 0 0 18px;padding:0;font-size:12px;color:#4B5563;line-height:1.5">'+
+      hints.map(function(h){return '<li>'+escHtml(String(h))+'</li>';}).join('')+'</ul>'):'';
+    body.innerHTML=
+      '<div class="wf-match-card">'+
+        '<h5>三单比对</h5>'+
+        '<div class="wf-match-row">合同 <b>'+escHtml(String(tw.contract_no||'—'))+'</b> · PO <b>'+escHtml(String(tw.po||'—'))+'</b> · 发票 <b>'+escHtml(String(tw.invoice||'—'))+'</b> · 验收 <b>'+escHtml(String(tw.acceptance||'—'))+'</b></div>'+
+        (tw.amount!=null&&tw.amount!==''?'<div class="wf-match-row" style="margin-top:6px">参考金额 <b>'+escHtml(wfFmtMoneyDock(tw.amount))+'</b></div>':'')+
+        '<div class="wf-match-ok">'+escHtml(match)+'</div>'+
+        (sub?'<div class="wf-match-sub">'+escHtml(sub)+'</div>':'')+
+        '<div class="wf-banner-ok">风控智能体已结合画布节点与看板异常池生成摘要（POC）。</div>'+
+      '</div>'+
+      '<div class="wf-banner-warn">'+escHtml(alertTxt)+'</div>'+
+      (wo?('<div class="wf-wo-card">'+
+        '<div class="wf-wo-head">异常工单 '+escHtml(woid)+'</div>'+
+        '<div class="wf-wo-body"><dl style="margin:0">'+
+        '<dt>采购单</dt><dd>'+escHtml(po)+'</dd>'+
+        '<dt>类型</dt><dd>'+escHtml(wtype)+'</dd>'+
+        '<dt>摘要</dt><dd>'+escHtml(String(desc).slice(0,220))+(String(desc).length>220?'…':'')+'</dd>'+
+        '<dt>状态</dt><dd><code style="font-size:11px">'+escHtml(wstat)+'</code></dd>'+
+        '</dl></div></div>'):'<div class="wf-wo-card"><div class="wf-wo-body" style="font-size:12px;color:#6B7280">暂无未关闭工单样本</div></div>')+
+      (hintHtml?('<div style="font-size:12px;font-weight:600;color:#374151">智能体提示</div>'+hintHtml):'')+
+      '<div class="wf-run-actions">'+
+        '<button type="button" class="wf-act-ai" onclick="wfRiskCardAskAi()">问 AI 处置</button>'+
+        '<button type="button" class="wf-act-biz" onclick="wfRiskCardContactBiz()">联系业务</button>'+
+        '<button type="button" class="wf-act-collapse" onclick="wfRiskCardCollapse()">收起面板</button>'+
+      '</div>'+
+      '<p class="wf-run-foot">数据来自本机 <code style="font-size:10px">/api/dashboard</code> 与工单列表；配置真实系统后由适配节点拉数并更新。</p>';
+    var det=document.getElementById('wfRunDockDetail');
+    if(det)try{det.textContent=JSON.stringify(data,null,2);}catch(e2){det.textContent=String(data);}
+    if(typeof wfUpdateRunTracePanel==='function')wfUpdateRunTracePanel();
+  }).catch(function(e){
+    wfShowToast('运行结果拉取失败：'+e.message);
+  });
+}
+function wfSwitchRunDockTab(key){
+  var dock=document.getElementById('wfRunDock');
+  if(!dock)return;
+  var map={res:'wfRunPanelRes',det:'wfRunPanelDet',trc:'wfRunPanelTrc'};
+  var pid=map[key]||map.res;
+  dock.querySelectorAll('.wf-run-dock-tabs [data-wf-run-tab]').forEach(function(b){
+    var on=b.getAttribute('data-wf-run-tab')===key;
+    b.classList.toggle('on',on);
+    b.setAttribute('aria-selected',on?'true':'false');
+  });
+  dock.querySelectorAll('.wf-run-tab-panel').forEach(function(p){
+    p.classList.toggle('on',p.id===pid);
+  });
+}
+function wfUpdateRunTracePanel(){
+  var g=window.__pipeLGraph;
+  var el=document.getElementById('wfRunDockTrace');
+  if(!el)return;
+  if(!g||!g._nodes||!g._nodes.length){
+    el.textContent='（画布暂无节点）';
+    return;
+  }
+  el.textContent=g._nodes.map(function(n,i){
+    var lr=(n.properties&&n.properties.last_run)?String(n.properties.last_run).replace(/\s+/g,' ').slice(0,140):'';
+    return (i+1)+'. '+(n.title||n.type||'?')+(lr?' — '+lr:'');
+  }).join('\n');
+}
+function wfStudioLayoutRoot(){
+  return document.querySelector('#pg-pipe .wf-studio-body');
+}
+function wfResizePipeSoon(){
+  setTimeout(function(){
+    if(typeof resizePipelineGraphEditor==='function')resizePipelineGraphEditor();
+  },40);
+  setTimeout(function(){
+    if(typeof resizePipelineGraphEditor==='function')resizePipelineGraphEditor();
+  },280);
+}
+function wfSyncLayoutButtons(){
+  var b=wfStudioLayoutRoot();
+  if(!b)return;
+  var p=document.getElementById('wfBtnPalette');
+  var i=document.getElementById('wfBtnInsp');
+  var r=document.getElementById('wfBtnRdock');
+  if(p)p.classList.toggle('on',!b.classList.contains('wf-coll-palette'));
+  if(i)i.classList.toggle('on',!b.classList.contains('wf-coll-insp'));
+  if(r)r.classList.toggle('on',!b.classList.contains('wf-coll-rdock'));
+}
+function wfSaveStudioLayout(){
+  var b=wfStudioLayoutRoot();
+  if(!b)return;
+  try{
+    localStorage.setItem('wfStudioLayout',JSON.stringify({
+      palette:!b.classList.contains('wf-coll-palette'),
+      insp:!b.classList.contains('wf-coll-insp'),
+      rdock:!b.classList.contains('wf-coll-rdock')
+    }));
+  }catch(e){}
+}
+function wfLoadStudioLayout(){
+  var b=wfStudioLayoutRoot();
+  if(!b)return;
+  try{
+    var o=JSON.parse(localStorage.getItem('wfStudioLayout')||'null');
+    if(!o||typeof o!=='object'){wfSyncLayoutButtons();return;}
+    b.classList.toggle('wf-coll-palette',o.palette===false);
+    b.classList.toggle('wf-coll-insp',o.insp===false);
+    b.classList.toggle('wf-coll-rdock',o.rdock===false);
+  }catch(e){}
+  wfSyncLayoutButtons();
+}
+function wfLayoutToggle(which){
+  var b=wfStudioLayoutRoot();
+  if(!b)return;
+  var cls=which==='palette'?'wf-coll-palette':which==='insp'?'wf-coll-insp':'wf-coll-rdock';
+  b.classList.toggle(cls);
+  wfSyncLayoutButtons();
+  wfSaveStudioLayout();
+  wfResizePipeSoon();
+}
+function wfLayoutReveal(which){
+  var b=wfStudioLayoutRoot();
+  if(!b)return;
+  if(which==='palette')b.classList.remove('wf-coll-palette');
+  if(which==='insp')b.classList.remove('wf-coll-insp');
+  if(which==='rdock')b.classList.remove('wf-coll-rdock');
+  wfSyncLayoutButtons();
+  wfSaveStudioLayout();
+  wfResizePipeSoon();
+}
 function wfToggleRunDock(){
-  var d=document.getElementById('wfRunDock');
-  var t=document.getElementById('wfRunDockToggle');
-  if(!d)return;
-  d.classList.toggle('collapsed');
-  if(t)t.textContent=d.classList.contains('collapsed')?'展开':'收起';
+  wfLayoutToggle('rdock');
 }
 function wfRiskCardCollapse(){
-  var d=document.getElementById('wfRunDock');
-  var t=document.getElementById('wfRunDockToggle');
-  if(d)d.classList.add('collapsed');
-  if(t)t.textContent='展开';
+  var b=wfStudioLayoutRoot();
+  if(b)b.classList.add('wf-coll-rdock');
+  wfSyncLayoutButtons();
+  wfSaveStudioLayout();
+  wfResizePipeSoon();
 }
 window.wfOnPipelineRunComplete=function(){
-  var d=document.getElementById('wfRunDock');
-  var t=document.getElementById('wfRunDockToggle');
-  if(d)d.classList.remove('collapsed');
-  if(t)t.textContent='收起';
+  var b=wfStudioLayoutRoot();
+  if(b)b.classList.remove('wf-coll-rdock');
+  wfSyncLayoutButtons();
+  wfSaveStudioLayout();
+  if(typeof wfSwitchRunDockTab==='function')wfSwitchRunDockTab('res');
+  if(typeof wfUpdateRunTracePanel==='function')wfUpdateRunTracePanel();
+  setTimeout(function(){
+    if(typeof wfRefreshRunDockFromServer==='function')wfRefreshRunDockFromServer();
+  },650);
+  wfResizePipeSoon();
 };
 function wfRiskCardAskAi(){
-  var q='请针对异常工单 WO-2026-002、采购单 PO-2026-005（合同类型与审批链疑点）给出处置步骤与需业务补充的材料。';
+  var ins=window.__wfLastRiskInsight;
+  var wo=ins&&ins.work_order;
+  var woid=wo?(wo.id||wo.work_order_id||'WO-2026-002'):'WO-2026-002';
+  var po=wo?(wo.po_number||'PO-2026-005'):'PO-2026-005';
+  var typ=wo?(wo.type||'合同类型与审批链疑点'):'合同类型与审批链疑点';
+  var q='请针对异常工单 '+woid+'、采购单 '+po+'（'+typ+'）给出处置步骤与需业务补充的材料。';
   if(typeof openChatAndSend==='function')openChatAndSend(q);
   else wfShowToast('无法打开对话：请点右上角 AI Agent');
 }
@@ -1651,14 +1906,28 @@ function wfInitWorkflowStudioUI(){
       if(pRun)pRun.style.display=tab==='run'?'flex':'none';
     });
   });
+  var rdock=document.getElementById('wfRunDock');
+  if(rdock)rdock.querySelectorAll('.wf-run-dock-tabs [data-wf-run-tab]').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      wfSwitchRunDockTab(btn.getAttribute('data-wf-run-tab')||'res');
+    });
+  });
 }
 document.addEventListener('DOMContentLoaded',function(){wfInitWorkflowStudioUI();});
 document.addEventListener('keydown',function(e){
-  if(!e.altKey||e.code!=='KeyR')return;
   var pg=document.getElementById('pg-pipe');
   if(!pg||!pg.classList.contains('on'))return;
-  e.preventDefault();
-  if(typeof runPipelineGraphOnce==='function')runPipelineGraphOnce();
+  var tag=(e.target&&e.target.tagName)||'';
+  if(tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT'||(e.target&&e.target.isContentEditable))return;
+  if(e.altKey&&e.code==='KeyR'){
+    e.preventDefault();
+    if(typeof runPipelineGraphOnce==='function')runPipelineGraphOnce();
+    return;
+  }
+  if(!e.ctrlKey&&!e.metaKey&&!e.altKey&&typeof wfSetCanvasTool==='function'){
+    if(e.code==='KeyV'){e.preventDefault();wfSetCanvasTool('pointer');}
+    if(e.code==='KeyH'){e.preventDefault();wfSetCanvasTool('hand');}
+  }
 });
 let goNavigatePromise=Promise.resolve();
 function go(p,btn){
@@ -1684,8 +1953,11 @@ function go(p,btn){
   if(p==='pipe'){
     goNavigatePromise=goNavigatePromise.finally(function(){
       setTimeout(function(){
+        if(typeof wfLoadStudioLayout==='function')wfLoadStudioLayout();
         if(typeof initPipelineGraphEditor==='function')initPipelineGraphEditor();
         if(typeof resizePipelineGraphEditor==='function')resizePipelineGraphEditor();
+        var cv=document.getElementById('pipeGraphCanvas');
+        if(cv&&typeof cv.focus==='function')try{cv.focus();}catch(e){}
       },100);
     });
   }
@@ -1783,8 +2055,8 @@ function buildTraceHtml(d, opts){
     '<span class="ct-it">PO <b>'+traceFmtMoney(c.po_amount)+'</b></span>'+
     '<span class="ct-it">发票 <b>'+traceFmtMoney(c.invoice_amount)+'</b></span>'+
     '<span class="ct-it">验收 <b>'+escHtml(c.accept_qty||'—')+'</b></span></div>'+
-    '<div style="margin-top:6px;font-weight:600;color:'+(aligned?'var(--green)':'var(--red)')+'">'+(aligned?'一致':'不一致')+'</div>'+
-    '<div style="margin-top:4px;color:var(--text2);font-size:10px">'+escHtml(c.note||'')+'</div>'+
+    '<div class="ct-align-line '+(aligned?'ok':'bad')+'">'+(aligned?'一致':'不一致')+'</div>'+
+    (c.note?'<div class="ct-note-line">'+escHtml(c.note)+'</div>':'')+
     '<div class="ct-ff '+(ffOk?'ok':'bad')+'"><strong>四流抽样</strong> · '+escHtml(ff.note||'')+'</div></div>';
   const stCls=d.status==='released'?'released':'blocked';
   let woHtml='';

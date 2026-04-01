@@ -1,4 +1,7 @@
 # 从本仓库根目录部署到 Render：New → Blueprint 选本仓库即可。
+# 闭环：GitHub 连仓库后，在服务 Settings 打开 Auto-Deploy（branch 一般为 main），
+#       本地 git push → Render 自动构建；刷新 https://baozun-risk-agent.onrender.com/
+#       详见根目录 DEPLOY_RENDER.md。
 # 必填：在 Render 控制台为 DEEPSEEK_API_KEY 填值（或改用 LLM_* 兼容网关，见 agent-app/.env.example）。
 services:
   - type: web

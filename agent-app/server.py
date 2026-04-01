@@ -20,6 +20,7 @@ from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import StreamingResponse, FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
 
 from agent import (run_agent_stream, get_dashboard_data, get_work_orders, get_notifications,
                     get_suppliers, get_budgets, get_deliveries, get_assets, build_po_trace)
@@ -62,6 +63,25 @@ async def _lifespan(app: FastAPI):
 app = FastAPI(title="宝尊风控AI Agent", lifespan=_lifespan)
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
+
+class _NoStrongCacheUiMiddleware(BaseHTTPMiddleware):
+    """首页与主静态脚本禁用强缓存，避免 CDN/浏览器长期持有旧版 HTML·JS·CSS（Render 部署后刷新即最新）。"""
+
+    async def dispatch(self, request, call_next):
+        response = await call_next(request)
+        try:
+            path = request.url.path
+            if path == "/":
+                response.headers["Cache-Control"] = "no-store, max-age=0, must-revalidate"
+            elif path.startswith("/static/") and path.endswith((".js", ".css")):
+                response.headers["Cache-Control"] = "public, max-age=0, must-revalidate"
+        except Exception:
+            pass
+        return response
+
+
+app.add_middleware(_NoStrongCacheUiMiddleware)
+
 REPORTS_DIR.mkdir(exist_ok=True)
 _REPORTS_ROOT = str(REPORTS_DIR.resolve())
 _STATIC_ROOT = str(STATIC_DIR.resolve())
@@ -89,7 +109,9 @@ async def chat(request: Request):
 
 @app.get("/api/health")
 async def health():
-    return {"ok": True, "service": "baozun-risk-agent"}
+    """Render 会注入 RENDER_GIT_COMMIT，便于对照 GitHub 最新提交是否已上线。"""
+    commit = (os.getenv("RENDER_GIT_COMMIT") or os.getenv("COMMIT_REF") or "").strip() or None
+    return {"ok": True, "service": "baozun-risk-agent", "commit": commit}
 
 
 @app.get("/api/config")
@@ -197,6 +219,78 @@ async def post_pipeline_graph(request: Request):
     return {"ok": True}
 
 
+@app.post("/api/pipeline/risk-insights")
+async def pipeline_risk_insights(request: Request):
+    """工作流「运行」结束后：结合当前画布节点摘要与看板真实数据，生成运行结果区展示 JSON。"""
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+    nodes_ctx = body.get("nodes")
+    if not isinstance(nodes_ctx, list):
+        nodes_ctx = []
+
+    dash = get_dashboard_data()
+    exc = dash.get("exceptions") or []
+    summary = dash.get("summary") or {}
+    wos = dash.get("work_orders") or get_work_orders()
+
+    def _sev_order(level: str) -> int:
+        return {"high": 0, "medium": 1, "low": 2}.get(str(level or "").lower(), 9)
+
+    pick = None
+    if exc:
+        pick = sorted(exc, key=lambda e: _sev_order(e.get("level")))[0]
+
+    three_ok = int(summary.get("three_doc_pass") or 0)
+    three_tot = int(summary.get("three_doc_total") or 0)
+    if three_tot > 0 and three_ok == three_tot:
+        match_label = "一致"
+    elif three_ok > 0:
+        match_label = "部分一致"
+    else:
+        match_label = "待核对"
+
+    wo_open = None
+    closed = {"resolved", "closed", "done"}
+    for w in wos:
+        st = str(w.get("status") or "").lower()
+        if st not in closed:
+            wo_open = w
+            break
+    if wo_open is None and wos:
+        wo_open = wos[0]
+
+    hints = []
+    if pick:
+        hints.append(f"{pick.get('title') or pick.get('type') or '异常'}（风险：{pick.get('level') or '—'}）")
+    hints.append(f"画布节点 {len(nodes_ctx)} 个已汇入上下文（触发 / 适配 / 智能体链路）")
+    if nodes_ctx:
+        sys_names = [str(n.get("source_system") or "").strip() for n in nodes_ctx if str(n.get("source_system") or "").strip()]
+        if sys_names:
+            hints.append("标注系统：" + "、".join(sys_names[:6]) + ("…" if len(sys_names) > 6 else ""))
+
+    amt = pick.get("amount") if pick else None
+    po_guess = pick.get("po") if pick else "—"
+    contract_guess = pick.get("contract") if pick else "—"
+
+    return {
+        "alert": "存在待处理异常，已关联工单待闭环" if pick else "当前样本下暂无高危异常（仍可继续巡检）",
+        "match_label": match_label,
+        "three_way": {
+            "contract_no": contract_guess,
+            "po": po_guess,
+            "invoice": "—",
+            "acceptance": "—",
+            "amount": amt,
+            "subtitle": f"三单一致度：{three_ok}/{three_tot}（演示宽表统计）",
+        },
+        "hints": hints[:8],
+        "work_order": wo_open,
+        "source": "dashboard",
+    }
+
+
 @app.post("/api/datasources/reload-procurement")
 async def datasources_reload_procurement(request: Request):
     """再次拉取采购数据并合并（需配置 DATASOURCE_RELOAD_TOKEN 时校验 Header）。"""
@@ -292,7 +386,10 @@ app.mount("/static", StaticFiles(directory=_STATIC_ROOT), name="static")
 
 @app.get("/")
 async def index():
-    return FileResponse(STATIC_DIR.resolve() / "index.html")
+    return FileResponse(
+        STATIC_DIR.resolve() / "index.html",
+        headers={"Cache-Control": "no-store, max-age=0, must-revalidate"},
+    )
 
 
 if __name__ == "__main__":

@@ -268,6 +268,8 @@ copy .env.example .env   # Windows；Unix 用 cp
 
 **与本仓库同步的演示地址：** **[https://baozun-risk-agent.onrender.com/](https://baozun-risk-agent.onrender.com/)**（源码：[github.com/chenchen-stack/baozun-risk-agent](https://github.com/chenchen-stack/baozun-risk-agent)）。向 `main` 推送后，Render 会自动重新构建；若页面仍是旧版，在 Render Dashboard 查看部署日志或手动 **Clear build cache & deploy**。
 
+**Cursor / 本地改代码 → 公网始终最新：** 见根目录 **[`DEPLOY_RENDER.md`](DEPLOY_RENDER.md)**（含 Auto-Deploy、验证方式）；部署后可用 **`GET /api/health`** 中的 **`commit`** 对照 GitHub 提交 SHA。
+
 **不推荐用 Vercel 部署本仓库主应用**：当前主工程是 **FastAPI 长驻进程**，与 Vercel 默认 Serverless 模型不匹配；用下面方式更省事。
 
 #### 方案 A：Render（与仓库内 `render.yaml` 对齐）

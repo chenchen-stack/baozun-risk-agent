@@ -3,28 +3,61 @@
  * 触发 → 多源适配(API/DB/RPA) → 汇聚/ETL → 风控智能体 → 决策 → 回调/审计
  */
 (function () {
-  var LG_URL = "https://cdn.jsdelivr.net/npm/litegraph.js@0.7.18/build/litegraph.min.js";
-  var LG_CSS = "https://cdn.jsdelivr.net/npm/litegraph.js@0.7.18/css/litegraph.css";
+  /** 优先同源 vendor（Render / 企业网关常拦外站 CDN）；失败再试 jsDelivr */
+  var LG_SCRIPT_URLS = [
+    "/static/vendor/litegraph/litegraph.min.js",
+    "https://cdn.jsdelivr.net/npm/litegraph.js@0.7.18/build/litegraph.min.js",
+  ];
+  var LG_CSS_URLS = [
+    "/static/vendor/litegraph/litegraph.css",
+    "https://cdn.jsdelivr.net/npm/litegraph.js@0.7.18/css/litegraph.css",
+  ];
 
   function loadScript(src, cb) {
     var s = document.createElement("script");
     s.src = src;
     s.async = true;
-    s.onload = cb;
+    s.onload = function () {
+      cb(null);
+    };
     s.onerror = function () {
-      console.error("LiteGraph load failed:", src);
-      cb(new Error("load fail"));
+      console.error("LiteGraph script failed:", src);
+      cb(new Error("load fail: " + src));
     };
     document.head.appendChild(s);
   }
 
-  function loadCss(href) {
+  function loadLiteGraphScript(cb) {
+    var i = 0;
+    function next(prevErr) {
+      if (window.LiteGraph) return cb(null);
+      if (i >= LG_SCRIPT_URLS.length) return cb(prevErr || new Error("no LiteGraph source"));
+      var src = LG_SCRIPT_URLS[i++];
+      loadScript(src, function (err) {
+        if (window.LiteGraph) return cb(null);
+        next(err || prevErr);
+      });
+    }
+    next(null);
+  }
+
+  function loadCssPipe() {
     if (document.querySelector('link[data-pipe-lg="1"]')) return;
-    var l = document.createElement("link");
-    l.rel = "stylesheet";
-    l.href = href;
-    l.setAttribute("data-pipe-lg", "1");
-    document.head.appendChild(l);
+    var idx = 0;
+    function attach() {
+      if (idx >= LG_CSS_URLS.length) return;
+      var l = document.createElement("link");
+      l.rel = "stylesheet";
+      l.href = LG_CSS_URLS[idx];
+      l.setAttribute("data-pipe-lg", "1");
+      l.onerror = function () {
+        idx++;
+        l.remove();
+        attach();
+      };
+      document.head.appendChild(l);
+    }
+    attach();
   }
 
   function injectLitegraphMenuLightCss() {
@@ -383,6 +416,21 @@
     if (typeof gc.setDirty === "function") gc.setDirty(true, true);
   }
 
+  window.__wfCanvasTool = "pointer";
+
+  window.wfSetCanvasTool = function (mode) {
+    window.__wfCanvasTool = mode === "hand" ? "hand" : "pointer";
+    var gc = window.__pipeLgCanvas;
+    if (gc) {
+      gc.allow_dragnodes = window.__wfCanvasTool !== "hand";
+    }
+    var c = document.getElementById("pipeGraphCanvas");
+    if (c) c.style.cursor = window.__wfCanvasTool === "hand" ? "grab" : "";
+    document.querySelectorAll(".wf-canvas-tool [data-tool]").forEach(function (btn) {
+      btn.classList.toggle("on", btn.getAttribute("data-tool") === window.__wfCanvasTool);
+    });
+  };
+
   var _saveT = null;
   function scheduleAutosave() {
     if (!canHttp()) return;
@@ -697,7 +745,8 @@
         var hint = document.getElementById("pipeGraphLoadErr");
         if (hint) {
           hint.style.display = "block";
-          hint.textContent = "节点画布依赖 CDN 加载 LiteGraph.js，请检查网络或稍后重试。";
+          hint.textContent =
+            "未能加载 LiteGraph 画布脚本。已尝试本站 /static/vendor/litegraph/ 与 CDN；请确认已部署 vendor 文件或网络可访问 jsDelivr。";
         }
         return;
       }
@@ -706,7 +755,7 @@
         hintOk.style.display = "none";
         hintOk.textContent = "";
       }
-      loadCss(LG_CSS);
+      loadCssPipe();
       injectLitegraphMenuLightCss();
       applyLiteGraphLightTheme(window.LiteGraph);
       registerNodeTypes();
@@ -741,6 +790,13 @@
 
       window.__pipeLGraph = graph;
       window.__pipeLgCanvas = graphcanvas;
+
+      graphcanvas.allow_searchbox = true;
+      graphcanvas.allow_dragcanvas = true;
+      try {
+        canvas.focus();
+      } catch (e1) {}
+      if (typeof window.wfSetCanvasTool === "function") window.wfSetCanvasTool("pointer");
 
       graphcanvas.onNodeMoved = scheduleAutosave;
 
@@ -794,8 +850,8 @@
       return;
     }
     window.__pipeGraphBooting = true;
-    loadScript(LG_URL, function (e) {
-      boot(e);
+    loadLiteGraphScript(function (err) {
+      boot(err);
     });
   };
 
@@ -838,7 +894,7 @@
         markGraphDirty();
         hint("运行完成");
         clearHintLater();
-        toast("运行完成：下方「运行结果」已展开，可点按钮继续操作");
+        toast("运行完成：右侧「测试运行」面板已展开，可切换结果 / 详情 / 追踪");
         if (typeof window.wfOnPipelineRunComplete === "function") window.wfOnPipelineRunComplete();
         return;
       }
