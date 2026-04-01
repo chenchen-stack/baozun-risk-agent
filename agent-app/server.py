@@ -116,6 +116,64 @@ async def datasources_status():
     return get_procurement_sync_status()
 
 
+@app.get("/api/pipeline/status")
+async def pipeline_status():
+    """数据接入与工作流编排页：聚合集成状态、采购数据源、侧栏模块映射与交付阶段。"""
+    from integrations.settings import integration_status_dict
+    from integrations.datasources.sync import get_procurement_sync_status
+
+    return {
+        "integrations": integration_status_dict(BASE_DIR),
+        "procurement_datasource": get_procurement_sync_status(),
+        "sidebar_binding": [
+            {
+                "page": "异常看板 / 预警列表",
+                "api": "GET /api/dashboard，Agent 工具链",
+                "upstream": "各信息系统数据经适配与校验后的异常集合",
+            },
+            {
+                "page": "工单管理 / 通知记录 / 月度报告",
+                "api": "/api/workorders · /api/notifications · /api/reports",
+                "upstream": "风控决策后的闭环：派单、触达、月报 HTML",
+            },
+            {
+                "page": "供应商 / 预算 / 交付 / 资产",
+                "api": "/api/suppliers · /api/budgets · /api/deliveries · /api/assets",
+                "upstream": "外围系统适配节点（REST / 只读库 / RPA）",
+            },
+        ],
+        "delivery_phases": [
+            {
+                "phase": "P0 · 当前 POC",
+                "done": True,
+                "items": [
+                    "侧栏九大模块与现有 API 已贯通（演示数据 + LangChain 工具）",
+                    "采购域：mock / HTTP REST / SelectDB 只读 SQL 适配层",
+                    "飞书·OA Webhook、external_data、定时月报可选集成",
+                ],
+            },
+            {
+                "phase": "P1 · 准实时与标准宽表",
+                "done": False,
+                "items": [
+                    "客户审批流 Webhook / 消息队列与定时轮询双触发",
+                    "ETL 统一单据模型（跨 OA·ERP·费控）",
+                    "合同/付款等域独立 Adapter，与采购并列接入",
+                ],
+            },
+            {
+                "phase": "P2 · 生产闭环",
+                "done": False,
+                "items": [
+                    "决策结果回写 OA 审批意见 / 加签节点",
+                    "RPA 兜底与异常重试队列",
+                    "审计日志外置存储与权限分级",
+                ],
+            },
+        ],
+    }
+
+
 @app.post("/api/datasources/reload-procurement")
 async def datasources_reload_procurement(request: Request):
     """再次拉取采购数据并合并（需配置 DATASOURCE_RELOAD_TOKEN 时校验 Header）。"""

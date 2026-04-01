@@ -76,7 +76,7 @@
 | `app.py`、`static/` | 历史极简 Demo（OpenAI SDK 直连），**与 `agent-app` 数据与能力不一致**；正式演示请用 `agent-app`。 |
 | `presentation.html`、`ppt-diagrams/` | 汇报与演示材料。 |
 | `参考材料-*.md` | 业务流程、风控控制点与竞品/业务知识等参考资料。 |
-| `docs/workflow-risk-nodes.html` | **工作流节点示意（类 Dify）**：浏览器本地打开，可视化「触发 → API/DB/RPA → ETL → 风控 Agent → 决策 → 回调/审计」。 |
+| `docs/workflow-risk-nodes.html` | **工作流节点示意（类 Dify）**；与 `agent-app/static/workflow-risk-nodes.html` 同源（Docker 仅打包 `static/`）。运行主应用后侧栏 **「数据接入 · 工作流」** 内嵌该图，并拉取 `/api/pipeline/status`。 |
 
 ---
 
@@ -98,6 +98,7 @@ python server.py
 - 健康检查：`/api/health`  
 - 集成状态：`/api/integrations/status`  
 - 数据源状态：`/api/datasources/status`  
+- **数据接入与工作流总览**：`GET /api/pipeline/status`（侧栏 **「数据接入 · 工作流」** 页消费；内嵌 `static/workflow-risk-nodes.html` 节点图）  
 
 ---
 

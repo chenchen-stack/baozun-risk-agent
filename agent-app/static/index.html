@@ -475,6 +475,26 @@ body.resizing .resize-handle{pointer-events:auto!important}
 
 /* ─────────── PAGES ─────────── */
 .pg{display:none}.pg.on{display:block}
+.pipe-grid{display:grid;grid-template-columns:1fr minmax(300px,1.05fr);gap:18px;align:start}
+@media(max-width:1100px){.pipe-grid{grid-template-columns:1fr}}
+.pipe-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;margin-bottom:14px}
+.pipe-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;box-shadow:var(--shadow)}
+.pipe-card h4{margin:0 0 8px;font-size:13px;color:var(--brand-navy);font-weight:650}
+.pipe-card p{margin:4px 0;font-size:12px;color:var(--text2);line-height:1.45}
+.pipe-err{color:var(--red);font-size:11px;margin-top:6px}
+.pipe-bind{border:1px solid var(--border);border-radius:var(--r);background:var(--white);overflow:hidden;margin-bottom:14px}
+.pipe-bind table{width:100%;border-collapse:collapse;font-size:11.5px}
+.pipe-bind th,.pipe-bind td{padding:8px 12px;text-align:left;border-bottom:1px solid var(--border2);vertical-align:top}
+.pipe-bind th{background:var(--bg2);color:var(--text3);font-weight:600}
+.pipe-bind tr:last-child td{border-bottom:none}
+.pipe-iframe-wrap{border:1px solid var(--border);border-radius:var(--r);overflow:hidden;background:#0c1222;box-shadow:var(--shadow)}
+.pipe-iframe-wrap iframe{width:100%;height:min(540px,56vh);border:none;display:block;vertical-align:top}
+.pipe-roadmap{border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;background:var(--bg2);margin-top:14px}
+.pipe-roadmap > h3{margin:0 0 10px;font-size:13px;color:var(--brand-navy)}
+.pipe-phase{margin-bottom:10px;padding:10px 12px;background:var(--white);border-radius:10px;border-left:3px solid var(--text4)}
+.pipe-phase.done{border-left-color:var(--green)}
+.pipe-phase h4{margin:0 0 6px;font-size:12px;font-weight:650;color:var(--text)}
+.pipe-phase ul{margin:0;padding-left:18px;font-size:11.5px;color:var(--text2);line-height:1.55}
 
 /* KPI Cards */
 .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;min-width:0}
@@ -983,6 +1003,10 @@ body.demo-tour-on[data-demo-zoom="chat"] .mn{transform:none}
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
         <span>资产台账</span>
       </a>
+      <a onclick="go('pipe')" data-p="pipe">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        <span>数据接入 · 工作流</span>
+      </a>
     </nav>
     <div class="ft">LangChain + DeepSeek V3<br>Powered by AI Agent v3.0<br>10阶段全流程覆盖</div>
   </aside>
@@ -1154,6 +1178,39 @@ body.demo-tour-on[data-demo-zoom="chat"] .mn{transform:none}
           </div>
         </div>
         <div class="card"><table><thead><tr><th>编号</th><th>名称</th><th>类别</th><th>原值</th><th>月折旧</th><th>净值</th><th>位置</th><th>盘点</th></tr></thead><tbody id="astTbl"></tbody></table></div>
+      </div>
+
+      <!-- ─────────── PIPELINE / WORKFLOW (数据接入 · 工作流) ─────────── -->
+      <div class="pg" id="pg-pipe">
+        <div class="rpt-header">
+          <div>
+            <h2>数据接入与工作流编排</h2>
+            <div class="rs">将各信息系统抽象为工作流节点 → API / 只读库 / RPA 拉数 → 标准化 → 风控 Agent → 决策与回调；本页展示<strong>运行态</strong>与侧栏模块映射。</div>
+          </div>
+          <div class="ra">
+            <button class="btn btn-teal" onclick="openChatAndSend('请根据当前数据接入配置，说明从采购 REST 同步到异常看板的数据路径，并列出还需要客户侧提供的接口或视图')">AI 解读接入状态</button>
+            <button class="btn btn-ghost" onclick="loadPipelineStatus()">刷新状态</button>
+          </div>
+        </div>
+        <div class="pipe-grid">
+          <div>
+            <div id="pipeStatus"><div style="padding:24px;color:var(--text4);font-size:13px">加载中…</div></div>
+            <div class="pipe-bind" id="pipeBindWrap" style="display:none">
+              <table><thead><tr><th>侧栏模块</th><th>API</th><th>上游（工作流视角）</th></tr></thead><tbody id="pipeBindTbl"></tbody></table>
+            </div>
+            <div class="pipe-roadmap" id="pipeRoadmap" style="display:none">
+              <h3>交付阶段（真正「做完」的路线图）</h3>
+              <div id="pipePhaseList"></div>
+            </div>
+          </div>
+          <div>
+            <div class="section-title" style="margin-bottom:8px">节点编排示意（类 Dify）</div>
+            <div class="pipe-iframe-wrap">
+              <iframe title="工作流节点图" src="/static/workflow-risk-nodes.html"></iframe>
+            </div>
+            <p style="font-size:11px;color:var(--text3);margin-top:8px;line-height:1.5">同源文件亦在仓库 <code style="font-size:10px">docs/workflow-risk-nodes.html</code>，便于方案评审单独打开。</p>
+          </div>
+        </div>
       </div>
 
     </div>
@@ -1360,7 +1417,7 @@ async function initApp(){
   refreshDemoBtnState();
 }
 
-const PAGE_TITLES={dash:'异常看板',exc:'预警列表',wo:'工单管理',rpt:'月度报告',notif:'通知记录',sup:'供应商画像',bgt:'预算管控',dlv:'交付跟踪',ast:'资产台账'};
+const PAGE_TITLES={dash:'异常看板',exc:'预警列表',wo:'工单管理',rpt:'月度报告',notif:'通知记录',sup:'供应商画像',bgt:'预算管控',dlv:'交付跟踪',ast:'资产台账',pipe:'数据接入 · 工作流'};
 let goNavigatePromise=Promise.resolve();
 function go(p,btn){
   document.querySelectorAll('.pg').forEach(el=>el.classList.remove('on'));
@@ -1378,8 +1435,56 @@ function go(p,btn){
   if(p==='bgt')jobs.push(loadBudgets());
   if(p==='dlv')jobs.push(loadDeliveries());
   if(p==='ast')jobs.push(loadAssets());
+  if(p==='pipe')jobs.push(loadPipelineStatus());
   goNavigatePromise=jobs.length?Promise.all(jobs):Promise.resolve();
   return goNavigatePromise;
+}
+
+async function loadPipelineStatus(){
+  const root=document.getElementById('pipeStatus');
+  const bindWrap=document.getElementById('pipeBindWrap');
+  const bindTbl=document.getElementById('pipeBindTbl');
+  const rm=document.getElementById('pipeRoadmap');
+  const phaseList=document.getElementById('pipePhaseList');
+  if(!root)return;
+  root.innerHTML='<div style="padding:24px;color:var(--text4);font-size:13px">加载中…</div>';
+  try{
+    const r=await fetch('/api/pipeline/status');
+    const j=await r.json();
+    const int=j.integrations||{};
+    const ds=j.procurement_datasource||{};
+    const yn=function(v){return v?'已配置':'未配置';};
+    let cards='';
+    cards+='<div class="pipe-cards">';
+    cards+='<div class="pipe-card"><h4>采购数据源</h4><p><strong>模式</strong> '+escHtml(String(ds.mode||'—'))+'</p><p><strong>结果</strong> '+(ds.ok?'成功':'失败')+' · 合并 <strong>'+escHtml(String(ds.merged_count!=null?ds.merged_count:'—'))+'</strong> 条</p>';
+    if(ds.at)cards+='<p style="font-size:11px;color:var(--text3)">'+escHtml(String(ds.at))+'</p>';
+    if(ds.error)cards+='<div class="pipe-err">'+escHtml(String(ds.error))+'</div>';
+    cards+='</div>';
+    cards+='<div class="pipe-card"><h4>大模型</h4><p><strong>端点</strong> '+escHtml(String(int.llm_openai_api_base||'—'))+'</p><p><strong>模型</strong> '+escHtml(String(int.llm_model||'—'))+'</p></div>';
+    cards+='<div class="pipe-card"><h4>协作 Webhook</h4><p>飞书 '+yn(int.feishu_webhook_configured)+'</p><p>OA '+yn(int.oa_webhook_configured)+'</p></div>';
+    cards+='<div class="pipe-card"><h4>月报调度</h4><p>'+(int.scheduled_monthly_report?'已开启 ENABLE_SCHEDULED_MONTHLY_REPORT':'未开启')+'</p></div>';
+    cards+='<div class="pipe-card"><h4>external_data</h4><p>'+(int.external_data_dir_exists?'目录存在':'无目录')+'</p><p style="font-size:11px">'+(int.external_overlay_files&&int.external_overlay_files.length?'文件：'+escHtml(int.external_overlay_files.join(', ')):'无 JSON 覆盖文件')+'</p></div>';
+    cards+='</div>';
+    root.innerHTML=cards;
+    const rows=j.sidebar_binding||[];
+    if(rows.length&&bindTbl&&bindWrap){
+      bindTbl.innerHTML=rows.map(function(row){
+        return '<tr><td><strong>'+escHtml(row.page||'')+'</strong></td><td>'+escHtml(row.api||'')+'</td><td>'+escHtml(row.upstream||'')+'</td></tr>';
+      }).join('');
+      bindWrap.style.display='block';
+    }else if(bindWrap)bindWrap.style.display='none';
+    const phases=j.delivery_phases||[];
+    if(phases.length&&phaseList&&rm){
+      phaseList.innerHTML=phases.map(function(ph){
+        const cls=ph.done?'pipe-phase done':'pipe-phase';
+        const lis=(ph.items||[]).map(function(t){return '<li>'+escHtml(t)+'</li>';}).join('');
+        return '<div class="'+cls+'"><h4>'+escHtml(ph.phase||'')+'</h4><ul>'+lis+'</ul></div>';
+      }).join('');
+      rm.style.display='block';
+    }else if(rm)rm.style.display='none';
+  }catch(e){
+    root.innerHTML='<div class="pipe-err" style="padding:16px">加载失败：'+escHtml(e.message||String(e))+'</div>';
+  }
 }
 
 function toggleChat(){
