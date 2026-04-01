@@ -177,14 +177,14 @@
             return r.json();
           })
           .then(function (j) {
-            setNodeLastRun(n, "GET /api/health → " + JSON.stringify(j));
+            setNodeLastRun(n, "定时巡检：服务存活 + 可扩展为拉取「预警列表/待办异常」（F17）→ " + JSON.stringify(j));
           })
           .catch(function (e) {
             setNodeLastRun(n, "health 失败: " + e.message);
           });
       },
       "wf/webhook": function () {
-        setNodeLastRun(this, "Webhook 模拟触发 " + new Date().toISOString());
+        setNodeLastRun(this, "OA 审批流事件：合同/付款节点状态变更（F08 审批链校验入口）· " + new Date().toISOString());
       },
       "wf/rest": function () {
         var n = this;
@@ -194,7 +194,7 @@
             return r.json();
           })
           .then(function (j) {
-            setNodeLastRun(n, "GET /api/datasources/status → " + JSON.stringify(j));
+            setNodeLastRun(n, "采购系统侧：数据源状态（可接 PO/申请 REST）→ " + JSON.stringify(j));
           })
           .catch(function (e) {
             setNodeLastRun(n, "datasources 失败: " + e.message);
@@ -208,18 +208,18 @@
             return r.json();
           })
           .then(function (j) {
-            setNodeLastRun(n, "GET /api/integrations/status → " + JSON.stringify(j).slice(0, 300));
+            setNodeLastRun(n, "合同/付款只读库或 SelectDB：集成态摘要 → " + JSON.stringify(j).slice(0, 300));
           })
           .catch(function (e) {
             setNodeLastRun(n, "integrations 失败: " + e.message);
           });
       },
       "wf/rpa": function () {
-        setNodeLastRun(this, "RPA：需对接 UiPath / 影刀等；此处为占位节点");
+        setNodeLastRun(this, "RPA 兜底（7.2）：无 API/库时的屏幕流程；对接 UiPath/影刀等 · POC 占位");
       },
       "wf/merge2": function () {
         this.setOutputData(0, { a: this.getInputData(0), b: this.getInputData(1), t: Date.now() });
-        setNodeLastRun(this, "已合并 2 路输入到输出");
+        setNodeLastRun(this, "调度触发 + OA 审批事件 合流 → 驱动下游拉数");
       },
       "wf/merge3": function () {
         this.setOutputData(0, {
@@ -228,7 +228,7 @@
           c: this.getInputData(2),
           t: Date.now(),
         });
-        setNodeLastRun(this, "已合并 3 路输入到输出");
+        setNodeLastRun(this, "采购 + 合同/OA + 付款/财务 三路合流（断点串联）");
       },
       "wf/etl": function () {
         var n = this;
@@ -246,18 +246,30 @@
           });
       },
       "wf/agent": function () {
-        setNodeLastRun(this, "已唤起右侧风控 AI 对话");
+        setNodeLastRun(this, "已唤起右侧「非经营性采购风控」对话（对齐需求书 F01–F14 / 第一期 POC）");
         if (typeof window.openChatAndSend === "function")
           window.openChatAndSend(
-            "请结合当前节点对接的系统与数据，分析是否存在非经营性采购风险项，并给出可执行建议（条列）。"
+            "你是宝尊非经营性采购风控 Agent（POC）。请按客户第一期范围：①多源接入采购/OA合同/OA付款（或 SelectDB）；②按单号串联申请→合同→PO→验收→发票→付款；③点出三单匹配（数量±2%、单价±1%、税率须一致）与四流一致（合同主体·付款·发票抬头·物流）是否可能异常；④对照 F06 前序流程、F07 合同类型、F08 审批层级、F09–F11 付款关联与重复/超额；⑤用条列给出可执行处置（冻结付款/补采购申请/升级审批/建工单）。若缺字段请说明需 IT 提供的接口字段。"
           );
+      },
+      "wf/threeway": function () {
+        setNodeLastRun(
+          this,
+          "三单匹配引擎（F04）：PO·入库(GRN)·发票 数量容差≤2%、单价≤1%、税率须 100% 一致；供应商三方须一致。超差→冻结付款+异常工单（演示逻辑）。"
+        );
+      },
+      "wf/fourflow": function () {
+        setNodeLastRun(
+          this,
+          "四流一致（F05）：合同流·资金流·发票流·物流（收货）主体对齐；双上市合规向金税四期靠拢。不一致→预警+飞书/OA（F13）。"
+        );
       },
       "wf/decision": function () {
         var v = this.getInputData(0);
         this.setOutputData(0, v);
         this.setOutputData(1, v);
         this.setOutputData(2, v);
-        setNodeLastRun(this, "决策分流：研判结果已复制到低 / 中 / 高三路（演示）");
+        setNodeLastRun(this, "风险分流：低→放行关注；中→复核；高→拦截+工单（演示复制到三路）");
       },
       "wf/callback": function () {
         var n = this;
@@ -268,7 +280,7 @@
           })
           .then(function (j) {
             var c = (j.notifications && j.notifications.length) || 0;
-            setNodeLastRun(n, "GET /api/notifications 条数 ≈ " + c);
+            setNodeLastRun(n, "飞书/OA 推送（F13）：通知记录条数 ≈ " + c);
           })
           .catch(function (e) {
             setNodeLastRun(n, "notifications 失败: " + e.message);
@@ -283,7 +295,7 @@
           })
           .then(function (j) {
             var c = (j.reports && j.reports.length) || 0;
-            setNodeLastRun(n, "GET /api/reports HTML 报告数 = " + c);
+            setNodeLastRun(n, "月度内控报告（F14）HTML 列表条数 = " + c);
           })
           .catch(function (e) {
             setNodeLastRun(n, "reports 失败: " + e.message);
@@ -292,35 +304,35 @@
     };
 
     var types = [
-      ["wf/poll", "定时轮询", [["触发", SLOT]], null, "#155EEF"],
-      ["wf/webhook", "审批流 Webhook", [["触发", SLOT]], null, "#2563EB"],
-      ["wf/rest", "REST API 拉取", [["原始数据", SLOT]], null, "#10B981"],
-      ["wf/db", "只读库 SQL", [["原始数据", SLOT]], null, "#8B5CF6"],
-      ["wf/rpa", "RPA 抓取", [["原始数据", SLOT]], null, "#F59E0B"],
+      ["wf/poll", "定时巡检 · 异常队列", [["触发", SLOT]], null, "#155EEF"],
+      ["wf/webhook", "OA 审批流事件", [["触发", SLOT]], null, "#2563EB"],
+      ["wf/rest", "采购系统 API（PO/申请）", [["原始数据", SLOT]], null, "#10B981"],
+      ["wf/db", "SelectDB / 合同·付款只读", [["原始数据", SLOT]], null, "#8B5CF6"],
+      ["wf/rpa", "RPA 兜底（无接口系统）", [["原始数据", SLOT]], null, "#F59E0B"],
       [
         "wf/merge2",
-        "多源汇聚 · 2 路",
+        "触发源汇聚（调度+事件）",
         [["合流", SLOT]],
         [
-          ["入 A", SLOT],
-          ["入 B", SLOT],
+          ["调度触发", SLOT],
+          ["审批事件", SLOT],
         ],
         "#64748B",
       ],
       [
         "wf/merge3",
-        "多源汇聚 · 3 路",
+        "三系统数据汇聚",
         [["合流", SLOT]],
         [
-          ["入 A", SLOT],
-          ["入 B", SLOT],
-          ["入 C", SLOT],
+          ["采购侧", SLOT],
+          ["合同/OA侧", SLOT],
+          ["付款/财务侧", SLOT],
         ],
         "#64748B",
       ],
       [
         "wf/etl",
-        "清洗与标准化",
+        "主数据对齐 · 标准宽表",
         [["标准宽表", SLOT]],
         [
           ["触发侧", SLOT],
@@ -328,10 +340,12 @@
         ],
         "#059669",
       ],
-      ["wf/agent", "风控智能体", [["研判", SLOT]], [["标准宽表", SLOT]], "#7C3AED"],
+      ["wf/threeway", "三单匹配引擎（PO·GRN·票）", [["三单结果", SLOT]], [["标准宽表", SLOT]], "#047857"],
+      ["wf/fourflow", "四流一致校验", [["四流结果", SLOT]], [["三单结果", SLOT]], "#0D9488"],
+      ["wf/agent", "非经营性采购风控智能体", [["研判", SLOT]], [["四流结果", SLOT]], "#7C3AED"],
       [
         "wf/decision",
-        "决策分流",
+        "风险等级分流（低/中/高）",
         [
           ["低风险", SLOT],
           ["中风险", SLOT],
@@ -340,8 +354,8 @@
         [["研判", SLOT]],
         "#0891B2",
       ],
-      ["wf/callback", "回调 OA / IM", [["已推送", SLOT]], [["任一路径", SLOT]], "#0D9488"],
-      ["wf/audit", "日志与审计", null, [["已推送", SLOT]], "#6B7280"],
+      ["wf/callback", "飞书 / OA 工单推送", [["已推送", SLOT]], [["任一路径", SLOT]], "#0D9488"],
+      ["wf/audit", "审计留痕 · 月报接口", null, [["已推送", SLOT]], "#6B7280"],
     ];
 
     types.forEach(function (row) {
@@ -365,18 +379,20 @@
       return n;
     }
 
-    var poll = add("wf/poll", 60, 40);
-    var hook = add("wf/webhook", 60, 160);
-    var m2 = add("wf/merge2", 360, 100);
-    var rest = add("wf/rest", 60, 300);
-    var db = add("wf/db", 60, 420);
-    var rpa = add("wf/rpa", 60, 540);
-    var m3 = add("wf/merge3", 360, 400);
-    var etl = add("wf/etl", 680, 240);
-    var agent = add("wf/agent", 980, 250);
-    var dec = add("wf/decision", 1240, 220);
-    var cb = add("wf/callback", 1500, 250);
-    var aud = add("wf/audit", 1760, 250);
+    var poll = add("wf/poll", 40, 40);
+    var hook = add("wf/webhook", 40, 160);
+    var m2 = add("wf/merge2", 320, 100);
+    var rest = add("wf/rest", 40, 320);
+    var db = add("wf/db", 40, 440);
+    var rpa = add("wf/rpa", 40, 560);
+    var m3 = add("wf/merge3", 320, 460);
+    var etl = add("wf/etl", 600, 280);
+    var tw = add("wf/threeway", 900, 280);
+    var ff = add("wf/fourflow", 1120, 280);
+    var agent = add("wf/agent", 1340, 280);
+    var dec = add("wf/decision", 1580, 260);
+    var cb = add("wf/callback", 1820, 280);
+    var aud = add("wf/audit", 2060, 280);
 
     if (poll && m2) poll.connect(0, m2, 0);
     if (hook && m2) hook.connect(0, m2, 1);
@@ -385,10 +401,30 @@
     if (db && m3) db.connect(0, m3, 1);
     if (rpa && m3) rpa.connect(0, m3, 2);
     if (m3 && etl) m3.connect(0, etl, 1);
-    if (etl && agent) etl.connect(0, agent, 0);
+    if (etl && tw) etl.connect(0, tw, 0);
+    if (tw && ff) tw.connect(0, ff, 0);
+    if (ff && agent) ff.connect(0, agent, 0);
     if (agent && dec) agent.connect(0, dec, 0);
     if (dec && cb) dec.connect(2, cb, 0);
     if (cb && aud) cb.connect(0, aud, 0);
+
+    function tag(n, sys, note) {
+      if (!n || !n.properties) return;
+      n.properties.source_system = sys;
+      n.properties.adapter_notes = note;
+    }
+    tag(poll, "调度", "轮询待处理异常/队列（事中监控）");
+    tag(hook, "OA", "合同/付款审批节点 Webhook");
+    tag(rest, "采购系统", "PO、采购申请 REST/API");
+    tag(db, "SelectDB", "合同与付款只读视图/SQL");
+    tag(rpa, "RPA", "无接口时的屏幕兜底");
+    tag(etl, "主数据", "申请·合同·PO·验收·发票·付款 主键对齐");
+    tag(tw, "规则引擎", "F04 三单匹配阈值");
+    tag(ff, "规则引擎", "F05 四流一致");
+    tag(agent, "大模型", "火山/千问 · 非经营性采购研判");
+    tag(dec, "策略", "低/中/高 → 放行/复核/拦截");
+    tag(cb, "飞书/OA", "F12/F13 工单与推送");
+    tag(aud, "内控", "F14 月报 / 审计底稿入口");
   }
 
   function resizeCanvas() {

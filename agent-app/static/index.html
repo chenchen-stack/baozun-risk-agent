@@ -1298,6 +1298,7 @@ body.demo-tour-on[data-demo-zoom="chat"] .mn{transform:none}
           <header class="wf-studio-top">
             <div class="wf-studio-top-left">
               <span class="wf-breadcrumb">风控编排</span>
+              <span class="wf-breadcrumb-sub" style="font-size:11px;font-weight:500;color:#9CA3AF;margin-left:8px">非经营性采购 · 10 阶段链路 · 三单/四流（POC）</span>
               <span class="wf-run-step-hint" id="wfRunStepHint" aria-live="polite"></span>
             </div>
             <div class="wf-studio-top-right">
@@ -1324,20 +1325,22 @@ body.demo-tour-on[data-demo-zoom="chat"] .mn{transform:none}
           </header>
           <div class="wf-studio-body">
             <aside class="wf-palette" aria-label="添加节点">
-              <div class="wf-palette-h">点击加到画布</div>
+              <div class="wf-palette-h">点击加到画布（对齐需求书第一期 F01–F14）</div>
               <div class="wf-palette-compact" id="wfPaletteScroll">
-                <button type="button" data-wf-type="wf/poll" title="定时扫各系统">+ 定时轮询</button>
-                <button type="button" data-wf-type="wf/webhook" title="审批事件推送">+ 审批 Webhook</button>
-                <button type="button" data-wf-type="wf/rest" title="HTTP 拉数">+ API 拉数</button>
-                <button type="button" data-wf-type="wf/db" title="只读 SQL">+ 数据库</button>
-                <button type="button" data-wf-type="wf/rpa" title="机器人抓取">+ RPA</button>
-                <button type="button" data-wf-type="wf/merge2" title="两路合流">+ 2 路合并</button>
-                <button type="button" data-wf-type="wf/merge3" title="三路合流">+ 3 路合并</button>
-                <button type="button" data-wf-type="wf/etl" title="清洗标准化">+ 标准化</button>
-                <button type="button" data-wf-type="wf/agent" title="规则+模型研判">+ 风控智能体</button>
-                <button type="button" data-wf-type="wf/decision" title="低/中/高分流">+ 决策分流</button>
-                <button type="button" data-wf-type="wf/callback" title="回写 OA/IM">+ 回调通知</button>
-                <button type="button" data-wf-type="wf/audit" title="留痕报告">+ 审计日志</button>
+                <button type="button" data-wf-type="wf/poll" title="事中巡检：异常队列/待办">+ 定时巡检</button>
+                <button type="button" data-wf-type="wf/webhook" title="OA 合同/付款审批事件">+ OA 审批事件</button>
+                <button type="button" data-wf-type="wf/rest" title="采购系统：PO、申请单">+ 采购 API</button>
+                <button type="button" data-wf-type="wf/db" title="SelectDB 或合同/付款只读库">+ 合同·付款库</button>
+                <button type="button" data-wf-type="wf/rpa" title="无 API 时的兜底抓取">+ RPA 兜底</button>
+                <button type="button" data-wf-type="wf/merge2" title="调度触发 + 审批事件">+ 触发汇聚</button>
+                <button type="button" data-wf-type="wf/merge3" title="采购+合同+付款 三系统合流">+ 三系统汇聚</button>
+                <button type="button" data-wf-type="wf/etl" title="主键对齐 → 标准宽表">+ 主数据对齐</button>
+                <button type="button" data-wf-type="wf/threeway" title="F04：数量±2% 单价±1% 税率一致">+ 三单匹配</button>
+                <button type="button" data-wf-type="wf/fourflow" title="F05：合同·资金·发票·物流主体">+ 四流一致</button>
+                <button type="button" data-wf-type="wf/agent" title="非经营性采购 + 规则/模型研判">+ 风控智能体</button>
+                <button type="button" data-wf-type="wf/decision" title="低/中/高 → 放行/复核/拦截">+ 风险分流</button>
+                <button type="button" data-wf-type="wf/callback" title="F13 飞书/OA 工单">+ 飞书·工单</button>
+                <button type="button" data-wf-type="wf/audit" title="F14 月报 / 审计底稿">+ 审计·月报</button>
               </div>
             </aside>
             <div class="wf-canvas-col">
@@ -1398,20 +1401,20 @@ body.demo-tour-on[data-demo-zoom="chat"] .mn{transform:none}
                 <div id="wfRunPanelRes" class="wf-run-tab-panel on" role="tabpanel">
                   <div class="wf-run-dock-body" id="wfRunDockBody">
                     <div class="wf-match-card">
-                      <h5>三单比对</h5>
-                      <div class="wf-match-row">合同 <b>¥980,000</b> · PO <b>¥980,000</b> · 发票 <b>—</b> · 验收 <b>—</b></div>
-                      <div class="wf-match-ok">一致</div>
-                      <div class="wf-match-sub">主金额字段一致（演示）</div>
-                      <div class="wf-banner-ok">四流抽样：合同主体、收款方、发票销方、物流信息一致（POC 演示数据）。</div>
+                      <h5>三单比对（F04）· 四流（F05）</h5>
+                      <div class="wf-match-row">合同 <b>¥200,000</b> · PO <b>ThinkPad 批量</b> · 在途付款 <b>¥400,000</b> · 发票 <b>连号嫌疑</b></div>
+                      <div class="wf-match-ok">待核对</div>
+                      <div class="wf-match-sub">演示案例贴近需求书：PO-2026-006 类「超合同付款 + 高中标率供应商」</div>
+                      <div class="wf-banner-ok">四流：合同签约主体、付款申请方、发票销方、收货信息需一致；同一合同项下付款发起人异常需结构化溯源（客户原话场景）。</div>
                     </div>
-                    <div class="wf-banner-warn">存在异常，已关联工单待闭环</div>
+                    <div class="wf-banner-warn">高风险：疑似超合同累计付款、重复付款线索 — 建议冻结并升级 CFO 线审批</div>
                     <div class="wf-wo-card">
-                      <div class="wf-wo-head">异常工单 WO-2026-002</div>
+                      <div class="wf-wo-head">异常工单 WO-2026-006</div>
                       <div class="wf-wo-body">
                         <dl style="margin:0">
-                          <dt>采购单</dt><dd>PO-2026-005</dd>
-                          <dt>类型</dt><dd>合同类型错误 + 审批流异常</dd>
-                          <dt>摘要</dt><dd>GAP 成都太古里门店装修，合同类型误标为门店运营</dd>
+                          <dt>采购单</dt><dd>PO-2026-006（IT 设备·ThinkPad）</dd>
+                          <dt>类型</dt><dd>超合同金额 + 付款溯源异常 + 供应商中标率偏离</dd>
+                          <dt>摘要</dt><dd>合同总额 ¥20 万，系统内在途/已付合计 ¥40 万；供应商近期中标率约 80%，发票连号需核验</dd>
                           <dt>状态</dt><dd><code style="font-size:11px">in_progress</code></dd>
                         </dl>
                       </div>
@@ -1421,7 +1424,7 @@ body.demo-tour-on[data-demo-zoom="chat"] .mn{transform:none}
                       <button type="button" class="wf-act-biz" onclick="wfRiskCardContactBiz()">联系业务</button>
                       <button type="button" class="wf-act-collapse" onclick="wfRiskCardCollapse()">收起面板</button>
                     </div>
-                    <p class="wf-run-foot">以上为模拟结果，用于演示完整交互；真实环境由接口与智能体生成。</p>
+                    <p class="wf-run-foot">样例对齐《客户需求说明书》第一期：非经营性采购全链路、三单匹配、四流一致、工单与飞书；运行后由 <code style="font-size:10px">/api/dashboard</code> 等接口刷新。</p>
                   </div>
                 </div>
                 <div id="wfRunPanelDet" class="wf-run-tab-panel" role="tabpanel">
@@ -1433,7 +1436,7 @@ body.demo-tour-on[data-demo-zoom="chat"] .mn{transform:none}
                 <div id="wfRunPanelTrc" class="wf-run-tab-panel" role="tabpanel">
                   <div class="wf-run-dock-body" style="padding-top:10px">
                     <p style="margin:0 0 8px;font-size:11px;color:#6B7280">按画布节点顺序的执行轨迹（演示）。</p>
-                    <pre class="wf-run-trace-pre" id="wfRunDockTrace">点击顶部「运行」后，将列出本次顺序执行的节点。</pre>
+                    <pre class="wf-run-trace-pre" id="wfRunDockTrace">点击「运行」后按画布节点顺序列出执行摘要；示例拓扑：三系统汇聚 → 主数据对齐 → 三单匹配 → 四流一致 → 智能体 → 分流 → 飞书/工单 → 审计。</pre>
                   </div>
                 </div>
               </div>
@@ -1751,7 +1754,7 @@ function wfRefreshRunDockFromServer(){
         (tw.amount!=null&&tw.amount!==''?'<div class="wf-match-row" style="margin-top:6px">参考金额 <b>'+escHtml(wfFmtMoneyDock(tw.amount))+'</b></div>':'')+
         '<div class="wf-match-ok">'+escHtml(match)+'</div>'+
         (sub?'<div class="wf-match-sub">'+escHtml(sub)+'</div>':'')+
-        '<div class="wf-banner-ok">风控智能体已结合画布节点与看板异常池生成摘要（POC）。</div>'+
+        '<div class="wf-banner-ok">已按画布节点（三系统汇聚→三单→四流→Agent）与看板异常池生成摘要，对齐需求书 F02/F04/F05/F12。</div>'+
       '</div>'+
       '<div class="wf-banner-warn">'+escHtml(alertTxt)+'</div>'+
       (wo?('<div class="wf-wo-card">'+
@@ -1891,10 +1894,10 @@ window.wfOnPipelineRunComplete=function(){
 function wfRiskCardAskAi(){
   var ins=window.__wfLastRiskInsight;
   var wo=ins&&ins.work_order;
-  var woid=wo?(wo.id||wo.work_order_id||'WO-2026-002'):'WO-2026-002';
-  var po=wo?(wo.po_number||'PO-2026-005'):'PO-2026-005';
-  var typ=wo?(wo.type||'合同类型与审批链疑点'):'合同类型与审批链疑点';
-  var q='请针对异常工单 '+woid+'、采购单 '+po+'（'+typ+'）给出处置步骤与需业务补充的材料。';
+  var woid=wo?(wo.id||wo.work_order_id||'WO-2026-006'):'WO-2026-006';
+  var po=wo?(wo.po_number||'PO-2026-006'):'PO-2026-006';
+  var typ=wo?(wo.type||'超合同付款与付款溯源'):'超合同付款与付款溯源';
+  var q='请按宝尊非经营性采购风控第一期要求，针对工单 '+woid+'、'+po+'（'+typ+'）说明：①三单匹配是否触发冻结条件；②四流是否可能不一致；③是否需冻结付款、补采购申请或升级审批；④需业务/财务补充的材料清单。';
   if(typeof openChatAndSend==='function')openChatAndSend(q);
   else wfShowToast('无法打开对话：请点右上角 AI Agent');
 }
