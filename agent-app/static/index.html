@@ -556,11 +556,7 @@ body.resizing #resizeChat{pointer-events:auto!important}
 .wf-trigger-details>summary::-webkit-details-marker{display:none}
 .wf-trigger-details[open]>summary{color:#155EEF}
 .wf-trigger-hint-inner{padding:0 12px 10px;line-height:1.45;color:#475569}
-/* 拖拽/平移画布时：专注模式（由 JS 添加 .wf-pipe-focus） */
-.wf-studio-body.wf-pipe-focus .wf-scenario-new{display:none!important}
-.wf-studio-body.wf-pipe-focus .wf-scenario-item .wf-si-sub{display:none!important}
-.wf-studio-body.wf-pipe-focus .wf-scenario-rail{width:80px;flex:0 0 80px}
-.wf-studio-body.wf-pipe-focus .wf-scenario-rail-h{font-size:9px;padding:8px 6px;text-align:center;line-height:1.25}
+/* 拖拽/平移画布时：专注模式（不改左侧场景/节点库宽度，避免画布跳动） */
 .wf-studio-body.wf-pipe-focus .wf-canvas-toolbar,
 .wf-studio-body.wf-pipe-focus .wf-zoom-bar{
   opacity:0!important;pointer-events:none!important;transition:opacity .12s ease;
@@ -653,12 +649,17 @@ body.resizing #resizeChat{pointer-events:auto!important}
 .wf-match-card h5{margin:0 0 8px;font-size:12px;font-weight:650;color:#374151}
 .wf-match-row{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:12px;color:#6B7280;margin-bottom:8px}
 .wf-match-row b{color:#111827;font-weight:600}
-.wf-match-ok{font-size:15px;font-weight:700;color:#059669;margin:4px 0}
+.wf-match-ok{font-size:14px;font-weight:650;color:#047857;margin:4px 0}
 .wf-match-sub{font-size:11px;color:#6B7280}
-.wf-banner-ok{padding:8px 10px;border-radius:8px;background:#ECFDF5;border:1px solid #A7F3D0;font-size:11px;color:#065F46;line-height:1.45}
-.wf-banner-warn{padding:8px 10px;border-radius:8px;background:#FEF2F2;border:1px solid #FECACA;font-size:12px;color:#B91C1C;line-height:1.45}
-.wf-wo-card{border:1px solid #FECACA;border-radius:10px;overflow:hidden;background:#fff}
-.wf-wo-head{background:#DC2626;color:#fff;padding:8px 12px;font-size:12px;font-weight:650}
+.wf-banner-ok{padding:8px 10px;border-radius:8px;background:#F0FDF4;border:1px solid #BBF7D0;font-size:11px;color:#166534;line-height:1.45}
+.wf-banner-warn{padding:8px 10px;border-radius:8px;background:#FFFBEB;border:1px solid #FDE68A;font-size:12px;color:#B45309;line-height:1.45}
+.wf-run-details{border:1px solid #E5E7EB;border-radius:8px;background:#FAFAFA;overflow:hidden}
+.wf-run-details summary{cursor:pointer;padding:8px 10px;font-size:11px;font-weight:600;color:#64748B;user-select:none}
+.wf-run-details[open] summary{color:#155EEF}
+.wf-run-details-body{padding:0 10px 10px;font-size:11px;color:#6B7280;line-height:1.45}
+.wf-run-hints .wf-run-details-body ul{margin:4px 0 0 18px;padding:0;font-size:12px;color:#4B5563;line-height:1.5}
+.wf-wo-card{border:1px solid #E7E5E4;border-radius:10px;overflow:hidden;background:#fff}
+.wf-wo-head{background:#44403C;color:#fff;padding:8px 12px;font-size:12px;font-weight:650}
 .wf-wo-body{padding:10px 12px;font-size:12px;color:#374151;line-height:1.55}
 .wf-wo-body dt{font-size:10px;color:#9CA3AF;font-weight:600;margin-top:6px}
 .wf-wo-body dt:first-child{margin-top:0}
@@ -668,8 +669,6 @@ body.resizing #resizeChat{pointer-events:auto!important}
 .wf-act-ai:hover{filter:brightness(1.08)}
 .wf-act-biz{padding:9px 16px;border:none;border-radius:8px;background:#EA580C;color:#fff;font-size:12px;font-weight:600;cursor:pointer}
 .wf-act-biz:hover{filter:brightness(1.06)}
-.wf-act-collapse{padding:9px 14px;border:1px solid #FCA5A5;border-radius:8px;background:#fff;color:#DC2626;font-size:12px;font-weight:600;cursor:pointer}
-.wf-act-collapse:hover{background:#FEF2F2}
 .wf-run-foot{margin:0;font-size:10px;color:#9CA3AB;text-align:center}
 .wf-inspector-head{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid #F3F4F6}
 .wf-inspector-head span{font-size:13px;font-weight:650;color:#111827}
@@ -1530,7 +1529,7 @@ body.demo-tour-on[data-demo-zoom="chat"] .mn{transform:none}
                       <div class="wf-match-row">合同 <b>¥200,000</b> · PO <b>ThinkPad 批量</b> · 在途付款 <b>¥400,000</b> · 发票 <b>连号嫌疑</b></div>
                       <div class="wf-match-ok">待核对</div>
                       <div class="wf-match-sub">演示案例贴近需求书：PO-2026-006 类「超合同付款 + 高中标率供应商」</div>
-                      <div class="wf-banner-ok">四流：合同签约主体、付款申请方、发票销方、收货信息需一致；同一合同项下付款发起人异常需结构化溯源（客户原话场景）。</div>
+                      <details class="wf-run-details"><summary>四流一致要点</summary><div class="wf-run-details-body">合同签约主体、付款申请方、发票销方、收货信息需一致；同一合同项下付款发起人异常需结构化溯源（客户原话场景）。</div></details>
                     </div>
                     <div class="wf-banner-warn">高风险：疑似超合同累计付款、重复付款线索 — 建议冻结并升级 CFO 线审批</div>
                     <div class="wf-wo-card">
@@ -1547,7 +1546,6 @@ body.demo-tour-on[data-demo-zoom="chat"] .mn{transform:none}
                     <div class="wf-run-actions">
                       <button type="button" class="wf-act-ai" onclick="wfRiskCardAskAi()">问 AI 处置</button>
                       <button type="button" class="wf-act-biz" onclick="wfRiskCardContactBiz()">联系业务</button>
-                      <button type="button" class="wf-act-collapse" onclick="wfRiskCardCollapse()">收起面板</button>
                     </div>
                     <p class="wf-run-foot">样例对齐《客户需求说明书》第一期：非经营性采购全链路、三单匹配、四流一致、工单与飞书；运行后由 <code style="font-size:10px">/api/dashboard</code> 等接口刷新。</p>
                   </div>
@@ -2010,7 +2008,8 @@ function wfRefreshRunDockFromServer(){
         (tw.amount!=null&&tw.amount!==''?'<div class="wf-match-row" style="margin-top:6px">参考金额 <b>'+escHtml(wfFmtMoneyDock(tw.amount))+'</b></div>':'')+
         '<div class="wf-match-ok">'+escHtml(match)+'</div>'+
         (sub?'<div class="wf-match-sub">'+escHtml(sub)+'</div>':'')+
-        '<div class="wf-banner-ok">已按画布节点（三系统汇聚→三单→四流→Agent）与看板异常池生成摘要，对齐需求书 F02/F04/F05/F12。</div>'+
+        '<details class="wf-run-details"><summary>需求对齐说明（F02 / F04 / F05 / F12）</summary>'+
+        '<div class="wf-run-details-body">已按画布节点（三系统汇聚→三单→四流→Agent）与看板异常池生成摘要。</div></details>'+
       '</div>'+
       '<div class="wf-banner-warn">'+escHtml(alertTxt)+'</div>'+
       (wo?('<div class="wf-wo-card">'+
@@ -2021,11 +2020,10 @@ function wfRefreshRunDockFromServer(){
         '<dt>摘要</dt><dd>'+escHtml(String(desc).slice(0,220))+(String(desc).length>220?'…':'')+'</dd>'+
         '<dt>状态</dt><dd><code style="font-size:11px">'+escHtml(wstat)+'</code></dd>'+
         '</dl></div></div>'):'<div class="wf-wo-card"><div class="wf-wo-body" style="font-size:12px;color:#6B7280">暂无未关闭工单样本</div></div>')+
-      (hintHtml?('<div style="font-size:12px;font-weight:600;color:#374151">智能体提示</div>'+hintHtml):'')+
+      (hintHtml?('<details class="wf-run-details wf-run-hints"><summary>智能体提示（'+hints.length+' 条）</summary><div class="wf-run-details-body">'+hintHtml+'</div></details>'):'')+
       '<div class="wf-run-actions">'+
         '<button type="button" class="wf-act-ai" onclick="wfRiskCardAskAi()">问 AI 处置</button>'+
         '<button type="button" class="wf-act-biz" onclick="wfRiskCardContactBiz()">联系业务</button>'+
-        '<button type="button" class="wf-act-collapse" onclick="wfRiskCardCollapse()">收起面板</button>'+
       '</div>'+
       '<p class="wf-run-foot">数据来自本机 <code style="font-size:10px">/api/dashboard</code> 与工单列表；配置真实系统后由适配节点拉数并更新。</p>';
     var det=document.getElementById('wfRunDockDetail');
@@ -2138,16 +2136,9 @@ function wfLayoutReveal(which){
 function wfToggleRunDock(){
   wfLayoutToggle('rdock');
 }
-function wfRiskCardCollapse(){
-  var b=wfStudioLayoutRoot();
-  if(b)b.classList.add('wf-coll-rdock');
-  wfSyncLayoutButtons();
-  wfSaveStudioLayout();
-  wfResizePipeSoon();
-}
 window.wfOnPipelineRunComplete=function(){
   var b=wfStudioLayoutRoot();
-  if(b)b.classList.remove('wf-coll-rdock');
+  var rdHidden=b&&b.classList.contains('wf-coll-rdock');
   wfSyncLayoutButtons();
   wfSaveStudioLayout();
   if(typeof wfSwitchRunDockTab==='function')wfSwitchRunDockTab('res');
@@ -2156,6 +2147,11 @@ window.wfOnPipelineRunComplete=function(){
     if(typeof wfRefreshRunDockFromServer==='function')wfRefreshRunDockFromServer();
   },650);
   wfResizePipeSoon();
+  if(typeof wfShowToast==='function'){
+    wfShowToast(rdHidden
+      ? '运行完成：侧栏「运行结果」已更新，展开侧栏或点画布左下「› 运行结果」查看'
+      : '运行完成：「运行结果」已刷新');
+  }
 };
 function wfRiskCardAskAi(){
   var ins=window.__wfLastRiskInsight;

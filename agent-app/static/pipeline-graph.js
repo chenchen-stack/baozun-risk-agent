@@ -155,7 +155,7 @@
     if (typeof graph.updateExecutionOrder === "function") graph.updateExecutionOrder();
   }
 
-  /** 拖拽节点 / 平移画布 / 拖连线时暂收侧栏，松手恢复 */
+  /** 拖拽节点 / 平移画布 / 拖连线时仅暂收右侧栏，左侧场景/节点库不动，避免布局跳动 */
   var _wfPipeQuiet = { active: false, saved: null, ptr: null };
 
   function wfEnterPipeQuietMode() {
@@ -170,7 +170,7 @@
       ins: root.classList.contains("wf-coll-insp"),
       rd: root.classList.contains("wf-coll-rdock"),
     };
-    root.classList.add("wf-coll-scenario", "wf-coll-palette", "wf-coll-insp", "wf-coll-rdock", "wf-pipe-focus");
+    root.classList.add("wf-coll-insp", "wf-coll-rdock", "wf-pipe-focus");
     var det = document.getElementById("wfTriggerDetails");
     if (det) det.open = false;
     if (content) content.classList.add("wf-pipe-focus");
@@ -335,6 +335,13 @@
           });
       },
       "wf/agent": function () {
+        if (window.__pipeRunSeqActive) {
+          setNodeLastRun(
+            this,
+            "批量运行：未自动打开对话（避免与「运行结果」同时占屏）。请在运行结果侧栏点「问 AI 处置」，或取消运行后单点本节点 ▶ 仅执行。"
+          );
+          return;
+        }
         setNodeLastRun(this, "已唤起右侧「非经营性采购风控」对话（对齐需求书 F01–F14 / 第一期 POC）");
         if (typeof window.openChatAndSend === "function")
           window.openChatAndSend(
@@ -1836,8 +1843,8 @@
         markGraphDirty();
         hint("运行完成");
         clearHintLater();
-        toast("运行完成：右侧「测试运行」面板已展开，可切换结果 / 详情 / 追踪");
         if (typeof window.wfOnPipelineRunComplete === "function") window.wfOnPipelineRunComplete();
+        else toast("运行完成");
         return;
       }
       var n = nodes[i];
