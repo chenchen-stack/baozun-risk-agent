@@ -614,9 +614,12 @@ body.resizing #resizeChat{pointer-events:auto!important}
 .wf-palette-compact button{width:100%;text-align:left;padding:8px 10px;border:1px solid #E5E7EB;border-radius:8px;background:#F9FAFB;font-size:12px;font-weight:600;color:#111827;cursor:pointer;transition:border-color .12s,background .12s}
 .wf-palette-compact button:hover{border-color:#155EEF;background:#EFF6FF;color:#155EEF}
 .wf-canvas-col{flex:1;min-width:0;display:flex;flex-direction:column;position:relative;background:#F4F5F8}
-.pipe-canvas-full{flex:1 1 auto;min-height:min(48vh,560px);display:flex;flex-direction:column;overflow:hidden;position:relative}
-.pipe-lg-host{flex:1 1 auto;min-height:min(42vh,480px);height:auto;position:relative;z-index:1;background:#F4F5F8;border:none;border-radius:0;overflow:hidden;box-shadow:none}
-.pipe-lg-host canvas#pipeGraphCanvas{display:block;width:100%;height:100%;touch-action:none;cursor:grab;position:relative;z-index:2;outline:none}
+.pipe-canvas-full{flex:1 1 0;min-height:0;display:flex;flex-direction:column;overflow:hidden;position:relative}
+.pipe-lg-host{
+  flex:1 1 0;min-height:200px;position:relative;z-index:1;
+  background:var(--paper,#EEF1F4);border:none;border-radius:0;overflow:hidden;box-shadow:none;
+}
+.pipe-lg-host canvas#pipeGraphCanvas{display:block;width:100%;height:100%;min-height:200px;touch-action:none;cursor:grab;position:relative;z-index:2;outline:none}
 .wf-canvas-toolbar{position:absolute;left:14px;top:50%;transform:translateY(-50%);z-index:6;display:flex;flex-direction:column;gap:4px;padding:8px 6px;background:rgba(255,255,255,.96);border:1px solid #E5E7EB;border-radius:14px;box-shadow:0 4px 24px rgba(15,23,42,.08)}
 .wf-canvas-toolbar button{width:36px;height:36px;border:none;border-radius:10px;background:transparent;cursor:pointer;color:#374151;font-size:18px;line-height:1;display:flex;align-items:center;justify-content:center}
 .wf-canvas-toolbar button:hover{background:#F3F4F6;color:#155EEF}
@@ -1762,6 +1765,77 @@ const CUSTOMER_TOOL_LABELS={
 let D=null,history=[],excFilter='all',woFilter='all',chatOpen=false;
 let customerPocSequenceRunning=false;
 
+/** 与 agent.py 演示库对齐：无后端或接口失败时填充表格，避免空白页 */
+const OFFLINE_DEMO=(function(){
+  const budgets=[
+    {code:'BBM-CAPEX-2026-Q1',dept:'BBM-GAP事业部',category:'资本性支出-门店装修',q_budget:2000000,used:1810000,frozen:400000,available:-210000,usage_rate:90.5,status:'超预算'},
+    {code:'BBM-CAPEX-2026-Q2',dept:'BBM-GAP事业部',category:'资本性支出-门店装修',q_budget:3000000,used:0,frozen:1200000,available:1800000,usage_rate:0,status:'正常'},
+    {code:'BEC-IT-2026-Q1',dept:'BEC-技术部',category:'IT设备采购',q_budget:500000,used:400000,frozen:0,available:100000,usage_rate:80,status:'预算紧张'},
+    {code:'BEC-ADMIN-2026-Q1',dept:'BEC-市场部',category:'行政办公',q_budget:100000,used:45000,frozen:0,available:55000,usage_rate:45,status:'正常'},
+    {code:'BBM-MKT-2026-Q1',dept:'BBM-HUNTER事业部',category:'市场营销',q_budget:200000,used:120000,frozen:85000,available:-5000,usage_rate:102.5,status:'超预算'}
+  ];
+  const deliveries=[
+    {po_number:'PO-2026-001',title:'GAP南京西路店基础装修',supplier:'上海锦华装饰工程有限公司',expected_date:'2026-02-25',actual_date:'2026-02-28',delay_days:3,status:'已交付'},
+    {po_number:'PO-2026-002',title:'ThinkPad T14s 批量采购',supplier:'上海联拓科技有限公司',expected_date:'2026-02-10',actual_date:'2026-02-10',delay_days:0,status:'已交付'},
+    {po_number:'PO-2026-003',title:'GAP杭州万象城店装修',supplier:'杭州博雅建设有限公司',expected_date:'2026-03-15',actual_date:'2026-03-20',delay_days:5,status:'已交付'},
+    {po_number:'PO-2026-004',title:'市场部办公家具',supplier:'上海美宜家具有限公司',expected_date:'2026-03-08',actual_date:'2026-03-10',delay_days:2,status:'已交付'},
+    {po_number:'PO-2026-005',title:'GAP成都太古里店装修',supplier:'成都锦华装饰工程有限公司',expected_date:'2026-04-30',actual_date:null,delay_days:0,status:'进行中'},
+    {po_number:'PO-2026-006',title:'ThinkPad 笔记本第二批',supplier:'上海联拓科技有限公司',expected_date:'2026-03-15',actual_date:'2026-03-15',delay_days:0,status:'已交付'},
+    {po_number:'PO-2026-007',title:'年度营销物料',supplier:'杭州创意印务有限公司',expected_date:'2026-04-15',actual_date:null,delay_days:0,status:'待交付'},
+    {po_number:'PO-2026-008',title:'华北区新店筹备',supplier:'北京恒达建设有限公司',expected_date:'2026-06-30',actual_date:null,delay_days:0,status:'待下单'},
+    {po_number:'PO-2026-088',title:'四流演示样例采购',supplier:'上海甲方科技有限公司',expected_date:'2026-03-20',actual_date:'2026-03-21',delay_days:0,status:'已交付'}
+  ];
+  const assets=[
+    {id:'FA-2026-001',name:'GAP南京西路店装修',category:'长期待摊费用-门店装修',original_value:250000,monthly_depreciation:6944,net_value:243056,location:'上海南京西路旗舰店',inventory_result:'账实一致'},
+    {id:'FA-2026-002',name:'联想ThinkPad T14s×20台',category:'固定资产-电子设备',original_value:200000,monthly_depreciation:5556,net_value:188888,location:'宝尊上海总部-技术部',inventory_result:'账实一致'},
+    {id:'FA-2026-003',name:'GAP杭州万象城店装修',category:'长期待摊费用-门店装修',original_value:580000,monthly_depreciation:16111,net_value:580000,location:'杭州万象城GAP店',inventory_result:'待盘点'},
+    {id:'FA-2026-004',name:'会议大屏与视频会议系统',category:'固定资产-电子设备',original_value:128000,monthly_depreciation:3556,net_value:120888,location:'上海总部-会议室A',inventory_result:'账实一致'},
+    {id:'FA-2026-005',name:'叉车与仓储设备',category:'固定资产-机械设备',original_value:86000,monthly_depreciation:2389,net_value:75890,location:'昆山物流中心',inventory_result:'账实一致'}
+  ];
+  const suppliers=[
+    {id:'SUP-001',name:'上海锦华装饰工程有限公司',credit_score:85,total_contracts:3,total_amount:850000,win_rate:0.67,related_suppliers:[],risk_level:'low'},
+    {id:'SUP-002',name:'上海联拓科技有限公司',credit_score:78,total_contracts:4,total_amount:600000,win_rate:0.8,related_suppliers:[],risk_level:'medium'},
+    {id:'SUP-003',name:'杭州博雅建设有限公司',credit_score:92,total_contracts:2,total_amount:580000,win_rate:0.5,related_suppliers:[],risk_level:'low'},
+    {id:'SUP-004',name:'上海美宜家具有限公司',credit_score:65,total_contracts:1,total_amount:35000,win_rate:1,related_suppliers:['SUP-008'],risk_level:'medium'},
+    {id:'SUP-005',name:'成都锦华装饰工程有限公司',credit_score:82,total_contracts:1,total_amount:980000,win_rate:0.33,related_suppliers:['SUP-001'],risk_level:'medium'},
+    {id:'SUP-008',name:'上海美宜办公用品有限公司',credit_score:55,total_contracts:0,total_amount:0,win_rate:0,related_suppliers:['SUP-004'],risk_level:'high'}
+  ];
+  const work_orders=[
+    {id:'WO-2026-001',po_number:'PO-2026-004',type:'跳过采购申请',priority:'high',title:'市场部办公家具采购未提交采购申请',assignee:'李明（风控专员）',status:'open',created:'2026-03-15 09:30',due:'2026-03-20',description:'PO-2026-004 未提交采购申请直接签署合同，需追补流程'},
+    {id:'WO-2026-002',po_number:'PO-2026-005',type:'合同类型错误+审批流异常',priority:'high',title:'GAP成都太古里店装修合同类型错误',assignee:'王芳（风控主管）',status:'in_progress',created:'2026-03-18 14:20',due:'2026-03-22',description:'合同类型标记错误，大额合同缺少 CFO/法务审批'},
+    {id:'WO-2026-003',po_number:'PO-2026-006',type:'疑似重复付款+超合同金额',priority:'high',title:'ThinkPad笔记本第二批疑似重复付款',assignee:'张强（风控专员）',status:'open',created:'2026-03-19 10:15',due:'2026-03-21',description:'两笔付款金额与收款方相同，发起人不同'},
+    {id:'WO-2026-088',po_number:'PO-2026-088',type:'四流不一致',priority:'high',title:'演示样例：合同主体与收款方不符',assignee:'风控专员',status:'open',created:'2026-03-25 09:00',due:'2026-03-28',description:'需核实供应商变更或账户风险，建议冻结待复核'}
+  ];
+  const notifications=[
+    {id:'N-001',time:'2026-03-15 09:31',channel:'飞书',recipient:'李明',type:'工单创建',content:'WO-2026-001: 市场部办公家具采购未提交采购申请',status:'已送达'},
+    {id:'N-002',time:'2026-03-15 09:31',channel:'飞书',recipient:'风控负责人',type:'高风险预警',content:'PO-2026-004 跳过采购申请直接签署合同',status:'已送达'},
+    {id:'N-003',time:'2026-03-18 14:21',channel:'飞书',recipient:'王芳',type:'工单创建',content:'WO-2026-002: GAP成都太古里店装修合同类型错误',status:'已送达'},
+    {id:'N-004',time:'2026-03-19 10:16',channel:'飞书',recipient:'张强',type:'工单创建',content:'WO-2026-003: ThinkPad笔记本第二批疑似重复付款',status:'已送达'},
+    {id:'N-005',time:'2026-03-19 10:16',channel:'飞书',recipient:'风控负责人',type:'高风险预警',content:'PO-2026-006 疑似重复付款，已创建工单',status:'已送达'}
+  ];
+  const dashboard={
+    summary:{total_po:9,total_amount:3842000,anomaly_count:7,high_risk:3,medium_risk:2,low_risk:2,pending_payment:3,pending_amount:620000,three_doc_pass:5,three_doc_total:6},
+    exceptions:[
+      {id:'PO-2026-004',po:'PO-2026-004',title:'跳过采购申请',type:'流程违规',level:'high',amount:85000,dept:'BEC-市场部',date:'2026-03-10',contract:'SC-2026-004',supplier:'上海美宜家具有限公司'},
+      {id:'PO-2026-005',po:'PO-2026-005',title:'合同类型与审批异常',type:'合同风险',level:'high',amount:980000,dept:'BBM-GAP事业部',date:'2026-03-12',contract:'SC-2026-005',supplier:'成都锦华装饰工程有限公司'},
+      {id:'PO-2026-006',po:'PO-2026-006',title:'疑似重复付款',type:'付款风险',level:'high',amount:400000,dept:'BEC-技术部',date:'2026-03-18',contract:'SC-2026-006',supplier:'上海联拓科技有限公司'},
+      {id:'PO-2026-007',po:'PO-2026-007',title:'发票连号嫌疑',type:'票据风险',level:'medium',amount:120000,dept:'BBM-HUNTER事业部',date:'2026-03-14',contract:'SC-2026-007',supplier:'杭州创意印务有限公司'},
+      {id:'PO-2026-001',po:'PO-2026-001',title:'交付轻微延迟',type:'履约提醒',level:'low',amount:250000,dept:'BBM-GAP事业部',date:'2026-02-28',contract:'SC-2026-001',supplier:'上海锦华装饰工程有限公司'}
+    ],
+    pending_payments:[
+      {id:'PAY-2026-001',contract:'SC-2026-001',desc:'南京西路店装修尾款',amount:125000,payee:'上海锦华装饰工程有限公司',date:'2026-03-20',risk:'medium'},
+      {id:'PAY-2026-006',contract:'SC-2026-006',desc:'ThinkPad 第二批（笔1）',amount:200000,payee:'上海联拓科技有限公司',date:'2026-03-19',risk:'high'},
+      {id:'PAY-2026-007',contract:'SC-2026-006',desc:'ThinkPad 第二批（笔2）',amount:200000,payee:'上海联拓科技有限公司',date:'2026-03-19',risk:'high'}
+    ],
+    work_orders:work_orders,
+    notifications:notifications
+  };
+  return{budgets,deliveries,assets,suppliers,work_orders,notifications,dashboard};
+})();
+function pickList(apiArr,fallback){
+  return(apiArr&&apiArr.length)?apiArr:fallback;
+}
+
 const LS_KEY='BZ_DEEPSEEK_API_KEY',LS_SERVER='BZ_USE_SERVER_KEY';
 function chatApiHeaders(){
   const k=localStorage.getItem(LS_KEY);
@@ -1960,7 +2034,14 @@ function wfSetRunHint(s){
     var parsed=null;
     if(raw)try{parsed=JSON.parse(raw);}catch(e2){}
     if(parsed&&parsed.litegraph&&parsed.litegraph.nodes&&parsed.litegraph.nodes.length&&typeof window.wfApplyGraphPayload==='function'){
-      window.wfApplyGraphPayload(parsed);
+      var applied=window.wfApplyGraphPayload(parsed);
+      if(applied===false&&window.__pipeLGraph&&typeof window.wfBuildGraphForActiveScene==='function'){
+        window.wfBuildGraphForActiveScene(window.__pipeLGraph);
+        window.__pipeLGraph.stop();
+        window.__pipeLGraph.start();
+        if(typeof resizePipelineGraphEditor==='function')resizePipelineGraphEditor();
+        if(typeof wfZoomToFit==='function')wfZoomToFit();
+      }
     }else if(window.__pipeLGraph&&typeof window.wfBuildGraphForActiveScene==='function'){
       window.wfBuildGraphForActiveScene(window.__pipeLGraph);
       window.__pipeLGraph.stop();
@@ -2122,7 +2203,7 @@ function wfRenderRunExecutionSteps(){
     var lr=(n.properties&&n.properties.last_run)?String(n.properties.last_run).replace(/\s+/g,' ').trim():'';
     lr=escHtml(lr.slice(0,220));
     var muted=lr?'':' wf-run-step-out--muted';
-    var out=lr?lr:'尚未写入输出';
+    var out=lr?lr:'暂无本轮执行输出（该步未运行或节点未写入结果）';
     return '<li class="wf-run-step" role="button" tabindex="0" data-idx="'+i+'" onclick="wfFocusPipeNodeAtIndex('+i+')" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();wfFocusPipeNodeAtIndex('+i+');}">'+
       '<span class="wf-run-step-ix">'+(i+1)+'</span>'+
       '<div class="wf-run-step-main">'+
@@ -2647,15 +2728,27 @@ function toggleCpQuickGroup(id){
 function fmt(n){return '¥'+n.toLocaleString()}
 
 async function loadData(){
-  try{
-    const r=await fetch('/api/dashboard');D=await r.json();renderDash();renderExc();renderRpt();
+  function applyDash(){
+    renderDash();renderExc();renderRpt();
     if(D.work_orders)renderWoCards();
     if(D.notifications){
       renderNotifications();
       const badge=document.getElementById('notifBadge');
-      badge.style.display='flex';badge.textContent=D.notifications.length;
+      if(badge){badge.style.display='flex';badge.textContent=D.notifications.length;}
     }
-  }catch(e){console.error(e)}
+  }
+  try{
+    const r=await fetch('/api/dashboard');
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    const j=await r.json();
+    if(!j||!j.summary||!Array.isArray(j.exceptions))throw new Error('invalid dashboard');
+    D=j;
+    applyDash();
+  }catch(e){
+    console.warn('[demo] /api/dashboard 不可用，使用内置演示数据：',e&&e.message?e.message:e);
+    D=OFFLINE_DEMO.dashboard;
+    applyDash();
+  }
 }
 
 function renderDash(){
@@ -2743,7 +2836,17 @@ function woFlt(f,btn){
   renderWoCards();
 }
 async function loadWorkOrders(){
-  try{const r=await fetch('/api/workorders');const d=await r.json();D.work_orders=d.work_orders;renderWoCards();}catch(e){}
+  if(!D)D={};
+  try{
+    const r=await fetch('/api/workorders');
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    const d=await r.json();
+    D.work_orders=pickList(d.work_orders,OFFLINE_DEMO.work_orders);
+    renderWoCards();
+  }catch(e){
+    D.work_orders=OFFLINE_DEMO.work_orders;
+    renderWoCards();
+  }
 }
 function renderWoCards(){
   const items=woFilter==='all'?(D.work_orders||[]):(D.work_orders||[]).filter(w=>w.status===woFilter);
@@ -2764,13 +2867,21 @@ function renderWoCards(){
 }
 
 async function loadNotifications(){
+  if(!D)D={};
   try{
-    const r=await fetch('/api/notifications');const d=await r.json();
-    D.notifications=d.notifications;
+    const r=await fetch('/api/notifications');
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    const d=await r.json();
+    D.notifications=pickList(d.notifications,OFFLINE_DEMO.notifications);
     renderNotifications();
     const badge=document.getElementById('notifBadge');
-    badge.style.display='flex';badge.textContent=d.notifications.length;
-  }catch(e){}
+    if(badge){badge.style.display='flex';badge.textContent=String((D.notifications||[]).length);}
+  }catch(e){
+    D.notifications=OFFLINE_DEMO.notifications;
+    renderNotifications();
+    const badge=document.getElementById('notifBadge');
+    if(badge){badge.style.display='flex';badge.textContent=String(OFFLINE_DEMO.notifications.length);}
+  }
 }
 function renderNotifications(){
   const items=(D.notifications||[]).slice().reverse();
@@ -2789,10 +2900,17 @@ function renderNotifications(){
 }
 
 async function loadSuppliers(){
+  let list=OFFLINE_DEMO.suppliers;
   try{
-    const r=await fetch('/api/suppliers');const d=await r.json();
+    const r=await fetch('/api/suppliers');
+    if(r.ok){
+      const d=await r.json();
+      list=pickList(d.suppliers,OFFLINE_DEMO.suppliers);
+    }
+  }catch(e){}
+  try{
     let h='';
-    d.suppliers.forEach(s=>{
+    list.forEach(s=>{
       const cls=s.risk_level==='high'?'h':s.risk_level==='medium'?'m':'l';
       const lbl=s.risk_level==='high'?'高':s.risk_level==='medium'?'中':'低';
       const rel=s.related_suppliers.length?s.related_suppliers.join(', '):'—';
@@ -2810,10 +2928,17 @@ async function loadSuppliers(){
 }
 
 async function loadBudgets(){
+  let list=OFFLINE_DEMO.budgets;
   try{
-    const r=await fetch('/api/budgets');const d=await r.json();
+    const r=await fetch('/api/budgets');
+    if(r.ok){
+      const d=await r.json();
+      list=pickList(d.budgets,OFFLINE_DEMO.budgets);
+    }
+  }catch(e){}
+  try{
     let h='';
-    d.budgets.forEach(b=>{
+    list.forEach(b=>{
       const stCls=b.status==='超预算'?'color:var(--red);font-weight:600':b.status==='预算紧张'?'color:var(--orange);font-weight:600':'color:var(--green)';
       h+=`<tr><td style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text2);white-space:nowrap">${b.code}</td>
           <td style="white-space:nowrap">${b.dept}</td><td style="font-size:11px">${b.category}</td>
@@ -2827,10 +2952,17 @@ async function loadBudgets(){
 }
 
 async function loadDeliveries(){
+  let list=OFFLINE_DEMO.deliveries;
   try{
-    const r=await fetch('/api/deliveries');const d=await r.json();
+    const r=await fetch('/api/deliveries');
+    if(r.ok){
+      const d=await r.json();
+      list=pickList(d.deliveries,OFFLINE_DEMO.deliveries);
+    }
+  }catch(e){}
+  try{
     let h='';
-    d.deliveries.forEach(v=>{
+    list.forEach(v=>{
       const stCls=v.status==='已交付'?'var(--green)':v.status==='进行中'?'var(--blue)':v.status==='待交付'?'var(--orange)':'var(--text3)';
       h+=`<tr><td style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2);white-space:nowrap">${v.po_number}</td>
           <td>${v.title||'—'}</td><td style="font-size:11px">${v.supplier||'—'}</td>
@@ -2843,10 +2975,17 @@ async function loadDeliveries(){
 }
 
 async function loadAssets(){
+  let list=OFFLINE_DEMO.assets;
   try{
-    const r=await fetch('/api/assets');const d=await r.json();
+    const r=await fetch('/api/assets');
+    if(r.ok){
+      const d=await r.json();
+      list=pickList(d.assets,OFFLINE_DEMO.assets);
+    }
+  }catch(e){}
+  try{
     let h='';
-    d.assets.forEach(a=>{
+    list.forEach(a=>{
       const invCls=a.inventory_result==='账实一致'?'color:var(--green)':'color:var(--orange)';
       h+=`<tr><td style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2);white-space:nowrap">${a.id}</td>
           <td style="font-weight:500">${a.name}</td><td style="font-size:11px">${a.category}</td>

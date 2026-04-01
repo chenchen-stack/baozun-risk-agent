@@ -93,6 +93,11 @@
     node.properties.last_run = String(msg).slice(0, 480);
     markGraphDirty();
     refreshInspectorIfCurrent(node);
+    if (typeof window.wfRenderRunExecutionSteps === "function") {
+      try {
+        window.wfRenderRunExecutionSteps();
+      } catch (e) {}
+    }
   }
 
   function refreshInspectorIfCurrent(node) {
@@ -263,6 +268,7 @@
         }
         fetch(new URL("/api/health", location.href), { credentials: "same-origin", cache: "no-store" })
           .then(function (r) {
+            if (!r.ok) throw new Error("HTTP " + r.status);
             return r.json();
           })
           .then(function (j) {
@@ -277,13 +283,18 @@
       },
       "wf/rest": function () {
         var n = this;
-        if (!canHttp()) return;
+        if (!canHttp()) {
+          setNodeLastRun(n, "执行结果（离线）：需通过 http(s) 同源访问才能请求 /api/datasources/status；本轮未发起请求。");
+          return;
+        }
+        setNodeLastRun(n, "执行中：GET /api/datasources/status …");
         fetch(new URL("/api/datasources/status", location.href), { credentials: "same-origin", cache: "no-store" })
           .then(function (r) {
+            if (!r.ok) throw new Error("HTTP " + r.status);
             return r.json();
           })
           .then(function (j) {
-            setNodeLastRun(n, "采购系统侧：数据源状态（可接 PO/申请 REST）→ " + JSON.stringify(j));
+            setNodeLastRun(n, "执行完成：采购系统侧数据源状态 → " + JSON.stringify(j));
           })
           .catch(function (e) {
             setNodeLastRun(n, "datasources 失败: " + e.message);
@@ -291,13 +302,18 @@
       },
       "wf/db": function () {
         var n = this;
-        if (!canHttp()) return;
+        if (!canHttp()) {
+          setNodeLastRun(n, "执行结果（离线）：需 http(s) 同源访问才能请求 /api/integrations/status；本轮未发起请求。");
+          return;
+        }
+        setNodeLastRun(n, "执行中：GET /api/integrations/status …");
         fetch(new URL("/api/integrations/status", location.href), { credentials: "same-origin", cache: "no-store" })
           .then(function (r) {
+            if (!r.ok) throw new Error("HTTP " + r.status);
             return r.json();
           })
           .then(function (j) {
-            setNodeLastRun(n, "合同/付款只读库或 SelectDB：集成态摘要 → " + JSON.stringify(j).slice(0, 300));
+            setNodeLastRun(n, "执行完成：合同/付款只读库或 SelectDB 集成态摘要 → " + JSON.stringify(j).slice(0, 300));
           })
           .catch(function (e) {
             setNodeLastRun(n, "integrations 失败: " + e.message);
@@ -321,14 +337,22 @@
       },
       "wf/etl": function () {
         var n = this;
-        if (!canHttp()) return;
+        if (!canHttp()) {
+          setNodeLastRun(
+            n,
+            "执行结果（离线）：主数据对齐 · 标准宽表 — 需 http(s) 同源才会请求 GET /api/dashboard。演示：已对齐 PO/合同/付款/票 联查键（宽表逻辑等同「本轮已跑完」）。"
+          );
+          return;
+        }
+        setNodeLastRun(n, "执行中：GET /api/dashboard …");
         fetch(new URL("/api/dashboard", location.href), { credentials: "same-origin", cache: "no-store" })
           .then(function (r) {
+            if (!r.ok) throw new Error("HTTP " + r.status);
             return r.json();
           })
           .then(function (d) {
             var keys = d && typeof d === "object" ? Object.keys(d).slice(0, 8).join(", ") : "";
-            setNodeLastRun(n, "GET /api/dashboard 字段示例: " + keys + " …");
+            setNodeLastRun(n, "执行完成：GET /api/dashboard → 字段示例 " + keys + " …");
           })
           .catch(function (e) {
             setNodeLastRun(n, "dashboard 失败: " + e.message);
@@ -369,14 +393,19 @@
       },
       "wf/callback": function () {
         var n = this;
-        if (!canHttp()) return;
+        if (!canHttp()) {
+          setNodeLastRun(n, "执行结果（离线）：需 http(s) 同源才能请求 /api/notifications；本轮未拉取推送回执。");
+          return;
+        }
+        setNodeLastRun(n, "执行中：GET /api/notifications …");
         fetch(new URL("/api/notifications", location.href), { credentials: "same-origin", cache: "no-store" })
           .then(function (r) {
+            if (!r.ok) throw new Error("HTTP " + r.status);
             return r.json();
           })
           .then(function (j) {
             var c = (j.notifications && j.notifications.length) || 0;
-            setNodeLastRun(n, "飞书/OA 推送（F13）：通知记录条数 ≈ " + c);
+            setNodeLastRun(n, "执行完成：飞书/OA 推送（F13）通知记录条数 ≈ " + c);
           })
           .catch(function (e) {
             setNodeLastRun(n, "notifications 失败: " + e.message);
@@ -384,14 +413,19 @@
       },
       "wf/audit": function () {
         var n = this;
-        if (!canHttp()) return;
+        if (!canHttp()) {
+          setNodeLastRun(n, "执行结果（离线）：需 http(s) 同源才能请求 /api/reports；本轮未拉取月报列表。");
+          return;
+        }
+        setNodeLastRun(n, "执行中：GET /api/reports …");
         fetch(new URL("/api/reports", location.href), { credentials: "same-origin", cache: "no-store" })
           .then(function (r) {
+            if (!r.ok) throw new Error("HTTP " + r.status);
             return r.json();
           })
           .then(function (j) {
             var c = (j.reports && j.reports.length) || 0;
-            setNodeLastRun(n, "月度内控报告（F14）HTML 列表条数 = " + c);
+            setNodeLastRun(n, "执行完成：月度内控报告（F14）HTML 列表条数 = " + c);
           })
           .catch(function (e) {
             setNodeLastRun(n, "reports 失败: " + e.message);
@@ -685,6 +719,18 @@
     applyScenarioPreset(graph, sid);
   };
 
+  /** configure 后若节点数为 0（存储损坏、类型不匹配等），自动按当前场景重建默认拓扑 */
+  function ensurePipelineGraphHasNodes(graph) {
+    if (!graph || !graph._nodes || graph._nodes.length) return;
+    console.warn("pipeline-graph: 已加载数据未还原出任何节点，已回退为当前场景默认拓扑");
+    if (typeof window.wfBuildGraphForActiveScene === "function") {
+      window.wfBuildGraphForActiveScene(graph);
+    } else {
+      buildDefaultGraph(graph);
+      applyScenarioPreset(graph, window.__wfActiveSceneId || "scene-proc");
+    }
+  }
+
   function resizeCanvas() {
     var host = document.querySelector("#pg-pipe .pipe-lg-host") || document.querySelector(".pipe-lg-host");
     var canvas = document.getElementById("pipeGraphCanvas");
@@ -748,6 +794,7 @@
     if (!data || !data.litegraph || !window.__pipeLGraph) return false;
     try {
       window.__pipeLGraph.configure(data.litegraph);
+      ensurePipelineGraphHasNodes(window.__pipeLGraph);
       normalizePipelineWfModes(window.__pipeLGraph);
       window.__pipeLGraph.stop();
       window.__pipeLGraph.start();
@@ -810,10 +857,12 @@
       .then(function (data) {
         if (data && data.litegraph && window.__pipeLGraph) {
           window.__pipeLGraph.configure(data.litegraph);
+          ensurePipelineGraphHasNodes(window.__pipeLGraph);
           normalizePipelineWfModes(window.__pipeLGraph);
           window.__pipeLGraph.stop();
           window.__pipeLGraph.start();
           resizeCanvas();
+          if (typeof window.wfZoomToFit === "function") window.wfZoomToFit();
           toast("已从服务器加载编排");
         } else {
           toast("服务器上暂无保存的编排");
@@ -860,10 +909,12 @@
           var data = JSON.parse(fr.result);
           if (data.litegraph && window.__pipeLGraph) {
             window.__pipeLGraph.configure(data.litegraph);
+            ensurePipelineGraphHasNodes(window.__pipeLGraph);
             normalizePipelineWfModes(window.__pipeLGraph);
             window.__pipeLGraph.stop();
             window.__pipeLGraph.start();
             resizeCanvas();
+            if (typeof window.wfZoomToFit === "function") window.wfZoomToFit();
             toast("已导入 JSON");
           } else alert("JSON 中缺少 litegraph 字段");
         } catch (e) {
@@ -1767,6 +1818,7 @@
         typeof window.wfLoadActiveSceneGraph === "function" ? window.wfLoadActiveSceneGraph() : null;
       if (localPayload && localPayload.litegraph && localPayload.litegraph.nodes && localPayload.litegraph.nodes.length) {
         graph.configure(localPayload.litegraph);
+        ensurePipelineGraphHasNodes(graph);
         finishGraphBoot();
       } else if (canHttp()) {
         var u = new URL("/api/pipeline/graph", location.href);
@@ -1777,6 +1829,7 @@
           .then(function (data) {
             if (data && data.litegraph && data.litegraph.nodes && data.litegraph.nodes.length) {
               graph.configure(data.litegraph);
+              ensurePipelineGraphHasNodes(graph);
               if (typeof window.wfMigrateServerGraphToActiveScene === "function")
                 window.wfMigrateServerGraphToActiveScene(data);
             } else if (typeof window.wfBuildGraphForActiveScene === "function") {
