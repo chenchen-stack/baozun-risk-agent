@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>非经营性采购风控 · 工作流节点编排（Dify 风格示意）</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Noto+Sans+SC:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0c1222;
+      --panel: #141c30;
+      --border: rgba(94, 234, 212, 0.22);
+      --accent: #2dd4bf;
+      --accent-dim: rgba(45, 212, 191, 0.15);
+      --text: #e8edf7;
+      --muted: #8b9cb8;
+      --node-api: #3b82f6;
+      --node-db: #8b5cf6;
+      --node-rpa: #f59e0b;
+      --node-agent: #2dd4bf;
+      --node-risk: #f43f5e;
+      --shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Noto Sans SC", "Outfit", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      background-image:
+        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(45, 212, 191, 0.12), transparent),
+        linear-gradient(180deg, #0a0f1a 0%, var(--bg) 40%);
+    }
+
+    header {
+      padding: 1.25rem 1.5rem 0.5rem;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    header h1 {
+      font-family: "Outfit", "Noto Sans SC", sans-serif;
+      font-weight: 700;
+      font-size: 1.35rem;
+      letter-spacing: -0.02em;
+      margin: 0 0 0.35rem;
+    }
+    header p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+      max-width: 52rem;
+      line-height: 1.55;
+    }
+    .badge {
+      display: inline-block;
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      color: var(--accent);
+      border: 1px solid var(--border);
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      margin-bottom: 0.5rem;
+      background: var(--accent-dim);
+    }
+
+    .canvas-wrap {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 1rem 1rem 2rem;
+      overflow-x: auto;
+    }
+
+    .flow-svg {
+      display: block;
+      width: 100%;
+      min-width: 1100px;
+      height: 520px;
+    }
+
+    .edge {
+      fill: none;
+      stroke: rgba(45, 212, 191, 0.35);
+      stroke-width: 2;
+      stroke-linecap: round;
+    }
+    .edge-dim { stroke: rgba(139, 156, 184, 0.25); stroke-width: 1.5; }
+    .edge-hot { stroke: var(--accent); stroke-width: 2.5; opacity: 0.85; }
+
+    .nodes-layer {
+      position: relative;
+      min-width: 1100px;
+      height: 520px;
+      margin-top: -520px;
+      pointer-events: none;
+    }
+    .node {
+      pointer-events: auto;
+      position: absolute;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 0.65rem 0.85rem;
+      box-shadow: var(--shadow);
+      cursor: default;
+      transition: transform 0.2s ease, border-color 0.2s, box-shadow 0.2s;
+      max-width: 150px;
+    }
+    .node:hover {
+      transform: translateY(-2px);
+      border-color: rgba(45, 212, 191, 0.5);
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.55);
+    }
+    .node .tag {
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 0.2rem;
+    }
+    .node .title {
+      font-weight: 700;
+      font-size: 0.82rem;
+      line-height: 1.25;
+    }
+    .node .sub {
+      font-size: 0.68rem;
+      color: var(--muted);
+      margin-top: 0.35rem;
+      line-height: 1.35;
+    }
+    .node.trigger { border-left: 3px solid #60a5fa; }
+    .node.api { border-left: 3px solid var(--node-api); }
+    .node.db { border-left: 3px solid var(--node-db); }
+    .node.rpa { border-left: 3px solid var(--node-rpa); }
+    .node.etl { border-left: 3px solid #a78bfa; }
+    .node.agent {
+      border-left: 4px solid var(--node-agent);
+      max-width: 200px;
+      padding: 0.85rem 1rem;
+    }
+    .node.agent .title { font-size: 0.95rem; }
+    .node.decision { border-left: 3px solid var(--node-risk); max-width: 118px; }
+    .node.callback { border-left: 3px solid #22c55e; }
+    .node.audit { border-left: 3px solid #64748b; }
+
+    .lane-label {
+      position: absolute;
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      color: var(--muted);
+      text-transform: uppercase;
+      opacity: 0.7;
+    }
+
+    aside.panel {
+      max-width: 1400px;
+      margin: 0 auto 2rem;
+      padding: 0 1.5rem;
+    }
+    .panel-inner {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1rem 1.25rem;
+    }
+    .panel-inner h2 {
+      margin: 0 0 0.75rem;
+      font-size: 0.95rem;
+      color: var(--accent);
+    }
+    .panel-inner ul {
+      margin: 0;
+      padding-left: 1.1rem;
+      color: var(--muted);
+      font-size: 0.85rem;
+      line-height: 1.65;
+    }
+    .panel-inner strong { color: var(--text); }
+
+    footer {
+      text-align: center;
+      padding: 1rem;
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <span class="badge">WORKFLOW · 节点构成示意</span>
+    <h1>各信息系统 → 工作流节点 → 风控智能体介入</h1>
+    <p>
+      将 OA / ERP / 费控 / 采购等系统抽象为<strong>数据源适配节点</strong>；通过 <strong>API</strong>、<strong>数据库只读</strong> 或 <strong>RPA</strong> 拉数；
+      标准化后进入<strong>风控 Agent</strong>做规则 + 语义分析；再经<strong>决策分流</strong>回调审批流并<strong>审计留痕</strong>。
+      触发采用<strong>Webhook 事件</strong>与<strong>定时轮询</strong>并行，贴近准实时。
+    </p>
+  </header>
+
+  <div class="canvas-wrap">
+    <svg class="flow-svg" viewBox="0 0 1200 520" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <!-- 触发 -> 汇聚 -->
+      <path class="edge edge-hot" d="M 175 95 C 240 95, 240 200, 295 200" />
+      <path class="edge edge-hot" d="M 175 255 C 250 255, 270 220, 295 200" />
+      <!-- 适配 -> ETL -->
+      <path class="edge" d="M 455 200 C 520 200, 520 248, 575 248" />
+      <!-- ETL -> Agent -->
+      <path class="edge edge-hot" d="M 705 248 C 770 248, 780 248, 835 248" />
+      <!-- Agent -> 决策 -->
+      <path class="edge" d="M 1045 248 C 1085 248, 1085 165, 1125 165" />
+      <path class="edge" d="M 1045 248 L 1125 248" />
+      <path class="edge" d="M 1045 248 C 1085 248, 1085 330, 1125 330" />
+      <!-- 决策 -> 回调 -->
+      <path class="edge edge-dim" d="M 1188 165 L 1188 90" />
+      <path class="edge edge-dim" d="M 1188 248 L 1188 320" />
+      <path class="edge edge-dim" d="M 1188 330 L 1188 400" />
+      <!-- 简化为到审计的示意竖线 -->
+      <line class="edge-dim" x1="600" y1="420" x2="600" y2="460" stroke="rgba(139,156,184,0.2)" stroke-width="1" />
+    </svg>
+
+    <div class="nodes-layer">
+      <span class="lane-label" style="left: 12px; top: 8px;">触发层</span>
+      <span class="lane-label" style="left: 268px; top: 8px;">适配层</span>
+      <span class="lane-label" style="left: 548px; top: 8px;">标准化</span>
+      <span class="lane-label" style="left: 718px; top: 8px;">智能体</span>
+      <span class="lane-label" style="left: 1008px; top: 8px;">决策 / 闭环</span>
+
+      <div class="node trigger" style="left: 20px; top: 72px;">
+        <div class="tag">Trigger A</div>
+        <div class="title">定时轮询</div>
+        <div class="sub">1～5 分钟扫增量单据，兜底防丢事件</div>
+      </div>
+      <div class="node trigger" style="left: 20px; top: 218px;">
+        <div class="tag">Trigger B</div>
+        <div class="title">事件 / Webhook</div>
+        <div class="sub">审批创建、状态变更即推，准实时</div>
+      </div>
+
+      <div class="node api" style="left: 300px; top: 118px;">
+        <div class="tag">方式 ①</div>
+        <div class="title">REST / OpenAPI</div>
+        <div class="sub">OA·ERP·费控开放接口，JSON 入参</div>
+      </div>
+      <div class="node db" style="left: 300px; top: 218px;">
+        <div class="tag">方式 ②</div>
+        <div class="title">DB 只读视图</div>
+        <div class="sub">SelectDB / MySQL 视图，定时 SELECT</div>
+      </div>
+      <div class="node rpa" style="left: 300px; top: 318px;">
+        <div class="tag">方式 ③</div>
+        <div class="title">RPA 机器人</div>
+        <div class="sub">无 API、无库权时的页面抓取</div>
+      </div>
+
+      <div class="node etl" style="left: 580px; top: 198px;">
+        <div class="tag">ETL</div>
+        <div class="title">清洗与标准模型</div>
+        <div class="sub">统一单据号、金额、供应商、审批态，过滤撤销/重复</div>
+      </div>
+
+      <div class="node agent" style="left: 800px; top: 168px;">
+        <div class="tag">Risk Agent</div>
+        <div class="title">风控智能体节点</div>
+        <div class="sub">规则引擎 + 黑名单/关联 + LLM 语义（备注/合同/事由）→ 风险等级、依据、建议动作</div>
+      </div>
+
+      <div class="node decision" style="left: 1060px; top: 118px;">
+        <div class="tag">分流</div>
+        <div class="title">低</div>
+        <div class="sub">记日志通过</div>
+      </div>
+      <div class="node decision" style="left: 1060px; top: 208px;">
+        <div class="tag">分流</div>
+        <div class="title">中</div>
+        <div class="sub">提醒审批人</div>
+      </div>
+      <div class="node decision" style="left: 1060px; top: 298px;">
+        <div class="tag">分流</div>
+        <div class="title">高</div>
+        <div class="sub">拦截 / 加签</div>
+      </div>
+
+      <div class="node callback" style="left: 520px; top: 400px;">
+        <div class="tag">Callback</div>
+        <div class="title">回写 OA / 审批流</div>
+        <div class="sub">飞书 / 企微 / 钉钉 通知</div>
+      </div>
+      <div class="node audit" style="left: 720px; top: 400px;">
+        <div class="tag">Audit</div>
+        <div class="title">审计与报告</div>
+        <div class="sub">拉取时间、依据、处理人、月报 HTML</div>
+      </div>
+    </div>
+  </div>
+
+  <aside class="panel">
+    <div class="panel-inner">
+      <h2>与 Dify / 低代码编排的对应关系</h2>
+      <ul>
+        <li><strong>节点（Node）</strong>：编排画布上的每一块；上图中每个卡片即一类可配置节点。</li>
+        <li><strong>边（Edge）</strong>：数据与触发顺序；事件与轮询可在编排里画成两条入边汇入「适配层」前的网关。</li>
+        <li><strong>本仓库现状</strong>：<code>agent-app/integrations/datasources</code> 已覆盖采购侧的 <strong>Mock / HTTP REST / 只读 SQL</strong>，与图中「方式①②」一致；RPA 需在客户侧另接机器人平台。</li>
+        <li><strong>打开方式</strong>：双击本文件，或拖入 Chrome / Edge；路径：<code>docs/workflow-risk-nodes.html</code>。</li>
+      </ul>
+    </div>
+  </aside>
+
+  <footer>宝尊非经营性采购风控 AI Agent · 工作流示意（非运行时代码，仅方案可视化）</footer>
+</body>
+</html>

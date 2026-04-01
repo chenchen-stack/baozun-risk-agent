@@ -76,6 +76,7 @@
 | `app.py`、`static/` | 历史极简 Demo（OpenAI SDK 直连），**与 `agent-app` 数据与能力不一致**；正式演示请用 `agent-app`。 |
 | `presentation.html`、`ppt-diagrams/` | 汇报与演示材料。 |
 | `参考材料-*.md` | 业务流程、风控控制点与竞品/业务知识等参考资料。 |
+| `docs/workflow-risk-nodes.html` | **工作流节点示意（类 Dify）**：浏览器本地打开，可视化「触发 → API/DB/RPA → ETL → 风控 Agent → 决策 → 回调/审计」。 |
 
 ---
 
