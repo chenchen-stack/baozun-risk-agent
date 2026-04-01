@@ -474,19 +474,47 @@ body.resizing #resizeChat{pointer-events:auto!important}
 .content.content-pipe-only > .pg.on{flex:1;min-height:0;display:flex!important;flex-direction:column;overflow:hidden}
 /* ─── Dify-like workflow studio (风控编排) ─── */
 .wf-studio{flex:1;min-height:0;display:flex;flex-direction:column;font-family:system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;color:#111827}
-.wf-studio-top{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 14px;background:#fff;border-bottom:1px solid #E5E7EB}
-.wf-studio-top-left{display:flex;align-items:center;gap:12px;min-width:0;flex:1}
-.wf-breadcrumb{font-size:14px;font-weight:650;color:#111827;letter-spacing:-.02em}
-.wf-run-step-hint{font-size:12px;color:#6B7280;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:min(280px,36vw)}
-.wf-autosave{font-size:11px;color:#9CA3AF;white-space:nowrap}
-.wf-studio-top-right{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end}
-.wf-more{position:relative}
-.wf-more>summary{list-style:none;cursor:pointer;font-size:12px;color:#6B7280;padding:6px 10px;border-radius:8px;border:1px solid #E5E7EB;background:#fff}
-.wf-more>summary::-webkit-details-marker{display:none}
-.wf-more[open]>summary{background:#F3F4F6}
-.wf-more-panel{position:absolute;right:0;top:100%;margin-top:4px;padding:6px;min-width:160px;background:#fff;border:1px solid #E5E7EB;border-radius:10px;box-shadow:0 8px 24px rgba(15,23,42,.1);z-index:20;display:flex;flex-direction:column;gap:2px}
-.wf-more-panel button{width:100%;text-align:left;padding:8px 10px;border:none;border-radius:6px;background:transparent;font-size:12px;color:#374151;cursor:pointer}
-.wf-more-panel button:hover{background:#F3F4F6}
+.wf-studio-top{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:10px 16px;background:linear-gradient(180deg,#fff 0%,#FAFBFC 100%);border-bottom:1px solid #E5E7EB;box-shadow:0 1px 0 rgba(255,255,255,.8) inset}
+.wf-studio-top-left{display:flex;align-items:center;gap:14px;min-width:0;flex:1}
+.wf-title-stack{display:flex;flex-direction:column;gap:2px;min-width:0}
+.wf-breadcrumb{font-size:15px;font-weight:650;color:#0F172A;letter-spacing:-.03em;line-height:1.2}
+.wf-breadcrumb-sub{font-size:11px;font-weight:500;color:#64748B;line-height:1.35;max-width:min(520px,55vw);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wf-run-step-hint{font-size:11px;color:#94A3B8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:min(200px,28vw);flex-shrink:0}
+@media (max-width:1100px){
+  .wf-run-step-hint{display:none}
+}
+.wf-autosave{font-size:10px;color:#94A3B8;white-space:nowrap;max-width:120px;overflow:hidden;text-overflow:ellipsis}
+.wf-studio-top-right{display:flex;align-items:center;gap:8px;flex-wrap:nowrap;justify-content:flex-end;flex-shrink:0}
+.wf-toolbar-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.wf-dropdown{position:relative}
+.wf-dropdown>summary.wf-dropdown-trigger{
+  list-style:none;cursor:pointer;font-size:12px;font-weight:600;color:#475569;padding:7px 12px;border-radius:9px;border:1px solid #E2E8F0;background:#fff;
+  transition:background .15s,border-color .15s,color .15s;white-space:nowrap;
+}
+.wf-dropdown>summary.wf-dropdown-trigger::-webkit-details-marker{display:none}
+.wf-dropdown>summary.wf-dropdown-trigger:hover{border-color:#CBD5E1;color:#111827;background:#F8FAFC}
+.wf-dropdown[open]>summary.wf-dropdown-trigger{background:#F1F5F9;border-color:#CBD5E1;color:#0F172A}
+.wf-dropdown-panel{
+  position:absolute;right:0;top:calc(100% + 6px);min-width:208px;padding:6px;background:#fff;border:1px solid #E5E7EB;border-radius:12px;
+  box-shadow:0 12px 40px rgba(15,23,42,.12);z-index:40;display:flex;flex-direction:column;gap:2px;
+}
+.wf-dropdown-panel--toggle{padding:8px}
+.wf-dropdown-panel--toggle .wf-layout-btn{
+  width:100%;display:flex;align-items:center;justify-content:space-between;text-align:left;padding:8px 11px;border-radius:8px;margin:0;
+  font-size:12px;font-weight:600;gap:10px;
+}
+.wf-dropdown-panel--toggle .wf-layout-btn.on{border-color:#BFDBFE}
+.wf-dropdown-panel--toggle .wf-layout-btn:not(.on){opacity:.88}
+.wf-dropdown-panel--toggle .wf-layout-btn::after{
+  content:'已显示';font-size:10px;font-weight:600;color:#155EEF;flex-shrink:0;letter-spacing:0;
+}
+.wf-dropdown-panel--toggle .wf-layout-btn:not(.on)::after{content:'已隐藏';color:#94A3B8;font-weight:500}
+.wf-dropdown-panel--tools button{
+  width:100%;text-align:left;padding:9px 12px;border:none;border-radius:8px;background:transparent;font-size:12px;font-weight:500;color:#374151;cursor:pointer;
+}
+.wf-dropdown-panel--tools button:hover{background:#F1F5F9;color:#0F172A}
+.wf-dropdown-sep{height:1px;background:#F1F5F9;margin:4px 8px}
+.wf-btn-run{padding:8px 18px!important;border-radius:9px!important;font-size:13px!important;letter-spacing:.02em}
 .wf-btn-ghost{padding:7px 12px;border-radius:8px;font-size:12px;font-weight:500;background:#fff;border:1px solid #E5E7EB;color:#374151;cursor:pointer;transition:background .15s,border-color .15s}
 .wf-btn-ghost:hover{background:#F9FAFB;border-color:#D1D5DB}
 .wf-btn-primary{padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;background:#155EEF;border:1px solid #155EEF;color:#fff;cursor:pointer;display:inline-flex;align-items:center;gap:6px;box-shadow:0 1px 2px rgba(21,94,239,.2)}
@@ -496,6 +524,7 @@ body.resizing #resizeChat{pointer-events:auto!important}
 .wf-scenario-rail{
   width:196px;flex:0 0 196px;flex-shrink:0;background:#F8FAFC;border-right:1px solid #E5E7EB;
   display:flex;flex-direction:column;min-height:0;overflow:hidden;
+  transition:flex-basis .22s ease,width .22s ease,opacity .18s ease,border-color .2s;
 }
 .wf-scenario-rail-h{padding:10px 12px 6px;font-size:11px;font-weight:700;color:#64748B;letter-spacing:.04em;text-transform:uppercase}
 .wf-scenario-list{flex:1;overflow-y:auto;padding:0 8px 8px;display:flex;flex-direction:column;gap:5px;min-height:0}
@@ -512,16 +541,39 @@ body.resizing #resizeChat{pointer-events:auto!important}
   font-size:11px;font-weight:600;color:#155EEF;cursor:pointer;
 }
 .wf-scenario-new:hover{border-color:#155EEF;background:#F8FAFF}
-.wf-trigger-hint{
-  flex-shrink:0;font-size:10px;color:#475569;line-height:1.45;padding:10px 12px;border-top:1px solid #E5E7EB;
-  background:#fff;
+.wf-studio-body.wf-coll-scenario .wf-scenario-rail{
+  flex:0 0 0!important;width:0!important;min-width:0!important;max-width:0!important;padding:0!important;border:none!important;
+  opacity:0;pointer-events:none;overflow:hidden;
+  transition:flex-basis .22s ease,width .22s ease,opacity .18s ease,border-color .2s;
 }
-.wf-trigger-hint strong{display:block;font-size:10px;color:#0F172A;margin-bottom:4px;font-weight:650}
+.wf-trigger-details{
+  flex-shrink:0;border-top:1px solid #E5E7EB;background:#fff;font-size:10px;color:#475569;
+}
+.wf-trigger-details>summary{
+  cursor:pointer;list-style:none;padding:8px 12px;font-weight:650;color:#64748B;
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+}
+.wf-trigger-details>summary::-webkit-details-marker{display:none}
+.wf-trigger-details[open]>summary{color:#155EEF}
+.wf-trigger-hint-inner{padding:0 12px 10px;line-height:1.45;color:#475569}
+/* 拖拽/平移画布时：专注模式（由 JS 添加 .wf-pipe-focus） */
+.wf-studio-body.wf-pipe-focus .wf-scenario-new{display:none!important}
+.wf-studio-body.wf-pipe-focus .wf-scenario-item .wf-si-sub{display:none!important}
+.wf-studio-body.wf-pipe-focus .wf-scenario-rail{width:80px;flex:0 0 80px}
+.wf-studio-body.wf-pipe-focus .wf-scenario-rail-h{font-size:9px;padding:8px 6px;text-align:center;line-height:1.25}
+.wf-studio-body.wf-pipe-focus .wf-canvas-toolbar,
+.wf-studio-body.wf-pipe-focus .wf-zoom-bar{
+  opacity:0!important;pointer-events:none!important;transition:opacity .12s ease;
+}
+.wf-studio-body.wf-pipe-focus .wf-reveal-stack{display:none!important}
+.content.content-pipe-only.wf-pipe-focus .chat-panel.open{
+  transform:translateX(calc(100% + 16px));transition:transform .2s ease;pointer-events:none;
+}
+.content.content-pipe-only.wf-pipe-focus .resize-handle.cp-resize-on{opacity:0;pointer-events:none}
 @media (max-width:900px){
   .wf-scenario-rail{width:160px;flex-basis:160px}
   .wf-scenario-item .wf-si-sub{display:none}
 }
-.wf-layout-toggles{display:inline-flex;align-items:center;gap:4px;margin-right:8px;padding-right:10px;border-right:1px solid #E5E7EB}
 .wf-layout-btn{
   padding:5px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;
   border:1px solid #E5E7EB;background:#fff;color:#6B7280;transition:background .15s,border-color .15s,color .15s;
@@ -562,6 +614,7 @@ body.resizing #resizeChat{pointer-events:auto!important}
   box-shadow:0 2px 10px rgba(15,23,42,.07);
 }
 .wf-reveal-item:hover{background:#EFF6FF}
+.wf-studio-body.wf-coll-scenario .wf-reveal-scenario{display:inline-flex}
 .wf-studio-body.wf-coll-palette .wf-reveal-palette{display:inline-flex}
 .wf-studio-body.wf-coll-insp .wf-reveal-insp{display:inline-flex}
 .wf-studio-body.wf-coll-rdock .wf-reveal-rdock{display:inline-flex}
@@ -631,6 +684,23 @@ body.resizing #resizeChat{pointer-events:auto!important}
 .wf-insp-panel input:focus,.wf-insp-panel textarea:focus{outline:none;border-color:#155EEF;box-shadow:0 0 0 3px rgba(21,94,239,.1)}
 .wf-insp-panel textarea{min-height:72px;resize:vertical}
 .wf-insp-panel pre{margin:0;padding:10px;background:#F9FAFB;border:1px solid #F3F4F6;border-radius:8px;font-size:11px;line-height:1.5;color:#374151;white-space:pre-wrap;word-break:break-word;max-height:220px;overflow-y:auto}
+.wf-insp-design-wrap{margin-top:12px;padding-top:12px;border-top:1px solid #E5E7EB;flex-shrink:0}
+.wf-insp-design-h{font-size:10px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:.06em;margin:0 0 8px}
+.wf-insp-details{border:1px solid #E5E7EB;border-radius:8px;margin-bottom:6px;background:#F9FAFB;overflow:hidden}
+.wf-insp-details[open]{background:#fff;box-shadow:0 1px 3px rgba(15,23,42,.04)}
+.wf-insp-details>summary{
+  padding:8px 10px;font-size:11px;font-weight:650;color:#111827;cursor:pointer;list-style:none;
+  display:flex;align-items:center;justify-content:space-between;gap:6px;
+}
+.wf-insp-details>summary::-webkit-details-marker{display:none}
+.wf-insp-details>summary::after{content:'›';font-size:14px;color:#9CA3AF;transition:transform .15s ease}
+.wf-insp-details[open]>summary::after{transform:rotate(90deg);color:#155EEF}
+.wf-insp-design-ta{
+  display:block;width:calc(100% - 20px);box-sizing:border-box;margin:0 10px 8px;padding:8px 10px;
+  border:1px solid #E5E7EB;border-radius:6px;font-size:11px;line-height:1.45;color:#374151;font-family:inherit;resize:vertical;min-height:52px;background:#fff;
+}
+.wf-insp-design-ta:focus{outline:none;border-color:#155EEF;box-shadow:0 0 0 2px rgba(21,94,239,.12)}
+.wf-insp-design-hint{font-size:10px;color:#94A3B8;margin:-4px 10px 8px;line-height:1.4}
 .wf-inspector-empty{flex:1;display:flex;align-items:center;justify-content:center;padding:24px;text-align:center;font-size:12px;color:#9CA3AF;line-height:1.6}
 #wfToast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);z-index:9999;padding:10px 18px;background:#111827;color:#fff;font-size:13px;border-radius:10px;box-shadow:0 8px 32px rgba(0,0,0,.2);opacity:0;transition:transform .25s ease,opacity .25s ease;pointer-events:none;max-width:min(420px,92vw)}
 #wfToast.show{opacity:1;transform:translateX(-50%) translateY(0)}
@@ -1326,30 +1396,39 @@ body.demo-tour-on[data-demo-zoom="chat"] .mn{transform:none}
         <div class="wf-studio">
           <header class="wf-studio-top">
             <div class="wf-studio-top-left">
-              <span class="wf-breadcrumb">风控编排</span>
-              <span class="wf-breadcrumb-sub" id="wfSceneSub" style="font-size:11px;font-weight:500;color:#9CA3AF;margin-left:8px">非经营性采购 · 10 阶段链路 · 三单/四流（POC）</span>
+              <div class="wf-title-stack">
+                <span class="wf-breadcrumb">风控编排</span>
+                <span class="wf-breadcrumb-sub" id="wfSceneSub">非经营性采购 · 10 阶段链路 · 三单/四流（POC）</span>
+              </div>
               <span class="wf-run-step-hint" id="wfRunStepHint" aria-live="polite"></span>
             </div>
             <div class="wf-studio-top-right">
-              <span class="wf-layout-toggles" role="toolbar" aria-label="侧栏显示">
-                <button type="button" class="wf-layout-btn on" id="wfBtnPalette" onclick="wfLayoutToggle('palette')" title="显示/隐藏左侧节点库">节点</button>
-                <button type="button" class="wf-layout-btn on" id="wfBtnInsp" onclick="wfLayoutToggle('insp')" title="显示/隐藏节点属性">属性</button>
-                <button type="button" class="wf-layout-btn on" id="wfBtnRdock" onclick="wfLayoutToggle('rdock')" title="显示/隐藏右侧测试运行">结果</button>
-              </span>
-              <span class="wf-autosave" id="wfAutosaveHint">未保存</span>
-              <button type="button" class="wf-btn-primary" onclick="runPipelineGraphOnce()" title="按顺序执行节点并拉取真实接口（若已启动后端）">运行</button>
-              <button type="button" class="wf-btn-ghost" onclick="savePipelineGraphToServer()">保存</button>
-              <button type="button" class="wf-btn-ghost" onclick="wfZoomToFit()" title="画布缩放到全部节点">适应</button>
-              <details class="wf-more">
-                <summary>更多</summary>
-                <div class="wf-more-panel" onclick="event.stopPropagation()">
-                  <button type="button" onclick="loadPipelineGraphFromServer()">从服务器加载</button>
-                  <button type="button" onclick="resetPipelineGraphDefault()">恢复示例拓扑</button>
-                  <button type="button" onclick="exportPipelineGraphJson()">导出 JSON</button>
-                  <button type="button" onclick="importPipelineGraphJson()">导入 JSON</button>
-                  <button type="button" onclick="reloadProcurementHot()">热拉取采购数据</button>
-                </div>
-              </details>
+              <span class="wf-autosave" id="wfAutosaveHint" title="本地自动保存各场景画布">未保存</span>
+              <div class="wf-toolbar-actions" role="toolbar" aria-label="编排操作">
+                <button type="button" class="wf-btn-primary wf-btn-run" onclick="runPipelineGraphOnce()" title="按画布节点顺序执行（Alt+R）；同源时请求真实接口">运行</button>
+                <details class="wf-dropdown" id="wfDropdownSidebars">
+                  <summary class="wf-dropdown-trigger" title="显示或隐藏左侧场景/节点库与右侧属性、运行结果">侧栏</summary>
+                  <div class="wf-dropdown-panel wf-dropdown-panel--toggle" onclick="event.stopPropagation()" role="group" aria-label="侧栏开关">
+                    <button type="button" class="wf-layout-btn on" id="wfBtnScenario" onclick="wfLayoutToggle('scenario')" title="风控场景列表">风控场景</button>
+                    <button type="button" class="wf-layout-btn on" id="wfBtnPalette" onclick="wfLayoutToggle('palette')" title="添加节点">节点库</button>
+                    <button type="button" class="wf-layout-btn on" id="wfBtnInsp" onclick="wfLayoutToggle('insp')" title="选中节点的备注与功能设计">节点属性</button>
+                    <button type="button" class="wf-layout-btn on" id="wfBtnRdock" onclick="wfLayoutToggle('rdock')" title="测试运行与三单/四流样例">运行结果</button>
+                  </div>
+                </details>
+                <details class="wf-dropdown" id="wfDropdownTools">
+                  <summary class="wf-dropdown-trigger" title="保存、画布与数据工具">工具</summary>
+                  <div class="wf-dropdown-panel wf-dropdown-panel--tools" onclick="event.stopPropagation()">
+                    <button type="button" onclick="savePipelineGraphToServer()">保存到服务器</button>
+                    <button type="button" onclick="wfZoomToFit()">适应画布</button>
+                    <div class="wf-dropdown-sep" role="separator"></div>
+                    <button type="button" onclick="loadPipelineGraphFromServer()">从服务器加载</button>
+                    <button type="button" onclick="resetPipelineGraphDefault()">恢复示例拓扑</button>
+                    <button type="button" onclick="exportPipelineGraphJson()">导出 JSON</button>
+                    <button type="button" onclick="importPipelineGraphJson()">导入 JSON</button>
+                    <button type="button" onclick="reloadProcurementHot()">热拉取采购数据</button>
+                  </div>
+                </details>
+              </div>
             </div>
           </header>
           <div class="wf-studio-body">
@@ -1357,10 +1436,12 @@ body.demo-tour-on[data-demo-zoom="chat"] .mn{transform:none}
               <div class="wf-scenario-rail-h">风控场景</div>
               <div class="wf-scenario-list" id="wfScenarioList" role="list"></div>
               <button type="button" class="wf-scenario-new" id="wfScenarioNewBtn" title="基于当前拓扑新建一场景副本">＋ 新建场景工作流</button>
-              <div class="wf-trigger-hint" id="wfTriggerHint" aria-live="polite">
-                <strong>触发策略说明</strong>
-                <span id="wfTriggerHintText">优先事件回调；无 WebHook 时采用 1～5 分钟增量轮询，在汇聚节点合流后进入规则引擎。</span>
-              </div>
+              <details class="wf-trigger-details" id="wfTriggerDetails">
+                <summary>触发策略 <span style="font-weight:500;opacity:.75">（点击展开）</span></summary>
+                <div class="wf-trigger-hint-inner" id="wfTriggerHint" aria-live="polite">
+                  <span id="wfTriggerHintText">优先事件回调；无 WebHook 时采用 1～5 分钟增量轮询，在汇聚节点合流后进入规则引擎。</span>
+                </div>
+              </details>
             </aside>
             <aside class="wf-palette" aria-label="添加节点">
               <div class="wf-palette-h">点击加到画布（对齐需求书第一期 F01–F14）</div>
@@ -1398,6 +1479,7 @@ body.demo-tour-on[data-demo-zoom="chat"] .mn{transform:none}
                   <button type="button" onclick="wfZoomDelta(0.12)" aria-label="放大">+</button>
                 </div>
                 <div class="wf-reveal-stack" aria-label="展开已隐藏的侧栏">
+                  <button type="button" class="wf-reveal-item wf-reveal-scenario" onclick="wfLayoutReveal('scenario')">› 风控场景</button>
                   <button type="button" class="wf-reveal-item wf-reveal-palette" onclick="wfLayoutReveal('palette')">› 节点库</button>
                   <button type="button" class="wf-reveal-item wf-reveal-insp" onclick="wfLayoutReveal('insp')">› 节点属性</button>
                   <button type="button" class="wf-reveal-item wf-reveal-rdock" onclick="wfLayoutReveal('rdock')">› 运行结果</button>
@@ -1415,9 +1497,14 @@ body.demo-tour-on[data-demo-zoom="chat"] .mn{transform:none}
                   <button type="button" class="on" data-wf-tab="set">备注</button>
                   <button type="button" data-wf-tab="run">运行日志</button>
                 </div>
-                <div class="wf-insp-panel" id="wfInspPanelSet">
+                <div class="wf-insp-panel" id="wfInspPanelSet" style="overflow-y:auto">
                   <div><label for="wfInpSys">系统名</label><input type="text" id="wfInpSys" placeholder="如 OA / ERP" autocomplete="off"/></div>
                   <div><label for="wfInpNotes">说明</label><textarea id="wfInpNotes" placeholder="接口路径或表名…" style="min-height:56px"></textarea></div>
+                  <div class="wf-insp-design-wrap" id="wfInspDesignWrap">
+                    <div class="wf-insp-design-h">功能详细设计</div>
+                    <p class="wf-insp-design-hint" id="wfInspDesignIntro" style="margin-top:0;margin-bottom:8px">按节点类型展开小节，可编辑并随编排保存（本地 / 导出 JSON）。</p>
+                    <div id="wfInspDesignMount" aria-label="节点功能设计"></div>
+                  </div>
                 </div>
                 <div class="wf-insp-panel" id="wfInspPanelRun" style="display:none">
                   <label>节点输出</label>
@@ -1989,9 +2076,11 @@ function wfResizePipeSoon(){
 function wfSyncLayoutButtons(){
   var b=wfStudioLayoutRoot();
   if(!b)return;
+  var s=document.getElementById('wfBtnScenario');
   var p=document.getElementById('wfBtnPalette');
   var i=document.getElementById('wfBtnInsp');
   var r=document.getElementById('wfBtnRdock');
+  if(s)s.classList.toggle('on',!b.classList.contains('wf-coll-scenario'));
   if(p)p.classList.toggle('on',!b.classList.contains('wf-coll-palette'));
   if(i)i.classList.toggle('on',!b.classList.contains('wf-coll-insp'));
   if(r)r.classList.toggle('on',!b.classList.contains('wf-coll-rdock'));
@@ -2001,6 +2090,7 @@ function wfSaveStudioLayout(){
   if(!b)return;
   try{
     localStorage.setItem('wfStudioLayout',JSON.stringify({
+      scenario:!b.classList.contains('wf-coll-scenario'),
       palette:!b.classList.contains('wf-coll-palette'),
       insp:!b.classList.contains('wf-coll-insp'),
       rdock:!b.classList.contains('wf-coll-rdock')
@@ -2012,7 +2102,13 @@ function wfLoadStudioLayout(){
   if(!b)return;
   try{
     var o=JSON.parse(localStorage.getItem('wfStudioLayout')||'null');
-    if(!o||typeof o!=='object'){wfSyncLayoutButtons();return;}
+    if(!o||typeof o!=='object'){
+      b.classList.add('wf-coll-rdock');
+      wfSyncLayoutButtons();
+      wfSaveStudioLayout();
+      return;
+    }
+    b.classList.toggle('wf-coll-scenario',o.scenario===false);
     b.classList.toggle('wf-coll-palette',o.palette===false);
     b.classList.toggle('wf-coll-insp',o.insp===false);
     b.classList.toggle('wf-coll-rdock',o.rdock===false);
@@ -2022,7 +2118,7 @@ function wfLoadStudioLayout(){
 function wfLayoutToggle(which){
   var b=wfStudioLayoutRoot();
   if(!b)return;
-  var cls=which==='palette'?'wf-coll-palette':which==='insp'?'wf-coll-insp':'wf-coll-rdock';
+  var cls=which==='scenario'?'wf-coll-scenario':which==='palette'?'wf-coll-palette':which==='insp'?'wf-coll-insp':'wf-coll-rdock';
   b.classList.toggle(cls);
   wfSyncLayoutButtons();
   wfSaveStudioLayout();
@@ -2031,6 +2127,7 @@ function wfLayoutToggle(which){
 function wfLayoutReveal(which){
   var b=wfStudioLayoutRoot();
   if(!b)return;
+  if(which==='scenario')b.classList.remove('wf-coll-scenario');
   if(which==='palette')b.classList.remove('wf-coll-palette');
   if(which==='insp')b.classList.remove('wf-coll-insp');
   if(which==='rdock')b.classList.remove('wf-coll-rdock');
@@ -2083,10 +2180,14 @@ function wfInitWorkflowStudioUI(){
     var ty=row.getAttribute('data-wf-type');
     if(typeof wfAddNode==='function')wfAddNode(ty);
   });
-  document.querySelectorAll('.wf-more-panel button').forEach(function(b){
-    b.addEventListener('click',function(){
-      var det=b.closest('.wf-more');
-      if(det)det.open=false;
+  var toolsDrop=document.getElementById('wfDropdownTools');
+  if(toolsDrop)toolsDrop.querySelectorAll('.wf-dropdown-panel--tools button').forEach(function(b){
+    b.addEventListener('click',function(){toolsDrop.open=false;});
+  });
+  document.querySelectorAll('#pg-pipe .wf-dropdown').forEach(function(d){
+    d.addEventListener('toggle',function(){
+      if(!d.open)return;
+      document.querySelectorAll('#pg-pipe .wf-dropdown').forEach(function(o){if(o!==d)o.open=false;});
     });
   });
   var insp=document.getElementById('wfInspector');

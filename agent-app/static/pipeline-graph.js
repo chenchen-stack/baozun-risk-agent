@@ -155,6 +155,83 @@
     if (typeof graph.updateExecutionOrder === "function") graph.updateExecutionOrder();
   }
 
+  /** 拖拽节点 / 平移画布 / 拖连线时暂收侧栏，松手恢复 */
+  var _wfPipeQuiet = { active: false, saved: null, ptr: null };
+
+  function wfEnterPipeQuietMode() {
+    if (_wfPipeQuiet.active) return;
+    var pg = document.getElementById("pg-pipe");
+    var root = document.querySelector("#pg-pipe .wf-studio-body");
+    var content = document.querySelector(".content.content-pipe-only");
+    if (!pg || !pg.classList.contains("on") || !root) return;
+    _wfPipeQuiet.saved = {
+      scene: root.classList.contains("wf-coll-scenario"),
+      pal: root.classList.contains("wf-coll-palette"),
+      ins: root.classList.contains("wf-coll-insp"),
+      rd: root.classList.contains("wf-coll-rdock"),
+    };
+    root.classList.add("wf-coll-scenario", "wf-coll-palette", "wf-coll-insp", "wf-coll-rdock", "wf-pipe-focus");
+    var det = document.getElementById("wfTriggerDetails");
+    if (det) det.open = false;
+    if (content) content.classList.add("wf-pipe-focus");
+    if (typeof window.wfSyncLayoutButtons === "function") window.wfSyncLayoutButtons();
+    _wfPipeQuiet.active = true;
+    if (typeof wfResizePipeSoon === "function") wfResizePipeSoon();
+  }
+
+  function wfExitPipeQuietMode() {
+    if (!_wfPipeQuiet.active || !_wfPipeQuiet.saved) {
+      _wfPipeQuiet.active = false;
+      _wfPipeQuiet.saved = null;
+      return;
+    }
+    var root = document.querySelector("#pg-pipe .wf-studio-body");
+    var content = document.querySelector(".content.content-pipe-only");
+    var s = _wfPipeQuiet.saved;
+    if (root) {
+      root.classList.remove("wf-pipe-focus");
+      root.classList.toggle("wf-coll-scenario", s.scene);
+      root.classList.toggle("wf-coll-palette", s.pal);
+      root.classList.toggle("wf-coll-insp", s.ins);
+      root.classList.toggle("wf-coll-rdock", s.rd);
+    }
+    if (content) content.classList.remove("wf-pipe-focus");
+    if (typeof window.wfSyncLayoutButtons === "function") window.wfSyncLayoutButtons();
+    _wfPipeQuiet.saved = null;
+    _wfPipeQuiet.active = false;
+    if (typeof wfResizePipeSoon === "function") wfResizePipeSoon();
+  }
+
+  window.wfExitPipeQuietMode = wfExitPipeQuietMode;
+
+  function wirePipeCanvasQuietMode(canvasEl) {
+    if (!canvasEl || wirePipeCanvasQuietMode._done) return;
+    wirePipeCanvasQuietMode._done = true;
+
+    function onDocPointerEnd() {
+      _wfPipeQuiet.ptr = null;
+      if (_wfPipeQuiet.active) wfExitPipeQuietMode();
+    }
+
+    document.addEventListener("pointerup", onDocPointerEnd, true);
+    document.addEventListener("pointercancel", onDocPointerEnd, true);
+
+    canvasEl.addEventListener("pointerdown", function (e) {
+      if (e.button !== 0 && e.button !== 1) return;
+      _wfPipeQuiet.ptr = { x: e.clientX, y: e.clientY };
+    });
+
+    canvasEl.addEventListener("pointermove", function (e) {
+      if (!_wfPipeQuiet.ptr || _wfPipeQuiet.active) return;
+      var gc = window.__pipeLgCanvas;
+      if (!gc) return;
+      var dx = e.clientX - _wfPipeQuiet.ptr.x;
+      var dy = e.clientY - _wfPipeQuiet.ptr.y;
+      if (dx * dx + dy * dy < 36) return;
+      if (gc.node_dragged || gc.dragging_canvas || gc.connecting_node) wfEnterPipeQuietMode();
+    });
+  }
+
   function registerNodeTypes() {
     var G = window.LiteGraph;
     if (!G || registerNodeTypes._ok) return;
@@ -791,6 +868,7 @@
   };
 
   window.pausePipelineGraph = function () {
+    if (typeof window.wfExitPipeQuietMode === "function") window.wfExitPipeQuietMode();
     window.__pipeRunSeqActive = false;
     if (typeof window.wfSetRunHint === "function") window.wfSetRunHint("");
     if (window.__pipeAutosaveInt) {
@@ -817,6 +895,609 @@
     }
   };
 
+  /** 属性面板「功能详细设计」：按节点类型的可折叠小节（写入 node.properties.design_*） */
+  var WF_INSPECTOR_DESIGN = {
+    _default: [
+      {
+        key: "design_capability",
+        label: "能力目标与边界",
+        rows: 3,
+        hint: "本节点职责、前置条件、明确不处理的例外场景。",
+        ph: "例：仅消费上游标准宽表；不直连核心账务写库。",
+      },
+      {
+        key: "design_io",
+        label: "输入 / 输出契约",
+        rows: 4,
+        hint: "字段名、主键、版本；与需求书条款（如 F01–F14）对齐处可注明编号。",
+        ph: "例：入参 { po_number, risk_level, evidence[] }；出参 HTTP 200 + 业务码。",
+      },
+      {
+        key: "design_integration",
+        label: "对接与配置",
+        rows: 3,
+        hint: "URL、鉴权、多环境、Feature Flag。",
+        ph: "例：生产/演练双通道；Header X-Request-Id 链路追踪。",
+      },
+      {
+        key: "design_reliability",
+        label: "可靠性 · 幂等 · 安全",
+        rows: 3,
+        hint: "重试策略、去重键、超时、敏感字段脱敏。",
+        ph: "例：同一工单 24h 内重复推送走幂等返回；PII 不落日志明文。",
+      },
+      {
+        key: "design_observability",
+        label: "可观测与告警",
+        rows: 2,
+        hint: "日志关键字、指标名、告警阈值与值班群。",
+        ph: "例：投递失败率 >5% / 5m → P2 告警。",
+      },
+    ],
+    "wf/poll": [
+      {
+        key: "design_capability",
+        label: "调度巡检范围",
+        rows: 2,
+        hint: "拉取哪些队列/状态机；与「无 WebHook」兜底策略的关系。",
+        ph: "例：待处理异常列表、审批待办增量；间隔 1～5 分钟可配置。",
+      },
+      {
+        key: "design_io",
+        label: "增量水位与断点",
+        rows: 3,
+        hint: "cursor / updated_since / 最大条数；首跑全量策略。",
+        ph: "例：SELECT … WHERE updated_at > :last_sync ORDER BY id LIMIT 500。",
+      },
+      {
+        key: "design_integration",
+        label: "数据源与鉴权",
+        rows: 3,
+        hint: "REST 路径、只读账号、代理与白名单。",
+        ph: "例：/api/v1/tasks/pending；OAuth2 Client Credentials。",
+      },
+      {
+        key: "design_reliability",
+        label: "容错",
+        rows: 2,
+        hint: "失败退避、与下游汇聚节点的就绪信号。",
+        ph: "例：连续 3 次失败冻结调度并告警，避免打爆对端。",
+      },
+      {
+        key: "design_observability",
+        label: "监控",
+        rows: 2,
+        hint: "每轮拉取条数、耗时、错误码分布。",
+        ph: "例：metrics: poll_batch_size, poll_latency_ms。",
+      },
+    ],
+    "wf/webhook": [
+      {
+        key: "design_capability",
+        label: "事件订阅范围",
+        rows: 2,
+        hint: "审批创建/通过/驳回等事件类型。",
+        ph: "例：OA 合同审批、付款申请节点状态变更。",
+      },
+      {
+        key: "design_io",
+        label: "回调报文契约",
+        rows: 4,
+        hint: "Body 结构、签名校验、幂等 Id。",
+        ph: "例：HMAC-SHA256 + timestamp；event_id 全局唯一。",
+      },
+      {
+        key: "design_integration",
+        label: "暴露端点",
+        rows: 3,
+        hint: "我方接收 URL、TLS、IP 白名单。",
+        ph: "例：POST /integrations/oa/callback；mTLS 可选。",
+      },
+      {
+        key: "design_reliability",
+        label: "投递保障",
+        rows: 2,
+        hint: "厂商重试行为、我方快速 200 与异步落库。",
+        ph: "例：先 ACK 再写队列，避免厂商超时重放。",
+      },
+      {
+        key: "design_observability",
+        label: "可观测",
+        rows: 2,
+        hint: "事件量、延迟、验签失败次数。",
+        ph: "例：按 event_type 分面看板。",
+      },
+    ],
+    "wf/rest": [
+      {
+        key: "design_capability",
+        label: "API 能力",
+        rows: 2,
+        hint: "PO、申请单、供应商等对象范围。",
+        ph: "例：分页列表 + 单号详情；只读。",
+      },
+      {
+        key: "design_io",
+        label: "OpenAPI 映射",
+        rows: 4,
+        hint: "路径、Query、与内部标准字段映射。",
+        ph: "例：po_number ← data.orderNo；金额单位分→元。",
+      },
+      {
+        key: "design_integration",
+        label: "运行配置",
+        rows: 2,
+        hint: "Base URL、Headers、超时。",
+        ph: "例：PROCUREMENT_REST_* 环境变量对齐。",
+      },
+      {
+        key: "design_reliability",
+        label: "限流与缓存",
+        rows: 2,
+        hint: "QPS、熔断、短期缓存。",
+        ph: "例：429 时指数退避；热点单号 60s 缓存。",
+      },
+      {
+        key: "design_observability",
+        label: "监控",
+        rows: 2,
+        hint: "HTTP 状态、P95 延迟。",
+        ph: "",
+      },
+    ],
+    "wf/db": [
+      {
+        key: "design_capability",
+        label: "只读视图范围",
+        rows: 2,
+        hint: "合同、付款、台账等表或视图。",
+        ph: "例：v_contract_payment_readonly。",
+      },
+      {
+        key: "design_io",
+        label: "SQL 与字段",
+        rows: 4,
+        hint: "SELECT 列表、JOIN 键、与主数据对齐字段。",
+        ph: "例：WHERE biz_date >= :cursor ORDER BY id。",
+      },
+      {
+        key: "design_integration",
+        label: "连接与权限",
+        rows: 2,
+        hint: "DSN、只读账号、SelectDB/MySQL。",
+        ph: "例：SELECTDB_MYSQL_DSN；禁止 DDL/DML。",
+      },
+      {
+        key: "design_reliability",
+        label: "一致性",
+        rows: 2,
+        hint: "延迟只读、与业务库的同步时差说明。",
+        ph: "例：T+0 近实时 binlog 同步；对账窗口。",
+      },
+      {
+        key: "design_observability",
+        label: "监控",
+        rows: 2,
+        hint: "慢查询、扫描行数。",
+        ph: "",
+      },
+    ],
+    "wf/rpa": [
+      {
+        key: "design_capability",
+        label: "RPA 覆盖范围",
+        rows: 2,
+        hint: "无 API 系统上的页面/导出流程。",
+        ph: "例：UiPath/影刀；登录态与二次验证策略。",
+      },
+      {
+        key: "design_io",
+        label: "抓取产物",
+        rows: 3,
+        hint: "文件、表格、截图；解析为结构化 JSON。",
+        ph: "",
+      },
+      {
+        key: "design_integration",
+        label: "机器人编排",
+        rows: 2,
+        hint: "队列、并发、运行窗口（避开业务高峰）。",
+        ph: "",
+      },
+      {
+        key: "design_reliability",
+        label: "健壮性",
+        rows: 2,
+        hint: "页面变更检测、人工兜底工单。",
+        ph: "",
+      },
+      {
+        key: "design_observability",
+        label: "可观测",
+        rows: 2,
+        hint: "成功率、平均耗时、失败截图归档。",
+        ph: "",
+      },
+    ],
+    "wf/merge2": [
+      {
+        key: "design_capability",
+        label: "汇聚语义",
+        rows: 2,
+        hint: "调度与事件双源合流；去重与时间对齐规则。",
+        ph: "例：同一单据以事件优先、轮询补偿缺失。",
+      },
+      {
+        key: "design_io",
+        label: "合流键",
+        rows: 3,
+        hint: "主键：单号/流程实例 ID；冲突解决策略。",
+        ph: "",
+      },
+      {
+        key: "design_integration",
+        label: "实现要点",
+        rows: 2,
+        hint: "内存合并 vs 消息总线。",
+        ph: "",
+      },
+      {
+        key: "design_reliability",
+        label: "背压",
+        rows: 2,
+        hint: "队列堆积阈值。",
+        ph: "",
+      },
+      {
+        key: "design_observability",
+        label: "监控",
+        rows: 2,
+        hint: "双源延迟差、重复条数。",
+        ph: "",
+      },
+    ],
+    "wf/merge3": [
+      {
+        key: "design_capability",
+        label: "三源汇聚",
+        rows: 2,
+        hint: "采购 / 合同·OA / 付款·财务 断点串联。",
+        ph: "例：任一路径先到则部分就绪，全齐才下游。",
+      },
+      {
+        key: "design_io",
+        label: "对齐键与宽表字段",
+        rows: 4,
+        hint: "PO、合同号、付款单号映射。",
+        ph: "",
+      },
+      {
+        key: "design_integration",
+        label: "实现",
+        rows: 2,
+        hint: "流式 Join 或批窗口。",
+        ph: "",
+      },
+      {
+        key: "design_reliability",
+        label: "缺失容忍",
+        rows: 2,
+        hint: "超时未齐单如何标记、是否进异常看板。",
+        ph: "",
+      },
+      {
+        key: "design_observability",
+        label: "监控",
+        rows: 2,
+        hint: "齐套率、等待时长分布。",
+        ph: "",
+      },
+    ],
+    "wf/etl": [
+      {
+        key: "design_capability",
+        label: "主数据对齐",
+        rows: 2,
+        hint: "申请·合同·PO·验收·发票·付款 主键归一。",
+        ph: "例：生成标准宽表供规则引擎消费。",
+      },
+      {
+        key: "design_io",
+        label: "清洗规则",
+        rows: 4,
+        hint: "去重、撤销单、币种税率、别名表。",
+        ph: "",
+      },
+      {
+        key: "design_integration",
+        label: "存储",
+        rows: 2,
+        hint: "落库/内存；与 dashboard API 字段对齐。",
+        ph: "",
+      },
+      {
+        key: "design_reliability",
+        label: "质量",
+        rows: 2,
+        hint: "脏数据隔离、死信。",
+        ph: "",
+      },
+      {
+        key: "design_observability",
+        label: "监控",
+        rows: 2,
+        hint: "对齐成功率、字段空值率。",
+        ph: "",
+      },
+    ],
+    "wf/threeway": [
+      {
+        key: "design_capability",
+        label: "三单匹配（F04）",
+        rows: 2,
+        hint: "PO · GRN · 发票；容差与冻结条件。",
+        ph: "例：数量 ±2%、单价 ±1%、税率须一致；超差冻结付款。",
+      },
+      {
+        key: "design_io",
+        label: "规则参数",
+        rows: 4,
+        hint: "阈值表版本、供应商白名单例外。",
+        ph: "",
+      },
+      {
+        key: "design_integration",
+        label: "规则引擎",
+        rows: 2,
+        hint: "内置引擎 / 外接 Drools 等。",
+        ph: "",
+      },
+      {
+        key: "design_reliability",
+        label: "审计",
+        rows: 2,
+        hint: "命中依据可追溯、证据包。",
+        ph: "",
+      },
+      {
+        key: "design_observability",
+        label: "指标",
+        rows: 2,
+        hint: "命中率、人工复核占比。",
+        ph: "",
+      },
+    ],
+    "wf/fourflow": [
+      {
+        key: "design_capability",
+        label: "四流一致（F05）",
+        rows: 2,
+        hint: "合同流·资金流·发票流·物流/收货 主体一致。",
+        ph: "例：签约主体、付款申请方、发票销方、收货信息。",
+      },
+      {
+        key: "design_io",
+        label: "比对维度",
+        rows: 4,
+        hint: "同一合同项下付款发起人溯源等客户原话场景。",
+        ph: "",
+      },
+      {
+        key: "design_integration",
+        label: "外部数据",
+        rows: 2,
+        hint: "金税/工商接口可选。",
+        ph: "",
+      },
+      {
+        key: "design_reliability",
+        label: "解释性",
+        rows: 2,
+        hint: "输出结构化差异列表供 Agent 引用。",
+        ph: "",
+      },
+      {
+        key: "design_observability",
+        label: "监控",
+        rows: 2,
+        hint: "不一致单量趋势。",
+        ph: "",
+      },
+    ],
+    "wf/agent": [
+      {
+        key: "design_capability",
+        label: "智能体职责",
+        rows: 3,
+        hint: "非经营性采购研判；规则 + LLM 分工。",
+        ph: "例：结构化结论必须来自规则命中；LLM 仅生成说明与建议动作。",
+      },
+      {
+        key: "design_io",
+        label: "提示词与工具",
+        rows: 4,
+        hint: "可调用的 MCP/API；输出 JSON Schema。",
+        ph: "",
+      },
+      {
+        key: "design_integration",
+        label: "模型与网关",
+        rows: 2,
+        hint: "DeepSeek / 火山；Key 与限流。",
+        ph: "",
+      },
+      {
+        key: "design_reliability",
+        label: "安全与合规",
+        rows: 2,
+        hint: "敏感字段脱敏、留痕、人工复核闸口。",
+        ph: "",
+      },
+      {
+        key: "design_observability",
+        label: "可观测",
+        rows: 2,
+        hint: "Token、延迟、工具调用成功率。",
+        ph: "",
+      },
+    ],
+    "wf/decision": [
+      {
+        key: "design_capability",
+        label: "分流策略",
+        rows: 2,
+        hint: "低 / 中 / 高 → 放行 / 复核 / 拦截。",
+        ph: "",
+      },
+      {
+        key: "design_io",
+        label: "决策表",
+        rows: 4,
+        hint: "条件矩阵、优先级、默认分支。",
+        ph: "",
+      },
+      {
+        key: "design_integration",
+        label: "与工单/审批联动",
+        rows: 2,
+        hint: "自动过审阈值、升级 CFO 规则。",
+        ph: "",
+      },
+      {
+        key: "design_reliability",
+        label: "override",
+        rows: 2,
+        hint: "人工覆盖审计。",
+        ph: "",
+      },
+      {
+        key: "design_observability",
+        label: "监控",
+        rows: 2,
+        hint: "各分支占比。",
+        ph: "",
+      },
+    ],
+    "wf/callback": [
+      {
+        key: "design_capability",
+        label: "推送能力（F12/F13）",
+        rows: 2,
+        hint: "飞书机器人通知、OA 工单创建/回写。",
+        ph: "例：高风险单强制创建工单并 @ 采购负责人。",
+      },
+      {
+        key: "design_io",
+        label: "消息体与字段映射",
+        rows: 4,
+        hint: "标题、摘要、风险等级、跳转链接、业务单号。",
+        ph: "例：{ title, text, po_number, wo_id, feishu_msg_type }。",
+      },
+      {
+        key: "design_integration",
+        label: "通道配置",
+        rows: 3,
+        hint: "FEISHU_WEBHOOK_URL、OA_WEBHOOK_URL；多租户路由。",
+        ph: "例：按部门路由不同 Webhook；演练环境开关。",
+      },
+      {
+        key: "design_reliability",
+        label: "幂等 · 重试 · 超时",
+        rows: 3,
+        hint: "同一工单多次推送策略；HTTP 超时与重试上限。",
+        ph: "例：Idempotency-Key = hash(wo_id+action)；3 次重试。",
+      },
+      {
+        key: "design_observability",
+        label: "投递监控与告警",
+        rows: 2,
+        hint: "成功率、失败样本、飞书侧错误码。",
+        ph: "例：连续失败触发备用通道或短信兜底（若采购）。",
+      },
+    ],
+    "wf/audit": [
+      {
+        key: "design_capability",
+        label: "审计留痕（F14）",
+        rows: 2,
+        hint: "月报 HTML、审计底稿导出、不可篡改存储（可选）。",
+        ph: "",
+      },
+      {
+        key: "design_io",
+        label: "报表结构",
+        rows: 4,
+        hint: "章节、指标、附录数据源。",
+        ph: "",
+      },
+      {
+        key: "design_integration",
+        label: "存储与访问",
+        rows: 2,
+        hint: "reports/ 目录、下载权限。",
+        ph: "",
+      },
+      {
+        key: "design_reliability",
+        label: "归档策略",
+        rows: 2,
+        hint: "保留周期、脱敏版本。",
+        ph: "",
+      },
+      {
+        key: "design_observability",
+        label: "监控",
+        rows: 2,
+        hint: "生成失败告警。",
+        ph: "",
+      },
+    ],
+  };
+
+  function renderInspectorDesignSections(node) {
+    var mount = document.getElementById("wfInspDesignMount");
+    var wrap = document.getElementById("wfInspDesignWrap");
+    var intro = document.getElementById("wfInspDesignIntro");
+    if (!mount) return;
+    mount.innerHTML = "";
+    if (!node || !node.type || String(node.type).indexOf("wf/") !== 0) {
+      if (wrap) wrap.style.display = "none";
+      return;
+    }
+    if (wrap) wrap.style.display = "";
+    if (intro) intro.style.display = "";
+    var schema = WF_INSPECTOR_DESIGN[node.type] || WF_INSPECTOR_DESIGN._default;
+    if (!node.properties) node.properties = {};
+    schema.forEach(function (sec, idx) {
+      var det = document.createElement("details");
+      det.className = "wf-insp-details";
+      det.open = idx === 0;
+      var sum = document.createElement("summary");
+      sum.textContent = sec.label;
+      det.appendChild(sum);
+      var ta = document.createElement("textarea");
+      ta.className = "wf-insp-design-ta";
+      ta.rows = sec.rows || 3;
+      ta.placeholder = sec.ph || "";
+      ta.value = node.properties[sec.key] != null ? String(node.properties[sec.key]) : "";
+      ta.addEventListener("input", function () {
+        if (!window.__pipeInspectorNode || window.__pipeInspectorNode.id !== node.id) return;
+        if (!node.properties) node.properties = {};
+        node.properties[sec.key] = ta.value;
+        markGraphDirty();
+        touchAutosaveHint();
+      });
+      det.appendChild(ta);
+      if (sec.hint) {
+        var hp = document.createElement("p");
+        hp.className = "wf-insp-design-hint";
+        hp.textContent = sec.hint;
+        det.appendChild(hp);
+      }
+      mount.appendChild(det);
+    });
+  }
+
   function wireInspector(graphcanvas) {
     if (wireInspector._ok) return;
     wireInspector._ok = true;
@@ -832,6 +1513,7 @@
       if (!node) {
         if (empty) empty.style.display = "";
         if (body) body.style.display = "none";
+        renderInspectorDesignSections(null);
         return;
       }
       if (empty) empty.style.display = "none";
@@ -860,6 +1542,7 @@
         };
       }
       if (inpRun) inpRun.textContent = (node.properties && node.properties.last_run) || "尚无运行记录";
+      renderInspectorDesignSections(node);
     }
 
     graphcanvas.onSelectionChange = function () {
@@ -1048,6 +1731,7 @@
       }, 40000);
 
       startZoomLabelPoll(graphcanvas);
+      wirePipeCanvasQuietMode(canvas);
 
       function finishGraphBoot() {
         normalizePipelineWfModes(graph);
