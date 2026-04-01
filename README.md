@@ -5,7 +5,30 @@
 
 [![Repo](https://img.shields.io/badge/GitHub-baozun--risk--agent-181717?logo=github)](https://github.com/chenchen-stack/baozun-risk-agent)
 
+<a id="readme-toc"></a>
+
+## 文档目录（GitHub 首页即可看完）
+
+以下链接在 [本仓库 README](https://github.com/chenchen-stack/baozun-risk-agent) 中跳转；**各场景使用说明均写在本页，无需另开 Wiki。**
+
+| 区块 | 说明 |
+|------|------|
+| [产品定位](#id-product) | 痛点与 POC 价值 |
+| [核心能力](#id-capabilities) | 对外话术一览表 |
+| [技术架构](#id-arch) | FastAPI / LangChain / 部署形态 |
+| [仓库导览](#id-layout) | 目录与文件用途 |
+| [快速运行](#id-quickstart) | 本地一条链路启动 |
+| [使用说明 · 分场景](#id-usage) | **场景一～十一（完整）** |
+| └ [环境变量速查表](#scenario-env-table) | 变量与场景对照 |
+| └ [场景一～十一](#scenario-01) | 锚点见下表 |
+| [推送到 GitHub](#id-git-push) | 协作与保密提醒 |
+| [许可证](#id-license) | 使用范围 |
+
+**场景直达：** [一](#scenario-01) · [二](#scenario-02) · [三](#scenario-03) · [四](#scenario-04) · [五](#scenario-05) · [六](#scenario-06) · [七](#scenario-07) · [八](#scenario-08) · [九](#scenario-09) · [十](#scenario-10) · [十一](#scenario-11)
+
 ---
+
+<a id="id-product"></a>
 
 ## 产品定位：为谁解决什么问题
 
@@ -13,6 +36,8 @@
 本 POC 将大模型与结构化工具链结合，让业务与内控人员**像和同事说话一样**完成：异常追问、单据穿透、维度对比与报告生成，同时保留**可部署、可集成、可换数据源**的工程化路径，便于从演示走向试点。
 
 ---
+
+<a id="id-capabilities"></a>
 
 ## 核心能力（营销向一览）
 
@@ -27,6 +52,8 @@
 
 ---
 
+<a id="id-arch"></a>
+
 ## 技术架构：稳定、可演示、可上云
 
 - **应用内核**：**FastAPI** 提供 API 与页面服务；**LangChain** 工具链组织检索、风控逻辑与 LLM 调用。  
@@ -34,6 +61,8 @@
 - **部署与交付**：Docker 与 **阿里云**（ACR、ECS、Compose、SAE 等）部署说明见 `agent-app/阿里云部署说明.md`；根目录另含 [Render](https://render.com) 的 `render.yaml` 示例，便于多云对比验证。
 
 ---
+
+<a id="id-layout"></a>
 
 ## 仓库导览
 
@@ -49,6 +78,8 @@
 | `参考材料-*.md` | 业务流程、风控控制点与竞品/业务知识等参考资料。 |
 
 ---
+
+<a id="id-quickstart"></a>
 
 ## 快速运行（主应用）
 
@@ -69,9 +100,42 @@ python server.py
 
 ---
 
+<a id="id-usage"></a>
+
 ## 使用说明（分场景）
 
-以下均以 **`agent-app/` 为主应用**；环境变量写在 `agent-app/.env`（由 `.env.example` 复制）。修改 `.env` 后需**重启** `python server.py` 生效（热更新接口除外，文中会单独说明）。
+以下均以 **`agent-app/` 为主应用**；环境变量写在 `agent-app/.env`（由 **[`.env.example`](agent-app/.env.example)** 复制）。**本地**修改 `.env` 后需**重启** `python server.py` 生效；**Render / 阿里云**等平台在控制台改环境变量后一般会触发重新部署。热更新采购数据见 [场景七](#scenario-07) 中的 `reload` 接口。
+
+<a id="scenario-env-table"></a>
+
+### 速查：环境变量与场景对照表
+
+| 环境变量（示例见 `.env.example`） | 主要对应场景 | 摘要 |
+|----------------------------------|-------------|------|
+| `DEEPSEEK_API_KEY` | 二、十 | DeepSeek 对话密钥；云端必填之一 |
+| `LLM_API_KEY` | 二、十 | 部分逻辑优先于 `DEEPSEEK_API_KEY` |
+| `LLM_OPENAI_API_BASE` / `LLM_MODEL` | 二、十 | 火山 / 通义等 OpenAI 兼容网关 |
+| `AGENT_MAX_ITERATIONS` | 二 | 单条用户消息内工具循环上限（默认 36） |
+| `FEISHU_WEBHOOK_URL` | 四、六 | 飞书机器人 Webhook，真实 POST |
+| `OA_WEBHOOK_URL` | 四 | OA 回调地址 |
+| `EXTERNAL_DATA_BOOTSTRAP_URL` | 五 | 启动时从 URL 拉取整包 JSON（可信源） |
+| `ENABLE_SCHEDULED_MONTHLY_REPORT` | 六 | 设为 `1` 开启每月 1 号 HTML 月报 |
+| `PROCUREMENT_DATA_SOURCE` | 七 | `mock` / `http_rest` / `selectdb_mysql` |
+| `PROCUREMENT_REST_*` | 七 | REST 基址、路径、可选 `HEADERS_JSON` |
+| `PROCUREMENT_MERGE_MODE` | 七 | `merge`（默认）或 `replace` |
+| `SELECTDB_MYSQL_DSN` / `SELECTDB_PROCUREMENT_SQL` | 七 | 只读库与 SQL |
+| `DATASOURCE_RELOAD_TOKEN` | 七 | 配置后 `reload-procurement` 需 `X-Admin-Token` |
+
+<details>
+<summary><b>展开：与 OpenAPI 兼容的备选变量名（若你沿用旧文档）</b></summary>
+
+部分运行环境也识别 `OPENAI_API_BASE`、`OPENAI_MODEL`（与 `LLM_*` 等价用途），以 [integrations/settings.py](agent-app/integrations/settings.py) 实际读取为准。
+
+</details>
+
+---
+
+<a id="scenario-01"></a>
 
 ### 场景一：本地安装与首次启动
 
@@ -93,6 +157,8 @@ copy .env.example .env   # Windows；Unix 用 cp
 2. 在 `.env` 中至少配置 **一种** 大模型密钥（见场景二），保存后执行 `python server.py`。  
 3. 浏览器访问 **`http://127.0.0.1:8800/`**（端口以终端输出为准）。
 
+<a id="scenario-02"></a>
+
 ### 场景二：大模型配置（DeepSeek / OpenAI 兼容）
 
 | 子场景 | 配置要点 |
@@ -103,6 +169,8 @@ copy .env.example .env   # Windows；Unix 用 cp
 
 前端可请求 **`GET /api/config`**，查看服务端是否已配置默认 Key（未在页面填写时是否仍可走服务端 Key）。
 
+<a id="scenario-03"></a>
+
 ### 场景三：浏览器内使用（对话、看板、溯源、报告）
 
 | 用途 | 说明 |
@@ -111,6 +179,8 @@ copy .env.example .env   # Windows；Unix 用 cp
 | **异常看板** | 前端调用 **`GET /api/dashboard`** 等聚合接口；也可直接调 **`/api/workorders`**、`/api/notifications`、`/api/suppliers`、`/api/budgets`、`/api/deliveries`、`/api/assets` 做二次开发或联调。 |
 | **采购单溯源** | **`GET /api/po-trace/{po}`**，`po` 为采购单号（如 `PO-2026-101`），用于全链路穿透演示。 |
 | **月报列表** | **`GET /api/reports`**；生成文件落在 `agent-app/reports/`（具体生成逻辑见定时任务与相关 API）。 |
+
+<a id="scenario-04"></a>
 
 ### 场景四：飞书 / OA 消息推送
 
@@ -122,6 +192,8 @@ copy .env.example .env   # Windows；Unix 用 cp
 2. 重启服务后，代码路径内调用飞书推送时会**真实 POST** 到上述地址。  
 3. 自检：**`GET /api/integrations/status`** 中会显示 `feishu_webhook_configured` / `oa_webhook_configured`。
 
+<a id="scenario-05"></a>
+
 ### 场景五：外部 JSON 数据覆盖（演示与客户脱敏数据）
 
 适合：真实 API 未就绪时，用 JSON 补丁演示采购/合同/付款等维度。
@@ -130,6 +202,8 @@ copy .env.example .env   # Windows；Unix 用 cp
 2. 可选：设置 **`EXTERNAL_DATA_BOOTSTRAP_URL`**，启动时从**可信内网地址**拉取整包 JSON（对象键需与文件名对应，如 `procurement.json`）。  
 3. 自检：**`GET /api/integrations/status`** 中的 `external_overlay_files` 会列出已扫描到的文件名。
 
+<a id="scenario-06"></a>
+
 ### 场景六：定时月报（HTML + 可选飞书提醒）
 
 适合：每月固定产出风控月报 HTML，减少手工汇总。
@@ -137,6 +211,8 @@ copy .env.example .env   # Windows；Unix 用 cp
 1. 在 `.env` 中设置 **`ENABLE_SCHEDULED_MONTHLY_REPORT=1`**。  
 2. 服务运行后由调度逻辑在 **每月 1 号**触发：生成 HTML 至 `agent-app/reports/`，若已配置 **`FEISHU_WEBHOOK_URL`**，可附带飞书提示（具体文案以当前实现为准）。  
 3. 自检：**`GET /api/integrations/status`** 中 `scheduled_monthly_report` 为 `true` 表示已开启。
+
+<a id="scenario-07"></a>
 
 ### 场景七：采购数据源（内置 Mock / 采购 REST / SelectDB 只读）
 
@@ -153,7 +229,11 @@ copy .env.example .env   # Windows；Unix 用 cp
 - 状态查询：**`GET /api/datasources/status`**  
 - 热拉取（不配 token 则可直接调；生产建议配 token）：**`POST /api/datasources/reload-procurement`**，若设置 **`DATASOURCE_RELOAD_TOKEN`**，需带请求头 **`X-Admin-Token`**。  
 
-契约与样例：**`agent-app/integrations/datasources/`** 下 `openapi/`、`sql/`、`fixtures/` 与 **`README.txt`**（含本机 REST 502/代理说明）。
+契约与样例：**`agent-app/integrations/datasources/`** 下 `openapi/`、`sql/`、`fixtures/` 与 **[`README.txt`](agent-app/integrations/datasources/README.txt)**（含本机 REST **502 / 系统代理**说明：客户端默认 `trust_env=False`，避免 `HTTP_PROXY` 把 `127.0.0.1` 走公司网关）。
+
+**本地联调 REST 两步：** 终端 A 执行 `python scripts/mock_procurement_rest_server.py`（`agent-app` 目录）；终端 B 设 `PROCUREMENT_DATA_SOURCE=http_rest` 与 `PROCUREMENT_REST_BASE_URL=http://127.0.0.1:8765` 后启动 `server.py`；浏览器访问 `GET /api/datasources/status` 确认同步条数。
+
+<a id="scenario-08"></a>
 
 ### 场景八：运维与接口自检
 
@@ -163,12 +243,16 @@ copy .env.example .env   # Windows；Unix 用 cp
 | `GET /api/integrations/status` | 飞书/OA、LLM 基址与模型名、定时月报开关、`external_data` 文件列表 |
 | `GET /api/datasources/status` | 采购同步模式、是否成功、合并条数、错误信息 |
 
+<a id="scenario-09"></a>
+
 ### 场景九：Docker 与阿里云部署
 
 适合：测试环境 / 客户 VPC 内长期运行。
 
 - 详细步骤、镜像构建与环境变量：**[agent-app/阿里云部署说明.md](agent-app/阿里云部署说明.md)**  
 - 同目录另有 `Dockerfile`、`docker-compose.aliyun.yml`、脚本示例，按客户网络与安全要求调整端口与密钥注入方式（**勿把 `.env` 提交到 Git**）。
+
+<a id="scenario-10"></a>
 
 ### 场景十：公网演示地址（推荐 Render）
 
@@ -199,11 +283,19 @@ copy .env.example .env   # Windows；Unix 用 cp
 
 公网演示会把入口暴露在互联网：**API Key、内网 Webhook、SelectDB 密码等只放在平台「环境变量 / Secrets」**，勿将 `.env` 提交到 Git；演示数据建议用内置 Mock + 脱敏 `external_data`。
 
+**Render Blueprint 常见报错：** 若提示 **`render.yaml not found`**，请确认选中的 GitHub 仓库是 **`chenchen-stack/baozun-risk-agent`**，而不是其他练习仓库；**Branch** 为 **`main`**，**Blueprint Path** 为根目录 **`render.yaml`**。
+
+<a id="scenario-11"></a>
+
 ### 场景十一：根目录 `app.py`（历史极简 Demo）
 
 仓库根目录的 **`app.py` + `static/`** 为早期 OpenAI SDK 直连 Demo，**与 `agent-app` 的数据域、风控能力不一致**。对外 POC、验收与运维**请以 `agent-app` 为准**；仅当需要对比「最简聊天壳」时再使用根目录 Demo。
 
+**[↑ 回到文档目录](#readme-toc)**
+
 ---
+
+<a id="id-git-push"></a>
 
 ## 推送到 GitHub
 
@@ -220,6 +312,8 @@ git push origin main
 **切勿**将 `.env`、`env.deploy`、真实 API Key 或 `reports/` 下生成 HTML 提交到公开仓库（已在 `.gitignore` 中排除）。
 
 ---
+
+<a id="id-license"></a>
 
 ## 许可证
 
