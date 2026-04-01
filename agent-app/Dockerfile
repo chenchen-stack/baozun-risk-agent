@@ -7,7 +7,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY agent.py server.py ./
 COPY static ./static
-RUN mkdir -p reports
+COPY integrations ./integrations
+RUN mkdir -p reports external_data
 
 ENV PYTHONUNBUFFERED=1
 # 云平台（Render / Railway / 部分 K8s）会注入 PORT；本地默认 8800

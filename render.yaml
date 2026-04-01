@@ -1,4 +1,5 @@
-# 从本仓库根目录部署到 Render 时使用（子目录 agent-app）
+# 从本仓库根目录部署到 Render：New → Blueprint 选本仓库即可。
+# 必填：在 Render 控制台为 DEEPSEEK_API_KEY 填值（或改用 LLM_* 兼容网关，见 agent-app/.env.example）。
 services:
   - type: web
     name: baozun-risk-agent

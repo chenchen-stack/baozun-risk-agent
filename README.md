@@ -170,11 +170,34 @@ copy .env.example .env   # Windows；Unix 用 cp
 - 详细步骤、镜像构建与环境变量：**[agent-app/阿里云部署说明.md](agent-app/阿里云部署说明.md)**  
 - 同目录另有 `Dockerfile`、`docker-compose.aliyun.yml`、脚本示例，按客户网络与安全要求调整端口与密钥注入方式（**勿把 `.env` 提交到 Git**）。
 
-### 场景十：Render 等 PaaS 部署
+### 场景十：公网演示地址（推荐 Render）
 
-适合：快速公网演示（需注意 API Key 与数据合规）。
+适合：**几分钟内得到 `https://xxx.onrender.com` 这类可分享链接**（免费档冷启动约 30～60 秒，无人访问会休眠；正式商用建议付费档或阿里云）。
 
-- 仓库根目录 **`render.yaml`** 为从根目录构建 `agent-app` 的示例；在 [Render](https://render.com) 控制台关联仓库后，按平台指引配置环境变量（与 `.env.example` 对齐）。
+**不推荐用 Vercel 部署本仓库主应用**：当前主工程是 **FastAPI 长驻进程**，与 Vercel 默认 Serverless 模型不匹配；用下面方式更省事。
+
+#### 方案 A：Render（与仓库内 `render.yaml` 对齐）
+
+1. 打开 [render.com](https://render.com) ，用 GitHub 登录。  
+2. **Dashboard → New → Blueprint**（或 **New Web Service**）。  
+   - 若用 **Blueprint**：选中仓库 **`chenchen-stack/baozun-risk-agent`**，Render 会读取根目录 **`render.yaml`**（Docker 构建上下文为 `agent-app/`，健康检查 `/api/health`）。  
+   - 若用手动 **Web Service**：选同一仓库，**Runtime 选 Docker**，**Dockerfile 路径**填 `agent-app/Dockerfile`，**Docker Build Context** 填 `agent-app`。  
+3. 在服务的 **Environment** 里新增（至少一项，与本地 `.env` 一致）：  
+   - **`DEEPSEEK_API_KEY`** = 你的 DeepSeek Key（必填才能对话）  
+   - 若用兼容网关：再加 **`LLM_OPENAI_API_BASE`**、`LLM_MODEL`、`LLM_API_KEY` 等（见 [agent-app/.env.example](agent-app/.env.example)）。  
+4. 部署完成后，控制台会给出 **HTTPS 公网 URL**，把根路径 `/` 发给演示对象即可。  
+5. 可选：飞书/OA、采购 REST、定时月报等变量同样在 Render 环境变量里配置，无需提交到 Git。
+
+**说明**：**`agent-app/Dockerfile`** 已包含 **`integrations/`** 目录，否则云端启动会因缺模块失败。
+
+#### 方案 B：Railway / Fly.io（备选）
+
+- **Railway**：[railway.app](https://railway.app) 连接 GitHub，以 **`agent-app/`** 为部署根目录（或使用 **`railway.json`**），在 Variables 里填 `DEEPSEEK_API_KEY` 等。  
+- **Fly.io**：安装 `flyctl`，在 **`agent-app/`** 下执行 `fly launch`，`fly.toml` 已存在；密钥：`fly secrets set DEEPSEEK_API_KEY=...`。
+
+#### 安全与合规提醒
+
+公网演示会把入口暴露在互联网：**API Key、内网 Webhook、SelectDB 密码等只放在平台「环境变量 / Secrets」**，勿将 `.env` 提交到 Git；演示数据建议用内置 Mock + 脱敏 `external_data`。
 
 ### 场景十一：根目录 `app.py`（历史极简 Demo）
 
