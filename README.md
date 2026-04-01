@@ -32,18 +32,19 @@ python server.py
 
 ## 推送到 GitHub
 
-1. 在 [新建仓库](https://github.com/new)（例如名称为 `baozun-risk-agent`），**不要**勾选自动添加 README（若本地已有）。
-2. 在本仓库根目录执行：
+1. 在 GitHub 上 [新建空仓库](https://github.com/new)，名称建议 **`baozun-risk-agent`**（与已配置的 `origin` 一致），**不要**勾选自动添加 README（本地已有）。
+2. **新开**一个终端（或重启 Cursor），确保 `git --version` 可用（winget 安装后 PATH 需新会话生效）。
+3. 若尚未初始化，在本仓库根目录执行；**若已初始化且已有首次提交**，只需推送：
 
 ```bash
-git init
-git add .
-git status   # 确认无 .env / .venv / reports/*.html
-git commit -m "chore: initial import — Baozun risk agent POC"
-git branch -M main
-git remote add origin https://github.com/chenchen-stack/你的仓库名.git
+cd 宝尊agent方案   # 或你的实际路径
+git status         # 确认无 .env / .venv / reports/*.html
+git remote -v      # 应为 https://github.com/chenchen-stack/baozun-risk-agent.git
 git push -u origin main
 ```
+
+首次 `git push` 会弹出 **Git Credential Manager** 浏览器登录，用 `chenchen-stack` 账号授权即可。若仓库名不同，可执行：  
+`git remote set-url origin https://github.com/chenchen-stack/<你的仓库名>.git` 再推送。
 
 **切勿**将 `.env`、`env.deploy`、真实 API Key 或 `reports/` 下生成 HTML 提交到公开仓库（已在 `.gitignore` 中排除）。
 
