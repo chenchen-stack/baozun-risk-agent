@@ -98,7 +98,7 @@ python server.py
 - 健康检查：`/api/health`  
 - 集成状态：`/api/integrations/status`  
 - 数据源状态：`/api/datasources/status`  
-- **数据接入与工作流总览**：`GET /api/pipeline/status`（侧栏 **「数据接入 · 工作流」** 页消费；内嵌 `static/workflow-risk-nodes.html` 节点图）  
+- **数据接入与工作流总览**：`GET /api/pipeline/status`（侧栏 **「数据接入 · 工作流」** 页）；节点图**内嵌在页面中**（不依赖 iframe）。**请勿用 `file://` 直接打开 `index.html`**，否则无法请求 API——请始终通过 `python server.py` 访问 `http://127.0.0.1:8800/`。  
 
 ---
 

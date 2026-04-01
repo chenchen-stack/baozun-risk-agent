@@ -489,6 +489,22 @@ body.resizing .resize-handle{pointer-events:auto!important}
 .pipe-bind tr:last-child td{border-bottom:none}
 .pipe-iframe-wrap{border:1px solid var(--border);border-radius:var(--r);overflow:hidden;background:#0c1222;box-shadow:var(--shadow)}
 .pipe-iframe-wrap iframe{width:100%;height:min(540px,56vh);border:none;display:block;vertical-align:top}
+.pipe-banner{display:none;margin-bottom:12px;padding:10px 14px;border-radius:var(--r);font-size:12px;line-height:1.55;border:1px solid var(--border)}
+.pipe-banner.warn{background:var(--orange-bg);border-color:rgba(245,166,35,.35);color:var(--text)}
+.pipe-banner.info{background:var(--blue-bg);border-color:rgba(0,74,141,.15);color:var(--text)}
+.pipe-flow-visual{background:linear-gradient(165deg,#0c1222 0%,#141c30 100%);border-radius:var(--r);padding:14px 12px 18px;border:1px solid var(--border);box-shadow:var(--shadow)}
+.pipe-flow-visual .lane{font-size:9px;letter-spacing:.1em;color:rgba(255,255,255,.4);margin:0 0 6px;font-weight:600}
+.pipe-flow-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:12px}
+.pipe-fn{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:7px 9px;min-width:68px;max-width:104px}
+.pipe-fn b{display:block;font-size:10.5px;color:#fff;margin-bottom:2px;font-weight:650}
+.pipe-fn span{display:block;font-size:9px;color:rgba(255,255,255,.52);line-height:1.3}
+.pipe-fn.api{border-left:2px solid #3b82f6}
+.pipe-fn.db{border-left:2px solid #8b5cf6}
+.pipe-fn.rpa{border-left:2px solid #f59e0b}
+.pipe-fn.agent{border-left:3px solid #2dd4bf;max-width:140px}
+.pipe-arrow{color:rgba(45,212,191,.55);font-size:12px;font-weight:700;padding:0 1px;user-select:none}
+.pipe-wf-foot{margin-top:10px;font-size:11px;color:var(--text3);line-height:1.5}
+.pipe-wf-foot a{color:var(--brand-navy);font-weight:600}
 .pipe-roadmap{border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;background:var(--bg2);margin-top:14px}
 .pipe-roadmap > h3{margin:0 0 10px;font-size:13px;color:var(--brand-navy)}
 .pipe-phase{margin-bottom:10px;padding:10px 12px;background:var(--white);border-radius:10px;border-left:3px solid var(--text4)}
@@ -1189,9 +1205,11 @@ body.demo-tour-on[data-demo-zoom="chat"] .mn{transform:none}
           </div>
           <div class="ra">
             <button class="btn btn-teal" onclick="openChatAndSend('请根据当前数据接入配置，说明从采购 REST 同步到异常看板的数据路径，并列出还需要客户侧提供的接口或视图')">AI 解读接入状态</button>
+            <button class="btn btn-ghost" onclick="reloadProcurementHot()">热拉取采购数据</button>
             <button class="btn btn-ghost" onclick="loadPipelineStatus()">刷新状态</button>
           </div>
         </div>
+        <div id="pipeBanner" class="pipe-banner info" style="display:none" role="status"></div>
         <div class="pipe-grid">
           <div>
             <div id="pipeStatus"><div style="padding:24px;color:var(--text4);font-size:13px">加载中…</div></div>
@@ -1204,11 +1222,35 @@ body.demo-tour-on[data-demo-zoom="chat"] .mn{transform:none}
             </div>
           </div>
           <div>
-            <div class="section-title" style="margin-bottom:8px">节点编排示意（类 Dify）</div>
-            <div class="pipe-iframe-wrap">
-              <iframe title="工作流节点图" src="/static/workflow-risk-nodes.html"></iframe>
+            <div class="section-title" style="margin-bottom:8px">节点编排示意（类 Dify · 内嵌，不依赖 iframe）</div>
+            <div class="pipe-flow-visual" aria-label="工作流节点">
+              <div class="lane">触发层</div>
+              <div class="pipe-flow-row">
+                <div class="pipe-fn"><b>定时轮询</b><span>增量扫描兜底</span></div>
+                <span class="pipe-arrow">→</span>
+                <div class="pipe-fn"><b>Webhook</b><span>审批事件准实时</span></div>
+              </div>
+              <div class="lane">数据源适配（按系统三选一或混用）</div>
+              <div class="pipe-flow-row">
+                <div class="pipe-fn api"><b>REST</b><span>OA / ERP / 采购中台</span></div>
+                <div class="pipe-fn db"><b>只读库</b><span>视图 / SelectDB</span></div>
+                <div class="pipe-fn rpa"><b>RPA</b><span>封闭系统抓取</span></div>
+                <span class="pipe-arrow">→</span>
+                <div class="pipe-fn"><b>ETL</b><span>标准风控宽表</span></div>
+              </div>
+              <div class="lane">智能体与闭环</div>
+              <div class="pipe-flow-row">
+                <span class="pipe-arrow">→</span>
+                <div class="pipe-fn agent"><b>风控 Agent</b><span>规则 + 语义 → 等级 / 依据</span></div>
+                <span class="pipe-arrow">→</span>
+                <div class="pipe-fn"><b>决策</b><span>低/中/高分流</span></div>
+                <span class="pipe-arrow">→</span>
+                <div class="pipe-fn"><b>回调</b><span>OA · 飞书</span></div>
+                <span class="pipe-arrow">→</span>
+                <div class="pipe-fn"><b>审计</b><span>留痕 / 月报</span></div>
+              </div>
             </div>
-            <p style="font-size:11px;color:var(--text3);margin-top:8px;line-height:1.5">同源文件亦在仓库 <code style="font-size:10px">docs/workflow-risk-nodes.html</code>，便于方案评审单独打开。</p>
+            <p class="pipe-wf-foot">大图版（深色全屏样式）：<a id="pipeWfOpen" href="#" target="_blank" rel="noopener">新窗口打开 workflow-risk-nodes.html</a> · 仓库内 <code style="font-size:10px">docs/workflow-risk-nodes.html</code></p>
           </div>
         </div>
       </div>
@@ -1418,6 +1460,95 @@ async function initApp(){
 }
 
 const PAGE_TITLES={dash:'异常看板',exc:'预警列表',wo:'工单管理',rpt:'月度报告',notif:'通知记录',sup:'供应商画像',bgt:'预算管控',dlv:'交付跟踪',ast:'资产台账',pipe:'数据接入 · 工作流'};
+/** 后端不可达时（file:// 或未启动 server）用于填满本页，避免空白 */
+var PIPELINE_FALLBACK={
+  integrations:{
+    feishu_webhook_configured:false,oa_webhook_configured:false,
+    llm_openai_api_base:'(default https://api.deepseek.com)',llm_model:'deepseek-chat',
+    scheduled_monthly_report:false,external_data_dir_exists:true,external_overlay_files:[]
+  },
+  procurement_datasource:{mode:'mock',ok:true,error:'',merged_count:0,at:''},
+  sidebar_binding:[
+    {page:'异常看板 / 预警列表',api:'GET /api/dashboard，Agent 工具链',upstream:'各信息系统数据经适配与校验后的异常集合'},
+    {page:'工单管理 / 通知记录 / 月度报告',api:'/api/workorders · /api/notifications · /api/reports',upstream:'风控决策后的闭环：派单、触达、月报 HTML'},
+    {page:'供应商 / 预算 / 交付 / 资产',api:'/api/suppliers · /api/budgets · /api/deliveries · /api/assets',upstream:'外围系统适配节点（REST / 只读库 / RPA）'}
+  ],
+  delivery_phases:[
+    {phase:'P0 · 当前 POC',done:true,items:['侧栏九大模块与现有 API 已贯通（演示数据 + LangChain 工具）','采购域：mock / HTTP REST / SelectDB 只读 SQL 适配层','飞书·OA Webhook、external_data、定时月报可选集成']},
+    {phase:'P1 · 准实时与标准宽表',done:false,items:['客户审批流 Webhook / 消息队列与定时轮询双触发','ETL 统一单据模型（跨 OA·ERP·费控）','合同/付款等域独立 Adapter，与采购并列接入']},
+    {phase:'P2 · 生产闭环',done:false,items:['决策结果回写 OA 审批意见 / 加签节点','RPA 兜底与异常重试队列','审计日志外置存储与权限分级']}
+  ]
+};
+function canReachBackend(){
+  return typeof location!=='undefined' && (location.protocol==='http:'||location.protocol==='https:');
+}
+function setPipeBanner(show,html,cls){
+  var b=document.getElementById('pipeBanner');
+  if(!b)return;
+  if(!show){b.style.display='none';b.innerHTML='';b.className='pipe-banner info';return;}
+  b.className='pipe-banner '+(cls||'info');
+  b.innerHTML=html;
+  b.style.display='block';
+}
+function updatePipeWorkflowLink(){
+  var a=document.getElementById('pipeWfOpen');
+  if(!a)return;
+  if(canReachBackend()){try{a.href=new URL('/static/workflow-risk-nodes.html',location.href).href;}catch(e){a.href='/static/workflow-risk-nodes.html';}}
+  else{a.href='https://github.com/chenchen-stack/baozun-risk-agent/blob/main/docs/workflow-risk-nodes.html';a.title='当前为离线打开；完整功能请 python server.py 后访问 http://127.0.0.1:8800/';}
+}
+function renderPipelinePageData(j){
+  var root=document.getElementById('pipeStatus');
+  var bindWrap=document.getElementById('pipeBindWrap');
+  var bindTbl=document.getElementById('pipeBindTbl');
+  var rm=document.getElementById('pipeRoadmap');
+  var phaseList=document.getElementById('pipePhaseList');
+  if(!root)return;
+  var int=j.integrations||{};
+  var ds=j.procurement_datasource||{};
+  var yn=function(v){return v?'已配置':'未配置';};
+  var cards='';
+  cards+='<div class="pipe-cards">';
+  cards+='<div class="pipe-card"><h4>采购数据源</h4><p><strong>模式</strong> '+escHtml(String(ds.mode||'—'))+'</p><p><strong>结果</strong> '+(ds.ok?'成功':'失败')+' · 合并 <strong>'+escHtml(String(ds.merged_count!=null?ds.merged_count:'—'))+'</strong> 条</p>';
+  if(ds.at)cards+='<p style="font-size:11px;color:var(--text3)">'+escHtml(String(ds.at))+'</p>';
+  if(ds.error)cards+='<div class="pipe-err">'+escHtml(String(ds.error))+'</div>';
+  cards+='</div>';
+  cards+='<div class="pipe-card"><h4>大模型</h4><p><strong>端点</strong> '+escHtml(String(int.llm_openai_api_base||'—'))+'</p><p><strong>模型</strong> '+escHtml(String(int.llm_model||'—'))+'</p></div>';
+  cards+='<div class="pipe-card"><h4>协作 Webhook</h4><p>飞书 '+yn(int.feishu_webhook_configured)+'</p><p>OA '+yn(int.oa_webhook_configured)+'</p></div>';
+  cards+='<div class="pipe-card"><h4>月报调度</h4><p>'+(int.scheduled_monthly_report?'已开启 ENABLE_SCHEDULED_MONTHLY_REPORT':'未开启')+'</p></div>';
+  cards+='<div class="pipe-card"><h4>external_data</h4><p>'+(int.external_data_dir_exists?'目录存在':'无目录')+'</p><p style="font-size:11px">'+(int.external_overlay_files&&int.external_overlay_files.length?'文件：'+escHtml(int.external_overlay_files.join(', ')):'无 JSON 覆盖文件')+'</p></div>';
+  cards+='</div>';
+  root.innerHTML=cards;
+  var rows=j.sidebar_binding||[];
+  if(rows.length&&bindTbl&&bindWrap){
+    bindTbl.innerHTML=rows.map(function(row){
+      return '<tr><td><strong>'+escHtml(row.page||'')+'</strong></td><td>'+escHtml(row.api||'')+'</td><td>'+escHtml(row.upstream||'')+'</td></tr>';
+    }).join('');
+    bindWrap.style.display='block';
+  }else if(bindWrap)bindWrap.style.display='none';
+  var phases=j.delivery_phases||[];
+  if(phases.length&&phaseList&&rm){
+    phaseList.innerHTML=phases.map(function(ph){
+      var cls=ph.done?'pipe-phase done':'pipe-phase';
+      var lis=(ph.items||[]).map(function(t){return '<li>'+escHtml(t)+'</li>';}).join('');
+      return '<div class="'+cls+'"><h4>'+escHtml(ph.phase||'')+'</h4><ul>'+lis+'</ul></div>';
+    }).join('');
+    rm.style.display='block';
+  }else if(rm)rm.style.display='none';
+}
+async function reloadProcurementHot(){
+  if(!canReachBackend()){alert('请先通过后端访问：在 agent-app 目录执行 python server.py，再打开 http://127.0.0.1:8800/');return;}
+  var tok=prompt('若服务端配置了 DATASOURCE_RELOAD_TOKEN，请输入；未配置请直接点确定','')||'';
+  var h={'Content-Type':'application/json'};
+  if(tok.trim())h['X-Admin-Token']=tok.trim();
+  try{
+    var u=new URL('/api/datasources/reload-procurement',location.href);
+    var r=await fetch(u.toString(),{method:'POST',headers:h,credentials:'same-origin',cache:'no-store'});
+    var j=await r.json().catch(function(){return {detail:'非 JSON 响应'};});
+    if(!r.ok){alert('HTTP '+r.status+'：'+(j.detail||JSON.stringify(j)));return;}
+    alert('采购同步完成：模式 '+String(j.mode||'')+'，合并 '+String(j.merged_count!=null?j.merged_count:'—')+' 条'+(j.error?'\n错误：'+j.error:''));
+    loadPipelineStatus();
+  }catch(e){alert('请求失败：'+(e.message||String(e)));}
+}
 let goNavigatePromise=Promise.resolve();
 function go(p,btn){
   document.querySelectorAll('.pg').forEach(el=>el.classList.remove('on'));
@@ -1441,49 +1572,25 @@ function go(p,btn){
 }
 
 async function loadPipelineStatus(){
-  const root=document.getElementById('pipeStatus');
-  const bindWrap=document.getElementById('pipeBindWrap');
-  const bindTbl=document.getElementById('pipeBindTbl');
-  const rm=document.getElementById('pipeRoadmap');
-  const phaseList=document.getElementById('pipePhaseList');
+  var root=document.getElementById('pipeStatus');
   if(!root)return;
+  updatePipeWorkflowLink();
   root.innerHTML='<div style="padding:24px;color:var(--text4);font-size:13px">加载中…</div>';
+  if(!canReachBackend()){
+    setPipeBanner(true,'<strong>离线或未通过 HTTP 访问。</strong> 节点图已内嵌可用；运行态卡片为<strong>演示数据</strong>。请在本机执行 <code style="font-size:11px">cd agent-app &amp;&amp; python server.py</code> 后访问 <strong>http://127.0.0.1:8800/</strong> 以连接真实 <code>/api/pipeline/status</code>。','warn');
+    renderPipelinePageData(PIPELINE_FALLBACK);
+    return;
+  }
+  setPipeBanner(false);
   try{
-    const r=await fetch('/api/pipeline/status');
-    const j=await r.json();
-    const int=j.integrations||{};
-    const ds=j.procurement_datasource||{};
-    const yn=function(v){return v?'已配置':'未配置';};
-    let cards='';
-    cards+='<div class="pipe-cards">';
-    cards+='<div class="pipe-card"><h4>采购数据源</h4><p><strong>模式</strong> '+escHtml(String(ds.mode||'—'))+'</p><p><strong>结果</strong> '+(ds.ok?'成功':'失败')+' · 合并 <strong>'+escHtml(String(ds.merged_count!=null?ds.merged_count:'—'))+'</strong> 条</p>';
-    if(ds.at)cards+='<p style="font-size:11px;color:var(--text3)">'+escHtml(String(ds.at))+'</p>';
-    if(ds.error)cards+='<div class="pipe-err">'+escHtml(String(ds.error))+'</div>';
-    cards+='</div>';
-    cards+='<div class="pipe-card"><h4>大模型</h4><p><strong>端点</strong> '+escHtml(String(int.llm_openai_api_base||'—'))+'</p><p><strong>模型</strong> '+escHtml(String(int.llm_model||'—'))+'</p></div>';
-    cards+='<div class="pipe-card"><h4>协作 Webhook</h4><p>飞书 '+yn(int.feishu_webhook_configured)+'</p><p>OA '+yn(int.oa_webhook_configured)+'</p></div>';
-    cards+='<div class="pipe-card"><h4>月报调度</h4><p>'+(int.scheduled_monthly_report?'已开启 ENABLE_SCHEDULED_MONTHLY_REPORT':'未开启')+'</p></div>';
-    cards+='<div class="pipe-card"><h4>external_data</h4><p>'+(int.external_data_dir_exists?'目录存在':'无目录')+'</p><p style="font-size:11px">'+(int.external_overlay_files&&int.external_overlay_files.length?'文件：'+escHtml(int.external_overlay_files.join(', ')):'无 JSON 覆盖文件')+'</p></div>';
-    cards+='</div>';
-    root.innerHTML=cards;
-    const rows=j.sidebar_binding||[];
-    if(rows.length&&bindTbl&&bindWrap){
-      bindTbl.innerHTML=rows.map(function(row){
-        return '<tr><td><strong>'+escHtml(row.page||'')+'</strong></td><td>'+escHtml(row.api||'')+'</td><td>'+escHtml(row.upstream||'')+'</td></tr>';
-      }).join('');
-      bindWrap.style.display='block';
-    }else if(bindWrap)bindWrap.style.display='none';
-    const phases=j.delivery_phases||[];
-    if(phases.length&&phaseList&&rm){
-      phaseList.innerHTML=phases.map(function(ph){
-        const cls=ph.done?'pipe-phase done':'pipe-phase';
-        const lis=(ph.items||[]).map(function(t){return '<li>'+escHtml(t)+'</li>';}).join('');
-        return '<div class="'+cls+'"><h4>'+escHtml(ph.phase||'')+'</h4><ul>'+lis+'</ul></div>';
-      }).join('');
-      rm.style.display='block';
-    }else if(rm)rm.style.display='none';
+    var u=new URL('/api/pipeline/status',location.href);
+    var r=await fetch(u.toString(),{credentials:'same-origin',cache:'no-store'});
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    var j=await r.json();
+    renderPipelinePageData(j);
   }catch(e){
-    root.innerHTML='<div class="pipe-err" style="padding:16px">加载失败：'+escHtml(e.message||String(e))+'</div>';
+    setPipeBanner(true,'<strong>无法拉取运行态（'+escHtml(e.message||String(e))+'）。</strong> 以下为内置演示数据；请确认已启动 <code style="font-size:11px">python server.py</code> 且当前地址与后端同源。','warn');
+    renderPipelinePageData(PIPELINE_FALLBACK);
   }
 }
 
